@@ -1,0 +1,113 @@
+# E_FLASH_RESS frozen-input checksum manifest
+
+Baseline Git commit: 8e29072122540d6b7a44c9bf617c13180dbfa14d
+Created: 2026-08-13
+Frozen result package count: 29
+Files inside packages: 24522
+Bytes inside packages: 387855948
+Top-level result files: 23
+Top-level result-file bytes: 15058325
+All frozen result files: 24545
+All frozen result bytes: 402914273
+
+TREE HASH DEFINITION
+
+For each package, recursively enumerate regular files and sort them by the
+POSIX-form relative path using ordinal ordering. For every file append this
+UTF-8/ASCII record to a SHA-256 stream:
+
+    relative/path\0lowercase_file_sha256\n
+
+The package digest is the lowercase SHA-256 of that stream. The digest changes
+when file content or the set/name of files changes. Empty directories are not
+represented. Counts and byte totals are recorded independently.
+
+FROZEN RESULT PACKAGES
+
+path | files | bytes | sha256_tree
+results/cstr_final | 8 | 26081 | 76201545d3b0bfabca1dd81532a641ea55cc7d1f2a928cfffd7293d09aa45f7f
+results/milestone_a | 13 | 1391246 | a5d3b1c80b99d6809909aad400f82e48aad586f31e4c588d9c8cedaaa656f4f8
+results/milestone_a5 | 17 | 2275253 | e07934854efbf1a1119ae4153eb43ec9eca549eb936277341b4ad7cccfcb7bcb
+results/milestone_b | 32 | 21625177 | 3eb1c520e683bd8d948be1f91c18be252862392f8fa3840f3dc12c8f7d4e736d
+results/milestone_b10 | 513 | 21358588 | e3c6f1130e47ed6e25d5947f39dd9279f6b3658a6f39a6a186c35e8a173223f0
+results/milestone_b10_debug | 6 | 239696 | 65e89019032858ff4d1595f41e58cf8947d52e87496858671940a17c3dfb1b42
+results/milestone_b10_smoke | 5 | 22249 | 56c71455bd81b8adf63e648bfb50f7eed7e82840ea9173d00e02119e04c9b4ab
+results/milestone_b11 | 813 | 31245688 | e05f94db1c74f420b8b680d9df0440e764ed5be4572e2130ea73032f4920666e
+results/milestone_b11_debug | 6 | 244237 | d377b621772f164df0630cb35064731164dbd6c10289f2fa17197cab8936130c
+results/milestone_b12 | 2338 | 58437924 | 9f76ab3e594c1b1c92cfb875e23af78158aeaace575ff20c3014b4f0a77727ec
+results/milestone_b12_debug | 6 | 142983 | 27d9b189b9ea249370135b1fe838be5a3c2fd751e9a98c2118a93e5a6e21e7ee
+results/milestone_b5 | 635 | 29101237 | 117f3e7fce4fb273855ec6f42c570f70d3b5c278153c85ad0401db307f26f086
+results/milestone_b6 | 19 | 3794861 | 36a69fd2e0b8a2068be9f3c586802d6a389e85e67fb80a0ed88bcebb17e3f0d1
+results/milestone_b7a | 23 | 23943655 | 7208dfbb16a3ab998927e2c342ee6689b59ceedf349ac5e1e37fea95d0635928
+results/milestone_b7b | 24 | 7157906 | 76dcfa1afccac57bb542b1aa0d123242f69328b3431b9d9d9062ac98060e335a
+results/milestone_b8 | 29 | 5272653 | 09da9632bb01e06a06330d535b39fe45adc8b6bb2bb34a4cb69e0348474380e7
+results/milestone_b9 | 35 | 3517184 | 8874d17c4bffdc5e69bc90fed7a0df58c552f09fe2479c484c5c8505a8b5966e
+results/milestone_b9_smoke | 35 | 1933411 | 03fb2c1016b072f90801381ffca12b795603f772386999d6080ccdecd2505484
+results/milestone_c1 | 5237 | 67522052 | 80c0711d6dacf134d5df543fa95642fb7dac7324efca982cd43701804aa658d2
+results/milestone_c1_5a | 25 | 2739116 | a6b7a30ad4822bd39dcb51f20640274942a528575f1c36c220a015abb9ff9c62
+results/milestone_c15c | 1256 | 11129607 | cce1e0c849508ec2e27c221d9b79115e0609a90c2a14746df996f7ff646eef35
+results/milestone_c15c_shard0 | 2013 | 12509709 | 5419cf231d1bda90bd9332c2f3ee20ff5c26b87360650c3fe785df896e129af4
+results/milestone_c15c_shard1 | 2013 | 12500746 | dc01f5cc9a0799fe1f39ef607372e5dcfe4d866672ed2dd7b7d97ef1ca1b1d32
+results/milestone_c15c_shard2 | 2013 | 12502021 | 5df13cac04ac369448eef42b7df3ca1c9d8e17e366a73cf1e151ba1d88a61893
+results/milestone_c15c_shard3 | 2013 | 12506524 | 1da4e4d5d87a9aed96f3a708b14fe40b70939bbb7f1343b1f0a07618e59c885b
+results/milestone_c16a | 8 | 1601509 | d34deaeb5a0000775a74a7d534b5a6e1dc65ac31314403c1f3d1351a59a57bfb
+results/milestone_c16b | 2740 | 20994738 | c758bbf76f610da74488809461b8540cf123d5730077c4d7c92e447576289078
+results/second_case_final | 2637 | 15017865 | 345423b6b54e42c84c93d7c70ea64e3e5e7d21a7ba7c9ce372e0dab6a440b150
+results/second_case_setup | 10 | 7102032 | b194cd5743577bf30f689eb44149a4941b39a89a9c0cafb88d64b1449b201cc4
+
+FROZEN TOP-LEVEL RESULT FILES
+
+The same tree-hash definition is applied to files directly inside `results/`,
+using the filename as the relative path. This virtual package closes the gap
+between directory packages and root-level execution logs/archive artifacts.
+
+root | files | bytes | sha256_tree
+results/<root-files> | 23 | 15058325 | 6c36176774bb4b9cc713a4aef5d3f19803a8da8f45b31c5e86bc62c303901ff0
+
+path | bytes | sha256
+results/milestone_b5_stderr.log | 0 | e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+results/milestone_b5_stdout.log | 539 | 26eb2dfbc024de7e94269c6d052d652304bc1496c5c09dbfefeae0b233fd9218
+results/milestone_b6_stderr.log | 0 | e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+results/milestone_b6_stdout.log | 442 | 79b182791af4580079801c7274cc1c609cf4bd2ea19e07ffa7eb106f55f15f40
+results/milestone_b7a_stderr.log | 0 | e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+results/milestone_b7a_stdout.log | 456 | f02388c9be94c164c9f1cd4dfb2ac63c6e462ab84e65a3cd375017f54e0a8111
+results/milestone_b7b_stderr.log | 0 | e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+results/milestone_b7b_stdout.log | 63 | 8b14167c214ca4537ae3d3560e57c0c508f9f1969a075f975f55a296b1d58642
+results/milestone_b9_stderr.log | 0 | e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+results/milestone_b9_stdout.log | 67 | 988050c1a8c30b6045b621a119437fcea6a26f0c2f396f5068d5084b455440d2
+results/milestone_c15c_shard0_stderr.log | 499 | 293dd871225f3dab7543db6810c25c886723e4aae82da4d9b9180a0b44e5cedb
+results/milestone_c15c_shard0_stdout.log | 101 | c487f7fc44eb229530ce87ab15a007444032efc616cdf5832f1f257823218f5e
+results/milestone_c15c_shard1_stderr.log | 499 | a663c6cd7659f6fa697aa23c6e1def23943dac520743e556042671543ab97f51
+results/milestone_c15c_shard1_stdout.log | 107 | 5aae6f62ce81e10e1f88ef449ce7bb4af0a9a09d658221bda210b230d0f51304
+results/milestone_c15c_shard2_stderr.log | 499 | bad39b6ff981551b52eef6c951ccbac85269ec48dd0ac29909144a50027584c6
+results/milestone_c15c_shard2_stdout.log | 101 | c487f7fc44eb229530ce87ab15a007444032efc616cdf5832f1f257823218f5e
+results/milestone_c15c_shard3_stderr.log | 499 | 6a1680340914c2a1b1a391e41c7d6b9d706c95035d5182f70bd79fbb1132292e
+results/milestone_c15c_shard3_stdout.log | 101 | c487f7fc44eb229530ce87ab15a007444032efc616cdf5832f1f257823218f5e
+results/milestone_c15c_stderr.log | 499 | 2d4c6c2219e2809c3bd186a1f05e0d1b7908abdecfb37efc20d807983e39b5d7
+results/milestone_c15c_stdout.log | 68 | 8a82cb4b42b7903520fff7fb5004a1b473c30ea93534a5b0f5df67fac561ff5f
+results/milestone_c16b_stderr.log | 0 | e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+results/milestone_c16b_stdout.log | 148 | efacfe12518ffeb21193652034793c0586a214e352180ff154c804f16ca5dcc7
+results/second_case_final.zip | 15053637 | 033a66681273840ec409c84533242cefe48badcbb47d3f21dfd0e18a3b9620f7
+
+FROZEN/REFERENCE SOURCE FILES
+
+These are direct file SHA-256 values, not package tree digests. Flash work may
+reuse their process-independent ideas or import stable helpers, but must not
+edit these files as part of the E_FLASH_RESS experiment.
+
+path | bytes | sha256
+cstr_digital_twin.py | 18098 | b8164d958b3ee7b9d7b54e9408be55ec96f2a1fac6a6820e8f9f7a9dd3848cc6
+counterfactual_rollout.py | 6313 | caf8bc213e2870d3a2e21c2a7964d84fab3686275c6e9d704aa8b56248c76090
+latent_discrepancy_state_space.py | 28319 | 6f7346de8b6679e2f129b4796d283bdcebbaa07fdf92b39e724a61ef2032a294
+milestone_b9_latent_discrepancy.py | 48503 | 49b4cc744ba3f4c2bd3ffc17d853fc6d682193254c4eed8e62e558865e83da1b
+milestone_b10_latent_uncertainty.py | 44019 | e81eb32471613ded4b1d8bbb52f1b28d784299f78f176250def3d29ec398451f
+milestone_b11_parameter_uncertainty.py | 31791 | f6d32c044aac2d978c8dc47623b8d3130c4d61cf25552372829f37e6086cce62
+milestone_b12_conformal_trajectories.py | 31722 | ac0cb4ed207fc0366660e9f018a9d6509589b97f8d171a68bca5a950b79c0118
+milestone_c1_safety_certification.py | 49646 | 5a887d69b9d7cfa12ac6a6f4196deacbe7ffd15bdf1ebfe1353915a74edc8385
+milestone_c1_5a_frozen_audit.py | 30635 | 462947c88dbae96f820892e7700c4a92859f0aa2406fd1c7d4feed1e0eef3cea
+milestone_c1_5c_multi_action_screening.py | 19244 | bb6c88229d286cac3cc6d331b437da4502532605e8225ef406a34c25dbb9fa94
+milestone_c1_6a_additional_faults.py | 13821 | d112975ed13d21a0659e0b102f34399c223718ca7f3db2cf3c1cf64d694be4d7
+milestone_c1_6b_multifault_revalidation.py | 36647 | 0812fc6b05c6965c55f59ad1bc9a6a57d7230543c08cc6c9b5b640ecea44185a
+two_tank_process.py | 4792 | 6835e87ae6e45c0dcc7178734d3d14e4388468261d861400ea21ebcf29e05c22
+milestone_d1_second_process_setup.py | 23231 | 2569cb6977e66d9f85e2e95b6283e378b629f2d3c831569722e951c3c36321a8
+milestone_d2_second_process_revalidation.py | 55644 | 3d578f420808e60a640d31da22cd6a87b4ff81269179a6c5e1622480e9225499

@@ -1,0 +1,559 @@
+old_path,new_path,action,reason
+.gitignore,,EXCLUDED,debugging/development: development packaging replaced by release packaging
+.pytest_cache/.gitignore,,EXCLUDED,generated/cache: Python bytecode or pytest cache
+.pytest_cache/CACHEDIR.TAG,,EXCLUDED,generated/cache: Python bytecode or pytest cache
+.pytest_cache/README.md,,EXCLUDED,generated/cache: Python bytecode or pytest cache
+.pytest_cache/v/cache/lastfailed,,EXCLUDED,generated/cache: Python bytecode or pytest cache
+.pytest_cache/v/cache/nodeids,,EXCLUDED,generated/cache: Python bytecode or pytest cache
+E6B_MARGIN_LADDER/CSTR_E6B_EPISODES.csv,artifacts/flash_margin_ladder/CSTR_E6B_EPISODES.csv,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/CSTR_E6B_MARGIN_RESULTS.csv,artifacts/flash_margin_ladder/CSTR_E6B_MARGIN_RESULTS.csv,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/CSTR_E6B_RESULTS.md,artifacts/flash_margin_ladder/CSTR_E6B_RESULTS.md,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/E6B_ARTIFACT_AUDIT.csv,artifacts/flash_margin_ladder/E6B_ARTIFACT_AUDIT.csv,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/E6B_CLAIMS_AUDIT.md,artifacts/flash_margin_ladder/E6B_CLAIMS_AUDIT.md,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/E6B_FINAL_ARTIFACT_HASHES.txt,artifacts/flash_margin_ladder/E6B_FINAL_ARTIFACT_HASHES.txt,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/E6B_PREDECLARATION.md,artifacts/flash_margin_ladder/E6B_PREDECLARATION.md,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/E6B_PREDECLARATION.sha256,artifacts/flash_margin_ladder/E6B_PREDECLARATION.sha256,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/E6B_RISK_AVAILABILITY.csv,artifacts/flash_margin_ladder/E6B_RISK_AVAILABILITY.csv,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/E6B_SEED_MANIFEST.csv,artifacts/flash_margin_ladder/E6B_SEED_MANIFEST.csv,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/FLASH_E6B_CALIBRATION_SCORES.csv,artifacts/flash_margin_ladder/FLASH_E6B_CALIBRATION_SCORES.csv,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/FLASH_E6B_CONFORMAL_CONFIG.json,artifacts/flash_margin_ladder/FLASH_E6B_CONFORMAL_CONFIG.json,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/FLASH_E6B_CONFORMAL_CONFIG.sha256,artifacts/flash_margin_ladder/FLASH_E6B_CONFORMAL_CONFIG.sha256,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/FLASH_E6B_EPISODES.csv,artifacts/flash_margin_ladder/FLASH_E6B_EPISODES.csv,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/FLASH_E6B_MARGIN_RESULTS.csv,artifacts/flash_margin_ladder/FLASH_E6B_MARGIN_RESULTS.csv,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/FLASH_E6B_RESULTS.md,artifacts/flash_margin_ladder/FLASH_E6B_RESULTS.md,RENAMED,frozen margin-ladder input/output; directory renamed
+E6B_MARGIN_LADDER/__init__.py,,EXCLUDED,superseded duplicate: package re-exports replaced by release package __init__
+E6B_MARGIN_LADDER/__pycache__/__init__.cpython-313.pyc,,EXCLUDED,generated/cache: Python bytecode or pytest cache
+E6B_MARGIN_LADDER/__pycache__/frozen_boundaries.cpython-313.pyc,,EXCLUDED,generated/cache: Python bytecode or pytest cache
+E6B_MARGIN_LADDER/__pycache__/run_e6b.cpython-313.pyc,,EXCLUDED,generated/cache: Python bytecode or pytest cache
+E6B_MARGIN_LADDER/__pycache__/write_preregistration.cpython-313.pyc,,EXCLUDED,generated/cache: Python bytecode or pytest cache
+E6B_MARGIN_LADDER/artifacts/CSTR_TEST_ARTIFACT_AUDIT.csv,artifacts/flash_margin_ladder/artifacts/CSTR_TEST_ARTIFACT_AUDIT.csv,RENAMED,per-episode chronology/hash ledger; absolute author-machine paths rewritten to repository-relative paths
+E6B_MARGIN_LADDER/artifacts/FLASH_CALIBRATION_ARTIFACT_AUDIT.csv,artifacts/flash_margin_ladder/artifacts/FLASH_CALIBRATION_ARTIFACT_AUDIT.csv,RENAMED,per-episode chronology/hash ledger; absolute author-machine paths rewritten to repository-relative paths
+E6B_MARGIN_LADDER/artifacts/FLASH_TEST_ARTIFACT_AUDIT.csv,artifacts/flash_margin_ladder/artifacts/FLASH_TEST_ARTIFACT_AUDIT.csv,RENAMED,per-episode chronology/hash ledger; absolute author-machine paths rewritten to repository-relative paths
+E6B_MARGIN_LADDER/artifacts/cstr_test/candidates/*,archive: artifacts/flash_margin_ladder/artifacts/cstr_test/candidates/*,LARGE_ARTIFACT_EXCLUDED,per-episode margin-ladder artifact; staged for the frozen archive (1500 files)
+E6B_MARGIN_LADDER/artifacts/cstr_test/decisions/*,archive: artifacts/flash_margin_ladder/artifacts/cstr_test/decisions/*,LARGE_ARTIFACT_EXCLUDED,per-episode margin-ladder artifact; staged for the frozen archive (1166 files)
+E6B_MARGIN_LADDER/artifacts/cstr_test/predictions/*,archive: artifacts/flash_margin_ladder/artifacts/cstr_test/predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode margin-ladder artifact; staged for the frozen archive (1166 files)
+E6B_MARGIN_LADDER/artifacts/cstr_test/truths/*,archive: artifacts/flash_margin_ladder/artifacts/cstr_test/truths/*,LARGE_ARTIFACT_EXCLUDED,per-episode margin-ladder artifact; staged for the frozen archive (1166 files)
+E6B_MARGIN_LADDER/artifacts/flash_calibration/candidates/*,archive: artifacts/flash_margin_ladder/artifacts/flash_calibration/candidates/*,LARGE_ARTIFACT_EXCLUDED,per-episode margin-ladder artifact; staged for the frozen archive (1500 files)
+E6B_MARGIN_LADDER/artifacts/flash_calibration/predictions/*,archive: artifacts/flash_margin_ladder/artifacts/flash_calibration/predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode margin-ladder artifact; staged for the frozen archive (1499 files)
+E6B_MARGIN_LADDER/artifacts/flash_calibration/truths/*,archive: artifacts/flash_margin_ladder/artifacts/flash_calibration/truths/*,LARGE_ARTIFACT_EXCLUDED,per-episode margin-ladder artifact; staged for the frozen archive (1499 files)
+E6B_MARGIN_LADDER/artifacts/flash_test/candidates/*,archive: artifacts/flash_margin_ladder/artifacts/flash_test/candidates/*,LARGE_ARTIFACT_EXCLUDED,per-episode margin-ladder artifact; staged for the frozen archive (2000 files)
+E6B_MARGIN_LADDER/artifacts/flash_test/decisions/*,archive: artifacts/flash_margin_ladder/artifacts/flash_test/decisions/*,LARGE_ARTIFACT_EXCLUDED,per-episode margin-ladder artifact; staged for the frozen archive (2000 files)
+E6B_MARGIN_LADDER/artifacts/flash_test/predictions/*,archive: artifacts/flash_margin_ladder/artifacts/flash_test/predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode margin-ladder artifact; staged for the frozen archive (2000 files)
+E6B_MARGIN_LADDER/artifacts/flash_test/truths/*,archive: artifacts/flash_margin_ladder/artifacts/flash_test/truths/*,LARGE_ARTIFACT_EXCLUDED,per-episode margin-ladder artifact; staged for the frozen archive (2000 files)
+E6B_MARGIN_LADDER/figures/01_margin_vs_false_safe.png,results/figures/appendix/margin_ladder_false_safe_frequency.png,RENAMED,publication figure copied byte-exact under a semantic name
+E6B_MARGIN_LADDER/figures/02_margin_vs_certification.png,results/figures/appendix/margin_ladder_certification_availability.png,RENAMED,publication figure copied byte-exact under a semantic name
+E6B_MARGIN_LADDER/figures/03_margin_vs_safe_action_certification.png,results/figures/appendix/margin_ladder_safe_action_certification.png,RENAMED,publication figure copied byte-exact under a semantic name
+E6B_MARGIN_LADDER/figures/04_risk_availability_operating_envelope.png,archive: artifacts/flash_margin_ladder/figures/04_risk_availability_operating_envelope.png,LARGE_ARTIFACT_EXCLUDED,non-paper figure; staged for the frozen archive
+E6B_MARGIN_LADDER/figures/05_margin_vs_violation_severity.png,archive: artifacts/flash_margin_ladder/figures/05_margin_vs_violation_severity.png,LARGE_ARTIFACT_EXCLUDED,non-paper figure; staged for the frozen archive
+E6B_MARGIN_LADDER/figures/06_flash_vs_cstr_margin_ladder.png,archive: artifacts/flash_margin_ladder/figures/06_flash_vs_cstr_margin_ladder.png,LARGE_ARTIFACT_EXCLUDED,non-paper figure; staged for the frozen archive
+E6B_MARGIN_LADDER/frozen_boundaries.py,src/twinguard/utils/margin_ladder_output_guard.py,RENAMED,source module; 1 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E6B_MARGIN_LADDER/run_e6b.py,src/twinguard/evaluation/margin_ladder.py,RENAMED,source module; 7 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E6B_MARGIN_LADDER/write_preregistration.py,src/twinguard/evaluation/margin_ladder_preregistration.py,RENAMED,source module; 3 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/CSTR_BOUNDARY_RESULTS.csv,artifacts/flash_study/CSTR_BOUNDARY_RESULTS.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/CSTR_RELIABILITY_RESULTS.csv,artifacts/flash_study/CSTR_RELIABILITY_RESULTS.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/CSTR_RELIABILITY_SUMMARY.csv,artifacts/flash_study/CSTR_RELIABILITY_SUMMARY.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_BOUNDARY_RESULTS.csv,artifacts/flash_study/FLASH_BOUNDARY_RESULTS.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_E1_VALIDATION.md,artifacts/flash_study/FLASH_E1_VALIDATION.md,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_E2_PREDECLARATION.md,artifacts/flash_study/FLASH_E2_PREDECLARATION.md,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_E2_PREDECLARATION.sha256,artifacts/flash_study/FLASH_E2_PREDECLARATION.sha256,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_E3_MODEL_SELECTION.md,artifacts/flash_study/FLASH_E3_MODEL_SELECTION.md,REQUIRES_REVIEW,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests; shipped unchanged but its bytes differ from the E7 freeze record (see reproducibility/known_discrepancies.csv)"
+E_FLASH_RESS/FLASH_E4_ARTIFACT_HASHES.txt,artifacts/flash_study/FLASH_E4_ARTIFACT_HASHES.txt,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_E4_CALIBRATION.md,artifacts/flash_study/FLASH_E4_CALIBRATION.md,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_E5_ARTIFACT_HASHES.txt,artifacts/flash_study/FLASH_E5_ARTIFACT_HASHES.txt,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_E5_RESULTS.md,artifacts/flash_study/FLASH_E5_RESULTS.md,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_FINAL_ABLATION.csv,artifacts/flash_study/FLASH_FINAL_ABLATION.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_FINAL_RESULTS.csv,artifacts/flash_study/FLASH_FINAL_RESULTS.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_PROCESS_SPECIFICATION.md,artifacts/flash_study/FLASH_PROCESS_SPECIFICATION.md,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_RELIABILITY_RESULTS.csv,artifacts/flash_study/FLASH_RELIABILITY_RESULTS.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_RELIABILITY_SUMMARY.csv,artifacts/flash_study/FLASH_RELIABILITY_SUMMARY.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_STRUCTURAL_RESULTS.csv,artifacts/flash_study/FLASH_STRUCTURAL_RESULTS.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FLASH_STRUCTURAL_SUMMARY.csv,artifacts/flash_study/FLASH_STRUCTURAL_SUMMARY.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/FROZEN_INPUT_HASHES.txt,artifacts/flash_study/FROZEN_INPUT_HASHES.txt,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/IMPLEMENTATION_PLAN.md,,EXCLUDED,debugging/development: E0 planning document
+E_FLASH_RESS/RESS_E6_ARTIFACT_HASHES.txt,artifacts/flash_study/RESS_E6_ARTIFACT_HASHES.txt,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/RESS_E6_DESIGN.json,artifacts/flash_study/RESS_E6_DESIGN.json,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/RESS_E6_RESULTS.md,artifacts/flash_study/RESS_E6_RESULTS.md,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/RESS_E7_AMENDMENT_01.md,artifacts/flash_study/RESS_E7_AMENDMENT_01.md,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/RESS_E7_DESIGN.json,artifacts/flash_study/RESS_E7_DESIGN.json,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/RESS_E7_DESIGN.sha256,artifacts/flash_study/RESS_E7_DESIGN.sha256,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/RESS_E7_FROZEN_INPUT_HASHES.txt,artifacts/flash_study/RESS_E7_FROZEN_INPUT_HASHES.txt,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/RESS_E7_RESULTS.md,artifacts/flash_study/RESS_E7_RESULTS.md,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/RESS_FINAL_ARTIFACT_HASHES.txt,artifacts/flash_study/RESS_FINAL_ARTIFACT_HASHES.txt,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/RESS_FINAL_AUDIT.md,artifacts/flash_study/RESS_FINAL_AUDIT.md,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/RESS_FINAL_AUDIT_DETAILS.csv,artifacts/flash_study/RESS_FINAL_AUDIT_DETAILS.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/RESS_FINAL_CLAIMS_AUDIT.md,artifacts/flash_study/RESS_FINAL_CLAIMS_AUDIT.md,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/RESS_FINAL_FIGURE_MANIFEST.md,artifacts/flash_study/RESS_FINAL_FIGURE_MANIFEST.md,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/RESS_FINAL_RESULTS.csv,artifacts/flash_study/RESS_FINAL_RESULTS.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/RISK_AVAILABILITY_RESULTS.csv,artifacts/flash_study/RISK_AVAILABILITY_RESULTS.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/__init__.py,,EXCLUDED,superseded duplicate: package re-exports replaced by release package __init__
+E_FLASH_RESS/__pycache__/*,,EXCLUDED,generated/cache: Python bytecode or pytest cache (12 files)
+E_FLASH_RESS/audit_ress_final.py,src/twinguard/evaluation/final_audit.py,RENAMED,source module; 10 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/e1_validation/ACTION_STEP_RESPONSES.csv,artifacts/flash_study/e1_validation/ACTION_STEP_RESPONSES.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/e1_validation/E1_VALIDATION_SUMMARY.json,artifacts/flash_study/e1_validation/E1_VALIDATION_SUMMARY.json,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/e1_validation/HEALTHY_SCENARIO_SUMMARY.csv,artifacts/flash_study/e1_validation/HEALTHY_SCENARIO_SUMMARY.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/e1_validation/HEALTHY_TRAJECTORIES.csv,artifacts/flash_study/e1_validation/HEALTHY_TRAJECTORIES.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/e3_data/EVALUATOR_GENERATION_MANIFEST.csv,artifacts/flash_study/e3_data/EVALUATOR_GENERATION_MANIFEST.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/e3_data/selection_operational_inputs.npz,artifacts/flash_study/e3_data/selection_operational_inputs.npz,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/e3_data/selection_predictions_before_truth_serialization.npz,artifacts/flash_study/e3_data/selection_predictions_before_truth_serialization.npz,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/e3_data/selection_truth_evaluator_only.npz,artifacts/flash_study/e3_data/selection_truth_evaluator_only.npz,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/e3_data/training_method_inputs.npz,artifacts/flash_study/e3_data/training_method_inputs.npz,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/e4_data/CALIBRATION_EVALUATOR_MANIFEST.csv,artifacts/flash_study/e4_data/CALIBRATION_EVALUATOR_MANIFEST.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/e4_data/calibration_boundary_operational_inputs.npz,artifacts/flash_study/e4_data/calibration_boundary_operational_inputs.npz,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/e4_data/calibration_ordinary_operational_inputs.npz,artifacts/flash_study/e4_data/calibration_ordinary_operational_inputs.npz,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/e4_data/ensemble_selection_diagnostics.csv,artifacts/flash_study/e4_data/ensemble_selection_diagnostics.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/e5_artifact_audit.csv,artifacts/flash_study/e5_artifact_audit.csv,RENAMED,per-episode chronology/hash ledger; absolute author-machine paths rewritten to repository-relative paths
+E_FLASH_RESS/e5_artifacts/decisions/*,archive: artifacts/flash_study/e5_artifacts/decisions/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (1200 files)
+E_FLASH_RESS/e5_artifacts/predictions/*,archive: artifacts/flash_study/e5_artifacts/predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (1200 files)
+E_FLASH_RESS/e5_artifacts/truths/*,archive: artifacts/flash_study/e5_artifacts/truths/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (1200 files)
+E_FLASH_RESS/e5_figures/01_representative_corrected_rollout.png,results/figures/main/flash_representative_corrected_rollout.png,RENAMED,publication figure copied byte-exact under a semantic name
+E_FLASH_RESS/e5_figures/02_true_vs_nominal_margin.png,results/figures/main/flash_nominal_vs_true_safety_margin.png,RENAMED,publication figure copied byte-exact under a semantic name
+E_FLASH_RESS/e5_figures/03_true_vs_conformal_margin.png,results/figures/main/flash_conformal_vs_true_safety_margin.png,RENAMED,publication figure copied byte-exact under a semantic name
+E_FLASH_RESS/e5_figures/04_certification_confusion.png,archive: artifacts/flash_study/e5_figures/04_certification_confusion.png,LARGE_ARTIFACT_EXCLUDED,"non-paper figure, regenerable by its stage script; staged for the frozen archive"
+E_FLASH_RESS/e5_figures/05_pooled_vs_action_conditioned_coverage.png,,EXCLUDED,"obsolete experiment: M4 action-conditioned figure (unsupported placeholder, zero-height bar)"
+E_FLASH_RESS/e5_figures/06_false_safe_risk_and_certification.png,archive: artifacts/flash_study/e5_figures/06_false_safe_risk_and_certification.png,LARGE_ARTIFACT_EXCLUDED,"non-paper figure, regenerable by its stage script; staged for the frozen archive"
+E_FLASH_RESS/e5_figures/07_safety_violation_severity.png,archive: artifacts/flash_study/e5_figures/07_safety_violation_severity.png,LARGE_ARTIFACT_EXCLUDED,"non-paper figure, regenerable by its stage script; staged for the frozen archive"
+E_FLASH_RESS/e5_figures/08_cstr_vs_flash_comparison.png,archive: artifacts/flash_study/e5_figures/08_cstr_vs_flash_comparison.png,LARGE_ARTIFACT_EXCLUDED,"non-paper figure, regenerable by its stage script; staged for the frozen archive"
+E_FLASH_RESS/e6_artifacts/CSTR_RESS_STRESS_ARTIFACT_AUDIT.csv,artifacts/flash_study/e6_artifacts/CSTR_RESS_STRESS_ARTIFACT_AUDIT.csv,RENAMED,per-episode chronology/hash ledger; absolute author-machine paths rewritten to repository-relative paths
+E_FLASH_RESS/e6_artifacts/FLASH_RESS_STRESS_ARTIFACT_AUDIT.csv,artifacts/flash_study/e6_artifacts/FLASH_RESS_STRESS_ARTIFACT_AUDIT.csv,RENAMED,per-episode chronology/hash ledger; absolute author-machine paths rewritten to repository-relative paths
+E_FLASH_RESS/e6_artifacts/cstr/candidates/*,archive: artifacts/flash_study/e6_artifacts/cstr/candidates/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (300 files)
+E_FLASH_RESS/e6_artifacts/cstr/decisions/*,archive: artifacts/flash_study/e6_artifacts/cstr/decisions/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (300 files)
+E_FLASH_RESS/e6_artifacts/cstr/predictions/*,archive: artifacts/flash_study/e6_artifacts/cstr/predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (300 files)
+E_FLASH_RESS/e6_artifacts/cstr/truths/*,archive: artifacts/flash_study/e6_artifacts/cstr/truths/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (300 files)
+E_FLASH_RESS/e6_artifacts/flash/candidates/*,archive: artifacts/flash_study/e6_artifacts/flash/candidates/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (1200 files)
+E_FLASH_RESS/e6_artifacts/flash/decisions/*,archive: artifacts/flash_study/e6_artifacts/flash/decisions/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (1200 files)
+E_FLASH_RESS/e6_artifacts/flash/predictions/*,archive: artifacts/flash_study/e6_artifacts/flash/predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (1200 files)
+E_FLASH_RESS/e6_artifacts/flash/truths/*,archive: artifacts/flash_study/e6_artifacts/flash/truths/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (1200 files)
+E_FLASH_RESS/e6_figures/01_risk_availability_frontier.png,archive: artifacts/flash_study/e6_figures/01_risk_availability_frontier.png,LARGE_ARTIFACT_EXCLUDED,"non-paper figure, regenerable by its stage script; staged for the frozen archive"
+E_FLASH_RESS/e6_figures/02_severity_risk_frontier.png,archive: artifacts/flash_study/e6_figures/02_severity_risk_frontier.png,LARGE_ARTIFACT_EXCLUDED,"non-paper figure, regenerable by its stage script; staged for the frozen archive"
+E_FLASH_RESS/e6_figures/03_near_boundary_true_vs_predicted_margins.png,archive: artifacts/flash_study/e6_figures/03_near_boundary_true_vs_predicted_margins.png,LARGE_ARTIFACT_EXCLUDED,"non-paper figure, regenerable by its stage script; staged for the frozen archive"
+E_FLASH_RESS/e6_figures/04_cstr_vs_flash_boundary_behavior.png,results/figures/main/cstr_vs_flash_boundary_behaviour.png,RENAMED,publication figure copied byte-exact under a semantic name
+E_FLASH_RESS/e7_artifacts/CSTR_RELIABILITY_ARTIFACT_AUDIT.csv,artifacts/flash_study/e7_artifacts/CSTR_RELIABILITY_ARTIFACT_AUDIT.csv,RENAMED,per-episode chronology/hash ledger; absolute author-machine paths rewritten to repository-relative paths
+E_FLASH_RESS/e7_artifacts/FLASH_RELIABILITY_ARTIFACT_AUDIT.csv,artifacts/flash_study/e7_artifacts/FLASH_RELIABILITY_ARTIFACT_AUDIT.csv,RENAMED,per-episode chronology/hash ledger; absolute author-machine paths rewritten to repository-relative paths
+E_FLASH_RESS/e7_artifacts/STRUCTURAL_ARTIFACT_AUDIT.csv,artifacts/flash_study/e7_artifacts/STRUCTURAL_ARTIFACT_AUDIT.csv,RENAMED,per-episode chronology/hash ledger; absolute author-machine paths rewritten to repository-relative paths
+E_FLASH_RESS/e7_artifacts/cstr_reliability/candidates/*,archive: artifacts/flash_study/e7_artifacts/cstr_reliability/candidates/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (3000 files)
+E_FLASH_RESS/e7_artifacts/cstr_reliability/decisions/*,archive: artifacts/flash_study/e7_artifacts/cstr_reliability/decisions/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (3000 files)
+E_FLASH_RESS/e7_artifacts/cstr_reliability/predictions/*,archive: artifacts/flash_study/e7_artifacts/cstr_reliability/predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (3000 files)
+E_FLASH_RESS/e7_artifacts/cstr_reliability/truths/*,archive: artifacts/flash_study/e7_artifacts/cstr_reliability/truths/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (3000 files)
+E_FLASH_RESS/e7_artifacts/flash_reliability/flash_reliability/candidates/*,archive: artifacts/flash_study/e7_artifacts/flash_reliability/flash_reliability/candidates/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (3000 files)
+E_FLASH_RESS/e7_artifacts/flash_reliability/flash_reliability/decisions/*,archive: artifacts/flash_study/e7_artifacts/flash_reliability/flash_reliability/decisions/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (3000 files)
+E_FLASH_RESS/e7_artifacts/flash_reliability/flash_reliability/predictions/*,archive: artifacts/flash_study/e7_artifacts/flash_reliability/flash_reliability/predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (3000 files)
+E_FLASH_RESS/e7_artifacts/flash_reliability/flash_reliability/truths/*,archive: artifacts/flash_study/e7_artifacts/flash_reliability/flash_reliability/truths/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (3000 files)
+E_FLASH_RESS/e7_artifacts/structural/structural/candidates/*,archive: artifacts/flash_study/e7_artifacts/structural/structural/candidates/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (600 files)
+E_FLASH_RESS/e7_artifacts/structural/structural/decisions/*,archive: artifacts/flash_study/e7_artifacts/structural/structural/decisions/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (600 files)
+E_FLASH_RESS/e7_artifacts/structural/structural/predictions/*,archive: artifacts/flash_study/e7_artifacts/structural/structural/predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (600 files)
+E_FLASH_RESS/e7_artifacts/structural/structural/truths/*,archive: artifacts/flash_study/e7_artifacts/structural/structural/truths/*,LARGE_ARTIFACT_EXCLUDED,per-episode candidate/prediction/decision/truth artifact; staged for the frozen archive (600 files)
+E_FLASH_RESS/e7_figures/01_large_reliability_evidence.png,archive: artifacts/flash_study/e7_figures/01_large_reliability_evidence.png,LARGE_ARTIFACT_EXCLUDED,"non-paper figure, regenerable by its stage script; staged for the frozen archive"
+E_FLASH_RESS/e7_figures/02_structural_mismatch_evidence.png,results/figures/appendix/flash_structural_mismatch_diagnostics.png,RENAMED,publication figure copied byte-exact under a semantic name
+E_FLASH_RESS/figures/action_step_responses.png,results/figures/appendix/flash_manipulated_action_step_responses.png,RENAMED,publication figure copied byte-exact under a semantic name
+E_FLASH_RESS/figures/composition_vle_diagnostics.png,archive: artifacts/flash_study/figures/composition_vle_diagnostics.png,LARGE_ARTIFACT_EXCLUDED,"non-paper figure, regenerable by its stage script; staged for the frozen archive"
+E_FLASH_RESS/figures/healthy_plant_dt_parity.png,results/figures/appendix/flash_healthy_plant_twin_parity.png,RENAMED,publication figure copied byte-exact under a semantic name
+E_FLASH_RESS/figures/level_trajectory.png,archive: artifacts/flash_study/figures/level_trajectory.png,LARGE_ARTIFACT_EXCLUDED,"non-paper figure, regenerable by its stage script; staged for the frozen archive"
+E_FLASH_RESS/figures/pressure_trajectory.png,archive: artifacts/flash_study/figures/pressure_trajectory.png,LARGE_ARTIFACT_EXCLUDED,"non-paper figure, regenerable by its stage script; staged for the frozen archive"
+E_FLASH_RESS/figures/temperature_trajectory.png,archive: artifacts/flash_study/figures/temperature_trajectory.png,LARGE_ARTIFACT_EXCLUDED,"non-paper figure, regenerable by its stage script; staged for the frozen archive"
+E_FLASH_RESS/flash_bootstrap.py,src/twinguard/uncertainty/flash_bootstrap.py,RENAMED,source module; 1 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/flash_bootstrap_manifest.csv,artifacts/flash_study/flash_bootstrap_manifest.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/flash_bootstrap_models.json,artifacts/flash_study/flash_bootstrap_models.json,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/flash_calibration_scores.csv,artifacts/flash_study/flash_calibration_scores.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/flash_config.yaml,artifacts/flash_study/flash_config.yaml,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/flash_conformal.py,src/twinguard/conformal/flash_conformal.py,RENAMED,source module; 1 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/flash_conformal_config.json,artifacts/flash_study/flash_conformal_config.json,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/flash_digital_twin.py,src/twinguard/digital_twins/flash_drum.py,RENAMED,source module; 1 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/flash_discrepancy_model.py,src/twinguard/discrepancy/flash_state_space.py,RENAMED,source module; 2 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/flash_model_selection.csv,artifacts/flash_study/flash_model_selection.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/flash_population.py,src/twinguard/scenarios/flash_population_design.py,RENAMED,source module; 1 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/flash_population_manifest.csv,artifacts/flash_study/flash_population_manifest.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/flash_process.py,src/twinguard/plants/flash_drum.py,RENAMED,source module; 0 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/flash_seed_manifest.csv,artifacts/flash_study/flash_seed_manifest.csv,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/flash_structural_mismatch.py,src/twinguard/plants/flash_drum_valve_lag.py,RENAMED,source module; 1 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/freeze_ress_e7.py,src/twinguard/evaluation/freeze_reliability_design.py,RENAMED,source module; 1 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/frozen_boundaries.py,src/twinguard/utils/flash_output_guard.py,RENAMED,source module; 3 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/run_flash_e1.py,src/twinguard/flash/validate_simulator.py,RENAMED,source module; 2 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/run_flash_e3.py,src/twinguard/flash/fit_discrepancy_model.py,RENAMED,source module; 4 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/run_flash_e4.py,src/twinguard/flash/bootstrap_and_calibrate.py,RENAMED,source module; 6 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/run_flash_e5.py,src/twinguard/flash/evaluate_primary.py,RENAMED,source module; 7 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/run_ress_e6.py,src/twinguard/evaluation/boundary_challenge.py,RENAMED,source module; 6 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/run_ress_e7.py,src/twinguard/evaluation/structural_and_reliability.py,RENAMED,source module; 6 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+E_FLASH_RESS/selected_flash_model.json,artifacts/flash_study/selected_flash_model.json,RENAMED,"frozen flash-study input/output; directory renamed, file name bound by frozen hash manifests"
+E_FLASH_RESS/write_flash_e2_preregistration.py,src/twinguard/flash/reserve_populations.py,RENAMED,source module; 1 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+__pycache__/*,,EXCLUDED,generated/cache: Python bytecode or pytest cache (28 files)
+prompts/*,,EXCLUDED,debugging/development: coding-agent task prompt (15 files)
+pyproject.toml,,EXCLUDED,debugging/development: development packaging replaced by release packaging
+requirements.txt,,EXCLUDED,debugging/development: development packaging replaced by release packaging
+results/*,,EXCLUDED,debugging/development: raw console dump (12 files)
+results/cstr_final/FIGURE_MANIFEST.md,artifacts/cstr/final_summary/FIGURE_MANIFEST.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/cstr_final/FINAL_ABLATION.csv,artifacts/cstr/final_summary/FINAL_ABLATION.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/cstr_final/FINAL_CSTR_RESULTS.csv,artifacts/cstr/final_summary/FINAL_CSTR_RESULTS.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/cstr_final/GO_NO_GO.md,artifacts/cstr/final_summary/GO_NO_GO.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/cstr_final/LIMITATIONS.md,artifacts/cstr/final_summary/LIMITATIONS.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/cstr_final/PAPER_CLAIMS_AUDIT.md,artifacts/cstr/final_summary/PAPER_CLAIMS_AUDIT.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/cstr_final/PAPER_CSTR_RESULTS.md,artifacts/cstr/final_summary/PAPER_CSTR_RESULTS.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/cstr_final/TRANSFER_SPECIFICATION.md,artifacts/cstr/final_summary/TRANSFER_SPECIFICATION.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_a/*,,EXCLUDED,obsolete experiment (13 files)
+results/milestone_a5/*,,EXCLUDED,obsolete experiment (17 files)
+results/milestone_b/*,,EXCLUDED,obsolete experiment (32 files)
+results/milestone_b10/GO_NO_GO.md,artifacts/cstr/discrepancy_freeze/GO_NO_GO.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b10/README.md,artifacts/cstr/discrepancy_freeze/README.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b10/calibration_episode_results.csv,artifacts/cstr/discrepancy_freeze/calibration_episode_results.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b10/calibration_summary.csv,artifacts/cstr/discrepancy_freeze/calibration_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b10/configuration.json,artifacts/cstr/discrepancy_freeze/configuration.json,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b10/em_sensitivity.csv,artifacts/cstr/discrepancy_freeze/em_sensitivity.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b10/figures/*,archive: artifacts/cstr/discrepancy_freeze/figures/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (figures); staged for the frozen archive (20 files)
+results/milestone_b10/frozen_latent_model.json,artifacts/cstr/discrepancy_freeze/frozen_latent_model.json,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b10/innovation_diagnostics.csv,artifacts/cstr/discrepancy_freeze/innovation_diagnostics.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b10/latent_parameter_robustness.csv,artifacts/cstr/discrepancy_freeze/latent_parameter_robustness.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b10/new_test_population_manifest.csv,artifacts/cstr/discrepancy_freeze/new_test_population_manifest.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b10/predictions/*,archive: artifacts/cstr/discrepancy_freeze/predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (predictions); staged for the frozen archive (240 files)
+results/milestone_b10/revealed_test_truth/*,archive: artifacts/cstr/discrepancy_freeze/revealed_test_truth/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (revealed_test_truth); staged for the frozen archive (240 files)
+results/milestone_b10/runtime_summary.csv,artifacts/cstr/discrepancy_freeze/runtime_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b10/uncertainty_model_comparison.csv,artifacts/cstr/discrepancy_freeze/uncertainty_model_comparison.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b10/variance_diagnostics.csv,artifacts/cstr/discrepancy_freeze/variance_diagnostics.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b10_debug/predictions/new_episode_0000_interpolation.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b10_debug/predictions/new_episode_0001_boundary.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b10_debug/predictions/new_episode_0002_extrapolation.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b10_debug/revealed_test_truth/new_episode_0000_interpolation.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b10_debug/revealed_test_truth/new_episode_0001_boundary.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b10_debug/revealed_test_truth/new_episode_0002_extrapolation.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b10_smoke/em_sensitivity.csv,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b10_smoke/frozen_latent_model.json,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b10_smoke/innovation_diagnostics.csv,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b10_smoke/latent_parameter_robustness.csv,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b10_smoke/variance_diagnostics.csv,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b11/GO_NO_GO.md,artifacts/cstr/bootstrap_ensemble/GO_NO_GO.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11/README.md,artifacts/cstr/bootstrap_ensemble/README.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11/bootstrap_model_manifest.csv,artifacts/cstr/bootstrap_ensemble/bootstrap_model_manifest.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11/bootstrap_models.json,artifacts/cstr/bootstrap_ensemble/bootstrap_models.json,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11/bootstrap_parameter_summary.csv,artifacts/cstr/bootstrap_ensemble/bootstrap_parameter_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11/calibration_episode_results.csv,artifacts/cstr/bootstrap_ensemble/calibration_episode_results.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11/calibration_population_manifest.csv,artifacts/cstr/bootstrap_ensemble/calibration_population_manifest.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11/calibration_predictions/J10/*,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/J10/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive (60 files)
+results/milestone_b11/calibration_predictions/J20/*,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/J20/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive (60 files)
+results/milestone_b11/calibration_predictions/J50/*,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/J50/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive (60 files)
+results/milestone_b11/calibration_predictions/M1000/b11_calibration_0000_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000/b11_calibration_0000_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000/b11_calibration_0001_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000/b11_calibration_0001_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000/b11_calibration_0002_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000/b11_calibration_0002_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000/b11_calibration_0003_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000/b11_calibration_0003_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000/b11_calibration_0004_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000/b11_calibration_0004_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000/b11_calibration_0005_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000/b11_calibration_0005_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000/b11_calibration_0006_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000/b11_calibration_0006_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000/b11_calibration_0007_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000/b11_calibration_0007_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000/b11_calibration_0008_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000/b11_calibration_0008_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000_balanced/b11_calibration_0000_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000_balanced/b11_calibration_0000_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000_balanced/b11_calibration_0001_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000_balanced/b11_calibration_0001_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000_balanced/b11_calibration_0002_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000_balanced/b11_calibration_0002_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000_balanced/b11_calibration_0020_boundary.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000_balanced/b11_calibration_0020_boundary.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000_balanced/b11_calibration_0021_boundary.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000_balanced/b11_calibration_0021_boundary.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000_balanced/b11_calibration_0022_boundary.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000_balanced/b11_calibration_0022_boundary.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000_balanced/b11_calibration_0040_extrapolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000_balanced/b11_calibration_0040_extrapolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000_balanced/b11_calibration_0041_extrapolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000_balanced/b11_calibration_0041_extrapolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M1000_balanced/b11_calibration_0042_extrapolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M1000_balanced/b11_calibration_0042_extrapolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000/b11_calibration_0000_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000/b11_calibration_0000_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000/b11_calibration_0001_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000/b11_calibration_0001_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000/b11_calibration_0002_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000/b11_calibration_0002_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000/b11_calibration_0003_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000/b11_calibration_0003_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000/b11_calibration_0004_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000/b11_calibration_0004_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000/b11_calibration_0005_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000/b11_calibration_0005_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000/b11_calibration_0006_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000/b11_calibration_0006_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000/b11_calibration_0007_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000/b11_calibration_0007_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000/b11_calibration_0008_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000/b11_calibration_0008_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000_balanced/b11_calibration_0000_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000_balanced/b11_calibration_0000_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000_balanced/b11_calibration_0001_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000_balanced/b11_calibration_0001_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000_balanced/b11_calibration_0002_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000_balanced/b11_calibration_0002_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000_balanced/b11_calibration_0020_boundary.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000_balanced/b11_calibration_0020_boundary.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000_balanced/b11_calibration_0021_boundary.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000_balanced/b11_calibration_0021_boundary.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000_balanced/b11_calibration_0022_boundary.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000_balanced/b11_calibration_0022_boundary.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000_balanced/b11_calibration_0040_extrapolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000_balanced/b11_calibration_0040_extrapolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000_balanced/b11_calibration_0041_extrapolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000_balanced/b11_calibration_0041_extrapolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M2000_balanced/b11_calibration_0042_extrapolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M2000_balanced/b11_calibration_0042_extrapolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000/b11_calibration_0000_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000/b11_calibration_0000_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000/b11_calibration_0001_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000/b11_calibration_0001_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000/b11_calibration_0002_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000/b11_calibration_0002_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000/b11_calibration_0003_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000/b11_calibration_0003_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000/b11_calibration_0004_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000/b11_calibration_0004_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000/b11_calibration_0005_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000/b11_calibration_0005_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000/b11_calibration_0006_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000/b11_calibration_0006_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000/b11_calibration_0007_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000/b11_calibration_0007_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000/b11_calibration_0008_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000/b11_calibration_0008_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000_balanced/b11_calibration_0000_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000_balanced/b11_calibration_0000_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000_balanced/b11_calibration_0001_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000_balanced/b11_calibration_0001_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000_balanced/b11_calibration_0002_interpolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000_balanced/b11_calibration_0002_interpolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000_balanced/b11_calibration_0020_boundary.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000_balanced/b11_calibration_0020_boundary.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000_balanced/b11_calibration_0021_boundary.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000_balanced/b11_calibration_0021_boundary.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000_balanced/b11_calibration_0022_boundary.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000_balanced/b11_calibration_0022_boundary.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000_balanced/b11_calibration_0040_extrapolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000_balanced/b11_calibration_0040_extrapolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000_balanced/b11_calibration_0041_extrapolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000_balanced/b11_calibration_0041_extrapolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_predictions/M5000_balanced/b11_calibration_0042_extrapolation.npz,archive: artifacts/cstr/bootstrap_ensemble/calibration_predictions/M5000_balanced/b11_calibration_0042_extrapolation.npz,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive
+results/milestone_b11/calibration_summary.csv,artifacts/cstr/bootstrap_ensemble/calibration_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11/configuration.json,artifacts/cstr/bootstrap_ensemble/configuration.json,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11/ensemble_size_sensitivity.csv,artifacts/cstr/bootstrap_ensemble/ensemble_size_sensitivity.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11/figures/*,archive: artifacts/cstr/bootstrap_ensemble/figures/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (figures); staged for the frozen archive (24 files)
+results/milestone_b11/final_population_manifest.csv,artifacts/cstr/bootstrap_ensemble/final_population_manifest.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11/horizon_calibration_summary.csv,artifacts/cstr/bootstrap_ensemble/horizon_calibration_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11/predictions/*,archive: artifacts/cstr/bootstrap_ensemble/predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (predictions); staged for the frozen archive (240 files)
+results/milestone_b11/revealed_calibration_truth/*,archive: artifacts/cstr/bootstrap_ensemble/revealed_calibration_truth/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (revealed_calibration_truth); staged for the frozen archive (60 files)
+results/milestone_b11/revealed_final_truth/*,archive: artifacts/cstr/bootstrap_ensemble/revealed_final_truth/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (revealed_final_truth); staged for the frozen archive (240 files)
+results/milestone_b11/runtime_summary.csv,artifacts/cstr/bootstrap_ensemble/runtime_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11/uncertainty_model_comparison.csv,artifacts/cstr/bootstrap_ensemble/uncertainty_model_comparison.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11/variance_decomposition.csv,artifacts/cstr/bootstrap_ensemble/variance_decomposition.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b11_debug/predictions/debug_0000_interpolation.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b11_debug/predictions/debug_0001_boundary.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b11_debug/predictions/debug_0002_extrapolation.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b11_debug/truth/debug_0000_interpolation.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b11_debug/truth/debug_0001_boundary.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b11_debug/truth/debug_0002_extrapolation.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b12/GO_NO_GO.md,artifacts/cstr/conformal_calibration/GO_NO_GO.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b12/README.md,artifacts/cstr/conformal_calibration/README.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b12/calibration_population_manifest.csv,artifacts/cstr/conformal_calibration/calibration_population_manifest.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b12/calibration_predictions/*,archive: artifacts/cstr/conformal_calibration/calibration_predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive (500 files)
+results/milestone_b12/calibration_scores.csv,artifacts/cstr/conformal_calibration/calibration_scores.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b12/calibration_size_sensitivity.csv,artifacts/cstr/conformal_calibration/calibration_size_sensitivity.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b12/configuration.json,artifacts/cstr/conformal_calibration/configuration.json,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b12/conformal_quantiles.csv,artifacts/cstr/conformal_calibration/conformal_quantiles.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b12/coverage_summary.csv,artifacts/cstr/conformal_calibration/coverage_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b12/diagnostic_predictions/*,archive: artifacts/cstr/conformal_calibration/diagnostic_predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (diagnostic_predictions); staged for the frozen archive (150 files)
+results/milestone_b12/figures/*,archive: artifacts/cstr/conformal_calibration/figures/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (figures); staged for the frozen archive (24 files)
+results/milestone_b12/final_episode_results.csv,artifacts/cstr/conformal_calibration/final_episode_results.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b12/final_test_population_manifest.csv,artifacts/cstr/conformal_calibration/final_test_population_manifest.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b12/horizon_diagnostics.csv,artifacts/cstr/conformal_calibration/horizon_diagnostics.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b12/horizon_scale.npy,artifacts/cstr/conformal_calibration/horizon_scale.npy,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b12/predictions/*,archive: artifacts/cstr/conformal_calibration/predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (predictions); staged for the frozen archive (500 files)
+results/milestone_b12/revealed_calibration_truth/*,archive: artifacts/cstr/conformal_calibration/revealed_calibration_truth/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (revealed_calibration_truth); staged for the frozen archive (500 files)
+results/milestone_b12/revealed_diagnostic_truth/*,archive: artifacts/cstr/conformal_calibration/revealed_diagnostic_truth/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (revealed_diagnostic_truth); staged for the frozen archive (150 files)
+results/milestone_b12/revealed_final_truth/*,archive: artifacts/cstr/conformal_calibration/revealed_final_truth/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (revealed_final_truth); staged for the frozen archive (500 files)
+results/milestone_b12/runtime_summary.csv,artifacts/cstr/conformal_calibration/runtime_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b12/sharpness_summary.csv,artifacts/cstr/conformal_calibration/sharpness_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b12_debug/debug_predictions/debug_0000_interpolation.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b12_debug/debug_predictions/debug_0001_boundary.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b12_debug/debug_predictions/debug_0002_extrapolation.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b12_debug/truth/debug_0000_interpolation.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b12_debug/truth/debug_0001_boundary.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b12_debug/truth/debug_0002_extrapolation.npz,,EXCLUDED,debugging/development: smoke/debug rerun
+results/milestone_b5/*,archive: artifacts/cstr/episode_design/*,LARGE_ARTIFACT_EXCLUDED,input to CSTR discrepancy re-fit (b9/b10 reruns); staged for the frozen archive (11 files)
+results/milestone_b5/evaluations/*,archive: artifacts/cstr/episode_design/evaluations/*,LARGE_ARTIFACT_EXCLUDED,input to CSTR discrepancy re-fit (b9/b10 reruns); staged for the frozen archive (300 files)
+results/milestone_b5/figures/*,archive: artifacts/cstr/episode_design/figures/*,LARGE_ARTIFACT_EXCLUDED,input to CSTR discrepancy re-fit (b9/b10 reruns); staged for the frozen archive (24 files)
+results/milestone_b5/predictions/*,archive: artifacts/cstr/episode_design/predictions/*,LARGE_ARTIFACT_EXCLUDED,input to CSTR discrepancy re-fit (b9/b10 reruns); staged for the frozen archive (300 files)
+results/milestone_b6/README.md,,EXCLUDED,obsolete experiment: B6 recursive-instability study (only its code helper is reused)
+results/milestone_b6/diagnostic_metadata.json,,EXCLUDED,obsolete experiment: B6 recursive-instability study (only its code helper is reused)
+results/milestone_b6/episode_stability_summary.csv,,EXCLUDED,obsolete experiment: B6 recursive-instability study (only its code helper is reused)
+results/milestone_b6/figures/*,,EXCLUDED,obsolete experiment: B6 recursive-instability study (only its code helper is reused) (14 files)
+results/milestone_b6/horizon_error_summary.csv,,EXCLUDED,obsolete experiment: B6 recursive-instability study (only its code helper is reused)
+results/milestone_b6/numerical_conditioning_summary.csv,,EXCLUDED,obsolete experiment: B6 recursive-instability study (only its code helper is reused)
+results/milestone_b6/stability_samples.csv,,EXCLUDED,obsolete experiment: B6 recursive-instability study (only its code helper is reused)
+results/milestone_b7a/README.md,,EXCLUDED,obsolete experiment
+results/milestone_b7a/before_after_stability_summary.csv,,EXCLUDED,obsolete experiment
+results/milestone_b7a/diagnostic_metadata.json,,EXCLUDED,obsolete experiment
+results/milestone_b7a/figures/*,,EXCLUDED,obsolete experiment (16 files)
+results/milestone_b7a/horizon_bias_summary.csv,,EXCLUDED,obsolete experiment
+results/milestone_b7a/innovation_samples.csv,,EXCLUDED,obsolete experiment
+results/milestone_b7a/innovation_summary.csv,,EXCLUDED,obsolete experiment
+results/milestone_b7a/stable_posterior_episode_results.csv,,EXCLUDED,obsolete experiment
+results/milestone_b7b/SELECTED_MODEL.md,,EXCLUDED,obsolete experiment
+results/milestone_b7b/arx_order_comparison.csv,archive: artifacts/cstr/stable_arx_order_study/arx_order_comparison.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b7b/experiment_metadata.json,,EXCLUDED,obsolete experiment
+results/milestone_b7b/figures/*,,EXCLUDED,obsolete experiment (16 files)
+results/milestone_b7b/horizon_error_summary.csv,archive: artifacts/cstr/stable_arx_order_study/horizon_error_summary.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b7b/innovation_summary.csv,archive: artifacts/cstr/stable_arx_order_study/innovation_summary.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b7b/posterior_stability_summary.csv,archive: artifacts/cstr/stable_arx_order_study/posterior_stability_summary.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b7b/selected_model_results.csv,archive: artifacts/cstr/stable_arx_order_study/selected_model_results.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b7b/selected_vs_b7a_comparison.csv,archive: artifacts/cstr/stable_arx_order_study/selected_vs_b7a_comparison.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b8/README.md,,EXCLUDED,obsolete experiment
+results/milestone_b8/conditional_innovation_bias.csv,archive: artifacts/cstr/observable_conditioning_study/conditional_innovation_bias.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b8/episode_results.csv,archive: artifacts/cstr/observable_conditioning_study/episode_results.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b8/experiment_metadata.json,,EXCLUDED,obsolete experiment
+results/milestone_b8/feature_set_comparison.csv,archive: artifacts/cstr/observable_conditioning_study/feature_set_comparison.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b8/feature_set_definitions.csv,archive: artifacts/cstr/observable_conditioning_study/feature_set_definitions.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b8/figures/*,,EXCLUDED,obsolete experiment (18 files)
+results/milestone_b8/horizon_summary.csv,archive: artifacts/cstr/observable_conditioning_study/horizon_summary.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b8/innovation_summary.csv,archive: artifacts/cstr/observable_conditioning_study/innovation_summary.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b8/multivariate_comparison.csv,archive: artifacts/cstr/observable_conditioning_study/multivariate_comparison.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b8/multivariate_episode_results.csv,archive: artifacts/cstr/observable_conditioning_study/multivariate_episode_results.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b8/observable_variable_audit.csv,archive: artifacts/cstr/observable_conditioning_study/observable_variable_audit.csv,LARGE_ARTIFACT_EXCLUDED,baseline table read by the CSTR discrepancy-fit rerun; staged for the frozen archive
+results/milestone_b9/GO_NO_GO.md,artifacts/cstr/discrepancy_fit/GO_NO_GO.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9/README.md,artifacts/cstr/discrepancy_fit/README.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9/baseline_comparison.csv,artifacts/cstr/discrepancy_fit/baseline_comparison.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9/configuration.json,artifacts/cstr/discrepancy_fit/configuration.json,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9/data_efficiency_episode_results.csv,artifacts/cstr/discrepancy_fit/data_efficiency_episode_results.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9/data_efficiency_summary.csv,artifacts/cstr/discrepancy_fit/data_efficiency_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9/figures/*,archive: artifacts/cstr/discrepancy_fit/figures/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (figures); staged for the frozen archive (20 files)
+results/milestone_b9/final_assessment_results.csv,artifacts/cstr/discrepancy_fit/final_assessment_results.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9/final_assessment_summary.csv,artifacts/cstr/discrepancy_fit/final_assessment_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9/horizon_error_summary.csv,artifacts/cstr/discrepancy_fit/horizon_error_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9/innovation_summary.csv,artifacts/cstr/discrepancy_fit/innovation_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9/latent_dimension_selection.csv,artifacts/cstr/discrepancy_fit/latent_dimension_selection.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9/model_parameters.json,artifacts/cstr/discrepancy_fit/model_parameters.json,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9/runtime_summary.csv,artifacts/cstr/discrepancy_fit/runtime_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9/training_population.npz,artifacts/cstr/discrepancy_fit/training_population.npz,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9/training_population_manifest.csv,artifacts/cstr/discrepancy_fit/training_population_manifest.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_b9_smoke/*,,EXCLUDED,debugging/development: smoke/debug rerun (15 files)
+results/milestone_b9_smoke/figures/*,,EXCLUDED,debugging/development: smoke/debug rerun (20 files)
+results/milestone_c1/*,archive: artifacts/cstr/primary_evaluation/*,LARGE_ARTIFACT_EXCLUDED,development figure; staged for the frozen archive (24 files)
+results/milestone_c1/GO_NO_GO.md,artifacts/cstr/primary_evaluation/GO_NO_GO.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1/PAPER_RESULT_SUMMARY.md,artifacts/cstr/primary_evaluation/PAPER_RESULT_SUMMARY.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1/README.md,artifacts/cstr/primary_evaluation/README.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1/calibration_predictions/*,archive: artifacts/cstr/primary_evaluation/calibration_predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive (500 files)
+results/milestone_c1/configuration.json,artifacts/cstr/primary_evaluation/configuration.json,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1/decision_snapshots/*,archive: artifacts/cstr/primary_evaluation/decision_snapshots/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (decision_snapshots); staged for the frozen archive (1000 files)
+results/milestone_c1/final_safety_episodes.csv,artifacts/cstr/primary_evaluation/final_safety_episodes.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1/final_safety_population_manifest.csv,artifacts/cstr/primary_evaluation/final_safety_population_manifest.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1/multi_action_screening.csv,artifacts/cstr/primary_evaluation/multi_action_screening.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1/multi_action_screening_summary.csv,artifacts/cstr/primary_evaluation/multi_action_screening_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1/one_sided_quantiles.csv,artifacts/cstr/primary_evaluation/one_sided_quantiles.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1/predictions/*,archive: artifacts/cstr/primary_evaluation/predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (predictions); staged for the frozen archive (1000 files)
+results/milestone_c1/revealed_calibration_truth/*,archive: artifacts/cstr/primary_evaluation/revealed_calibration_truth/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (revealed_calibration_truth); staged for the frozen archive (500 files)
+results/milestone_c1/revealed_final_truth/*,archive: artifacts/cstr/primary_evaluation/revealed_final_truth/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (revealed_final_truth); staged for the frozen archive (1000 files)
+results/milestone_c1/revealed_screening_truth/*,archive: artifacts/cstr/primary_evaluation/revealed_screening_truth/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (revealed_screening_truth); staged for the frozen archive (600 files)
+results/milestone_c1/safety_calibration_manifest.csv,artifacts/cstr/primary_evaluation/safety_calibration_manifest.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1/safety_calibration_scores.csv,artifacts/cstr/primary_evaluation/safety_calibration_scores.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1/safety_summary.csv,artifacts/cstr/primary_evaluation/safety_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1/screening_latency.csv,artifacts/cstr/primary_evaluation/screening_latency.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1/screening_predictions/*,archive: artifacts/cstr/primary_evaluation/screening_predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (screening_predictions); staged for the frozen archive (600 files)
+results/milestone_c15c/GO_NO_GO.md,,REQUIRES_REVIEW,uncertain/manual review: C1.5C multi-action screening not in the requested experiments; left in the development repository
+results/milestone_c15c/MULTI_ACTION_CANDIDATE_RESULTS.csv,,REQUIRES_REVIEW,uncertain/manual review: C1.5C multi-action screening not in the requested experiments; left in the development repository
+results/milestone_c15c/MULTI_ACTION_STATE_RESULTS.csv,,REQUIRES_REVIEW,uncertain/manual review: C1.5C multi-action screening not in the requested experiments; left in the development repository
+results/milestone_c15c/PAPER_MULTI_ACTION_RESULT.md,,REQUIRES_REVIEW,uncertain/manual review: C1.5C multi-action screening not in the requested experiments; left in the development repository
+results/milestone_c15c/RUNTIME_SUMMARY.csv,,REQUIRES_REVIEW,uncertain/manual review: C1.5C multi-action screening not in the requested experiments; left in the development repository
+results/milestone_c15c/SCREENING_SUMMARY.csv,,REQUIRES_REVIEW,uncertain/manual review: C1.5C multi-action screening not in the requested experiments; left in the development repository
+results/milestone_c15c/configuration.json,,REQUIRES_REVIEW,uncertain/manual review: C1.5C multi-action screening not in the requested experiments; left in the development repository
+results/milestone_c15c/figures/01_screening_success_vs_K.png,,REQUIRES_REVIEW,uncertain/manual review: C1.5C multi-action screening not in the requested experiments; left in the development repository
+results/milestone_c15c/figures/02_certified_probability_vs_K.png,,REQUIRES_REVIEW,uncertain/manual review: C1.5C multi-action screening not in the requested experiments; left in the development repository
+results/milestone_c15c/figures/03_certified_count_vs_K.png,,REQUIRES_REVIEW,uncertain/manual review: C1.5C multi-action screening not in the requested experiments; left in the development repository
+results/milestone_c15c/figures/04_latency_vs_K.png,,REQUIRES_REVIEW,uncertain/manual review: C1.5C multi-action screening not in the requested experiments; left in the development repository
+results/milestone_c15c/figures/05_selected_true_vs_conformal_margin.png,,REQUIRES_REVIEW,uncertain/manual review: C1.5C multi-action screening not in the requested experiments; left in the development repository
+results/milestone_c15c/figures/06_representative_state_20_actions.png,,REQUIRES_REVIEW,uncertain/manual review: C1.5C multi-action screening not in the requested experiments; left in the development repository
+results/milestone_c16a/FAULT_DEFINITIONS.md,artifacts/cstr/feed_temperature_fault/FAULT_DEFINITIONS.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16a/FAULT_SMOKE_TEST_RESULTS.csv,artifacts/cstr/feed_temperature_fault/FAULT_SMOKE_TEST_RESULTS.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16a/FAULT_TRAJECTORY_SUMMARY.csv,artifacts/cstr/feed_temperature_fault/FAULT_TRAJECTORY_SUMMARY.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16a/GO_NO_GO.md,artifacts/cstr/feed_temperature_fault/GO_NO_GO.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16a/figures/01_residual_vs_time.png,archive: artifacts/cstr/feed_temperature_fault/figures/01_residual_vs_time.png,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (figures); staged for the frozen archive
+results/milestone_c16a/figures/02_maximum_residual.png,archive: artifacts/cstr/feed_temperature_fault/figures/02_maximum_residual.png,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (figures); staged for the frozen archive
+results/milestone_c16a/figures/03_residual_autocorrelation.png,archive: artifacts/cstr/feed_temperature_fault/figures/03_residual_autocorrelation.png,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (figures); staged for the frozen archive
+results/milestone_c16a/figures/04_nominal_dt_error_vs_severity.png,archive: artifacts/cstr/feed_temperature_fault/figures/04_nominal_dt_error_vs_severity.png,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (figures); staged for the frozen archive
+results/milestone_c16b/FAULT_SPECIFIC_RESULTS.csv,artifacts/cstr/mixed_degradation/FAULT_SPECIFIC_RESULTS.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16b/GO_NO_GO.md,artifacts/cstr/mixed_degradation/GO_NO_GO.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16b/MULTIFAULT_FINAL_EPISODES.csv,artifacts/cstr/mixed_degradation/MULTIFAULT_FINAL_EPISODES.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16b/MULTIFAULT_POPULATION_MANIFEST.csv,artifacts/cstr/mixed_degradation/MULTIFAULT_POPULATION_MANIFEST.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16b/MULTIFAULT_SUMMARY.csv,artifacts/cstr/mixed_degradation/MULTIFAULT_SUMMARY.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16b/PAPER_MULTIFAULT_RESULT.md,artifacts/cstr/mixed_degradation/PAPER_MULTIFAULT_RESULT.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16b/SEVERITY_RESULTS.csv,artifacts/cstr/mixed_degradation/SEVERITY_RESULTS.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16b/bootstrap_manifest.csv,artifacts/cstr/mixed_degradation/bootstrap_manifest.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16b/bootstrap_models.json,artifacts/cstr/mixed_degradation/bootstrap_models.json,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16b/calibration_predictions/*,archive: artifacts/cstr/mixed_degradation/calibration_predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (calibration_predictions); staged for the frozen archive (400 files)
+results/milestone_c16b/calibration_scores.csv,artifacts/cstr/mixed_degradation/calibration_scores.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16b/configuration.json,artifacts/cstr/mixed_degradation/configuration.json,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16b/figures/01_pooled_safety_metrics.png,archive: artifacts/cstr/mixed_degradation/figures/01_pooled_safety_metrics.png,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (figures); staged for the frozen archive
+results/milestone_c16b/figures/02_fault_specific_results.png,archive: artifacts/cstr/mixed_degradation/figures/02_fault_specific_results.png,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (figures); staged for the frozen archive
+results/milestone_c16b/figures/03_severity_diagnostics.png,archive: artifacts/cstr/mixed_degradation/figures/03_severity_diagnostics.png,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (figures); staged for the frozen archive
+results/milestone_c16b/figures/04_true_vs_conformal_margin.png,archive: artifacts/cstr/mixed_degradation/figures/04_true_vs_conformal_margin.png,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (figures); staged for the frozen archive
+results/milestone_c16b/figures/05_calibration_scores.png,archive: artifacts/cstr/mixed_degradation/figures/05_calibration_scores.png,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (figures); staged for the frozen archive
+results/milestone_c16b/figures/06_original_vs_multifault.png,archive: artifacts/cstr/mixed_degradation/figures/06_original_vs_multifault.png,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (figures); staged for the frozen archive
+results/milestone_c16b/final_decisions/*,archive: artifacts/cstr/mixed_degradation/final_decisions/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (final_decisions); staged for the frozen archive (600 files)
+results/milestone_c16b/final_predictions/*,archive: artifacts/cstr/mixed_degradation/final_predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (final_predictions); staged for the frozen archive (600 files)
+results/milestone_c16b/frozen_model.json,artifacts/cstr/mixed_degradation/frozen_model.json,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16b/revealed_calibration/*,archive: artifacts/cstr/mixed_degradation/revealed_calibration/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (revealed_calibration); staged for the frozen archive (400 files)
+results/milestone_c16b/revealed_final_test/*,archive: artifacts/cstr/mixed_degradation/revealed_final_test/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (revealed_final_test); staged for the frozen archive (600 files)
+results/milestone_c16b/revealed_selection/*,archive: artifacts/cstr/mixed_degradation/revealed_selection/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (revealed_selection); staged for the frozen archive (60 files)
+results/milestone_c16b/selection_diagnostics.csv,artifacts/cstr/mixed_degradation/selection_diagnostics.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c16b/selection_predictions/*,archive: artifacts/cstr/mixed_degradation/selection_predictions/*,LARGE_ARTIFACT_EXCLUDED,per-episode artifact or development figure (selection_predictions); staged for the frozen archive (60 files)
+results/milestone_c16b/training_population.npz,artifacts/cstr/mixed_degradation/training_population.npz,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1_5a/*,archive: artifacts/cstr/primary_decision_audit/*,LARGE_ARTIFACT_EXCLUDED,development figure; staged for the frozen archive (16 files)
+results/milestone_c1_5a/AUDIT_VERDICT.md,artifacts/cstr/primary_decision_audit/AUDIT_VERDICT.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1_5a/README.md,artifacts/cstr/primary_decision_audit/README.md,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1_5a/artifact_chronology_audit.csv,artifacts/cstr/primary_decision_audit/artifact_chronology_audit.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1_5a/audit_summary.csv,artifacts/cstr/primary_decision_audit/audit_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1_5a/calibration_score_regime_summary.csv,artifacts/cstr/primary_decision_audit/calibration_score_regime_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1_5a/configuration.json,artifacts/cstr/primary_decision_audit/configuration.json,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1_5a/decision_reconstruction.csv,artifacts/cstr/primary_decision_audit/decision_reconstruction.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1_5a/episode_margin_diagnostics.csv,artifacts/cstr/primary_decision_audit/episode_margin_diagnostics.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/milestone_c1_5a/regime_diagnostic_summary.csv,artifacts/cstr/primary_decision_audit/regime_diagnostic_summary.csv,RENAMED,frozen CSTR stage output (summary/manifest/model/calibration); directory renamed
+results/second_case_final/*,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository (14 files)
+results/second_case_final/calibration_predictions/*,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository (300 files)
+results/second_case_final/figures/01_primary_metrics.png,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_final/figures/02_fault_results.png,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_final/figures/03_severity_results.png,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_final/figures/04_true_vs_conformal_margin.png,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_final/figures/05_representative_decision.png,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_final/figures/06_cstr_vs_second_process.png,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_final/figures/07_calibration_scores.png,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_final/final_decisions/*,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository (600 files)
+results/second_case_final/final_predictions/*,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository (600 files)
+results/second_case_final/k1/selection_predictions/*,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository (54 files)
+results/second_case_final/k2/selection_predictions/*,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository (54 files)
+results/second_case_final/k3/selection_predictions/*,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository (54 files)
+results/second_case_final/revealed_calibration/*,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository (300 files)
+results/second_case_final/revealed_final_test/*,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository (600 files)
+results/second_case_final/revealed_selection/*,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository (54 files)
+results/second_case_setup/DIAGNOSTIC_TRAJECTORIES.csv,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_setup/FAULT_DEFINITIONS.md,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_setup/GO_NO_GO.md,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_setup/OBSERVABILITY.md,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_setup/PROCESS_SPECIFICATION.md,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_setup/SAFETY_CONSTRAINT.md,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_setup/figures/01_nominal_validation.png,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_setup/figures/02_action_safety_diversity.png,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_setup/figures/03_fault_counterfactuals.png,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+results/second_case_setup/figures/04_fault_discrepancy_shapes.png,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+tests/__pycache__/*,,EXCLUDED,generated/cache: Python bytecode or pytest cache (32 files)
+tests/test_e6b_margin_ladder.py,tests/test_margin_ladder.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_e_flash_ress_isolation.py,,EXCLUDED,debugging/development: asserts the development results/ inventory
+tests/test_flash_conformal.py,tests/test_flash_conformal.py,RENAMED,test module; 2 ledgered edit hunk(s)
+tests/test_flash_discrepancy.py,tests/test_flash_discrepancy_model.py,RENAMED,test module; 2 ledgered edit hunk(s)
+tests/test_flash_e2_design.py,tests/test_flash_population_design.py,RENAMED,test module; 2 ledgered edit hunk(s)
+tests/test_flash_e4_calibration.py,tests/test_flash_calibration_artifacts.py,RENAMED,test module; 0 ledgered edit hunk(s)
+tests/test_flash_e5_final.py,tests/test_flash_primary_evaluation.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_flash_e6_boundary.py,tests/test_boundary_challenge.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_flash_e7_structural.py,tests/test_flash_structural_mismatch.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_flash_physics.py,tests/test_flash_simulator.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_latent_discrepancy_state_space.py,tests/test_cstr_state_space.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_milestone_a.py,,EXCLUDED,obsolete experiment: tests of excluded module
+tests/test_milestone_b.py,,EXCLUDED,obsolete experiment: tests of excluded module
+tests/test_milestone_b10_latent_uncertainty.py,tests/test_cstr_discrepancy_freeze.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_milestone_b11_parameter_uncertainty.py,tests/test_cstr_bootstrap_ensemble.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_milestone_b12_conformal_trajectories.py,tests/test_cstr_conformal_calibration.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_milestone_b5.py,tests/test_cstr_episode_design.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_milestone_b5_calibration_analysis.py,,EXCLUDED,obsolete experiment: tests of excluded module
+tests/test_milestone_b6_recursive_instability.py,tests/test_cstr_recursive_rollout_diagnostics.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_milestone_b7a_stability_conditioned.py,,EXCLUDED,obsolete experiment: tests of excluded module
+tests/test_milestone_b7b_stable_arx.py,tests/test_cstr_stable_arx_order_study.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_milestone_b8_observable_conditioning.py,,EXCLUDED,obsolete experiment: tests of excluded module
+tests/test_milestone_b9_latent_discrepancy.py,tests/test_cstr_discrepancy_fit.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_milestone_c1_5a_frozen_audit.py,tests/test_cstr_primary_decision_audit.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_milestone_c1_6a_additional_faults.py,tests/test_cstr_feed_temperature_fault.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_milestone_c1_6b_multifault_revalidation.py,tests/test_cstr_mixed_degradation.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_milestone_c1_safety_certification.py,tests/test_cstr_safety_certification.py,RENAMED,test module; 1 ledgered edit hunk(s)
+tests/test_milestone_d1_second_process_setup.py,,REQUIRES_REVIEW,uncertain/manual review: two-tank tests; left in the development repository
+tests/test_milestone_d2_second_process_revalidation.py,,REQUIRES_REVIEW,uncertain/manual review: two-tank tests; left in the development repository
+tests/test_observable_conditioned_arx.py,,EXCLUDED,obsolete experiment: tests of excluded module
+tests/test_ress_e7_final.py,tests/test_structural_and_reliability.py,RENAMED,test module; 0 ledgered edit hunk(s)
+tests/test_stable_arx_residual_dynamics.py,tests/test_stable_arx_baseline.py,RENAMED,test module; 1 ledgered edit hunk(s)
+twingaurd/__init__.py,,EXCLUDED,superseded duplicate: replaced by release package __init__
+twingaurd/__pycache__/*,,EXCLUDED,generated/cache: Python bytecode or pytest cache (28 files)
+twingaurd/aggregate_milestone_c1_5c.py,,EXCLUDED,debugging/development: one-off shard aggregation (shards absent)
+twingaurd/bayesian_residual_dynamics.py,src/twinguard/discrepancy/baselines/bayesian_linear_residual.py,RENAMED,source module; 0 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/counterfactual_rollout.py,src/twinguard/discrepancy/baselines/bayesian_residual_rollout.py,RENAMED,source module; 2 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/cstr_anomaly_threshold_test.py,,EXCLUDED,unrelated to final paper: LLM-agent control case and its detector
+twingaurd/cstr_case.py,,EXCLUDED,unrelated to final paper: LLM-agent control case and its detector
+twingaurd/cstr_digital_twin.py,src/twinguard/plants/cstr.py,RENAMED,source module; 0 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/latent_discrepancy_state_space.py,src/twinguard/discrepancy/cstr_state_space.py,RENAMED,source module; 0 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/milestone_a5_diagnostic.py,,EXCLUDED,obsolete experiment: superseded residual-model study
+twingaurd/milestone_a_minimal_probabilistic_revalidation.py,,EXCLUDED,obsolete experiment: superseded residual-model study
+twingaurd/milestone_b10_latent_uncertainty.py,src/twinguard/cstr/freeze_discrepancy_model.py,RENAMED,source module; 3 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/milestone_b11_parameter_uncertainty.py,src/twinguard/cstr/bootstrap_ensemble.py,RENAMED,source module; 4 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/milestone_b12_conformal_trajectories.py,src/twinguard/cstr/conformal_calibration.py,RENAMED,source module; 3 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/milestone_b5_calibration_analysis.py,,EXCLUDED,obsolete experiment: superseded residual-model study
+twingaurd/milestone_b5_posterior_calibration.py,src/twinguard/cstr/episode_design.py,RENAMED,source module; 4 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/milestone_b6_recursive_instability.py,src/twinguard/cstr/recursive_rollout_diagnostics.py,RENAMED,source module; 4 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/milestone_b7a_stability_conditioned_diagnostics.py,,EXCLUDED,obsolete experiment: superseded residual-model study
+twingaurd/milestone_b7b_stable_higher_order_arx.py,src/twinguard/cstr/stable_arx_order_study.py,RENAMED,source module; 5 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/milestone_b8_observable_conditioning.py,,EXCLUDED,obsolete experiment: superseded residual-model study
+twingaurd/milestone_b9_latent_discrepancy.py,src/twinguard/cstr/fit_discrepancy_model.py,RENAMED,source module; 3 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/milestone_b_residual_dynamics.py,,EXCLUDED,obsolete experiment: superseded residual-model study
+twingaurd/milestone_c1_5a_frozen_audit.py,src/twinguard/cstr/primary_decision_audit.py,RENAMED,source module; 3 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/milestone_c1_5c_multi_action_screening.py,,REQUIRES_REVIEW,uncertain/manual review: C1.5C multi-action screening not in the requested experiments; left in the development repository
+twingaurd/milestone_c1_6a_additional_faults.py,src/twinguard/cstr/feed_temperature_fault.py,RENAMED,source module; 2 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/milestone_c1_6b_multifault_revalidation.py,src/twinguard/cstr/mixed_degradation.py,RENAMED,source module; 4 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/milestone_c1_safety_certification.py,src/twinguard/cstr/safety_certification.py,RENAMED,source module; 3 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/milestone_d1_second_process_setup.py,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+twingaurd/milestone_d2_second_process_revalidation.py,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository
+twingaurd/observable_conditioned_arx.py,,EXCLUDED,obsolete experiment: superseded residual-model study
+twingaurd/probabilistic_residual_model.py,src/twinguard/discrepancy/baselines/gaussian_residual.py,RENAMED,source module; 0 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/stable_arx_residual_dynamics.py,src/twinguard/discrepancy/baselines/stable_arx.py,RENAMED,source module; 1 ledgered edit hunk(s) (imports/paths/frozen-hash resolution only)
+twingaurd/two_tank_process.py,,REQUIRES_REVIEW,uncertain/manual review: two-tank second process superseded by the flash drum; left in the development repository

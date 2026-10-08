@@ -1,0 +1,36 @@
+{
+  "configuration": {
+    "b9_dir": "results/milestone_b9",
+    "b10_dir": "results/milestone_b10",
+    "output_dir": "results/milestone_b11",
+    "bootstrap_target": 50,
+    "bootstrap_max_attempts": 75,
+    "calibration_per_category": 20,
+    "final_per_category": 80,
+    "total_trajectories": 2000,
+    "bootstrap_samples": 2000,
+    "workers": 5,
+    "limit_episodes": null
+  },
+  "frozen_U0_identity": "B9S_seed_91005_limit_100",
+  "bootstrap_source": "original results/milestone_b9/training_population.npz only",
+  "bootstrap_unit": "complete episode",
+  "acceptance": "converged by 100 iterations, finite likelihood, spectral radius < 1; attempts up to 75 declared before fitting",
+  "selected_J": 10,
+  "selected_M_total": 2000,
+  "decision_rule": {
+    "sufficient": "MACE reductions >=30%, U3 95% pointwise/simultaneous >=.85/.80, width <=4x, RMSE <=1.10x",
+    "partial": "either MACE reduction >=15% or 95% coverage gain >=.10"
+  },
+  "decision_metrics": {
+    "pointwise_MACE_reduction": 0.06735888488562303,
+    "simultaneous_MACE_reduction": 0.20060396893874022,
+    "pointwise_95_gain": 0.03022569444444445,
+    "simultaneous_95_gain": 0.10416666666666674,
+    "U3_pointwise_95": 0.5884548611111112,
+    "U3_simultaneous_95": 0.6166666666666667,
+    "width_ratio": 1.0686805690965515,
+    "RMSE_ratio": 0.9755266649286309
+  },
+  "decision": "PARAMETER UNCERTAINTY PARTIALLY SUFFICIENT"
+}

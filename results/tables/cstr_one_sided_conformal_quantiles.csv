@@ -1,0 +1,7 @@
+direction,nominal_level,miscoverage_alpha,number_of_calibration_episodes,corrected_rank_k,conformal_quantile,finite_sample_convention
+upper,0.9,0.09999999999999998,500,451,4.817657283300313,k=ceil((n_cal+1)*(1-alpha)); kth ordered episode score
+upper,0.95,0.050000000000000044,500,476,5.464557586938352,k=ceil((n_cal+1)*(1-alpha)); kth ordered episode score
+upper,0.99,0.010000000000000009,500,496,6.096371299137879,k=ceil((n_cal+1)*(1-alpha)); kth ordered episode score
+lower,0.9,0.09999999999999998,500,451,2.2929960434147545,k=ceil((n_cal+1)*(1-alpha)); kth ordered episode score
+lower,0.95,0.050000000000000044,500,476,2.5996101430262493,k=ceil((n_cal+1)*(1-alpha)); kth ordered episode score
+lower,0.99,0.010000000000000009,500,496,3.0203189795486436,k=ceil((n_cal+1)*(1-alpha)); kth ordered episode score

@@ -1,0 +1,13 @@
+{
+  "configuration": {
+    "c1_dir": "results/milestone_c1",
+    "b11_dir": "results/milestone_b11",
+    "b12_dir": "results/milestone_b12",
+    "output_dir": "results/milestone_c1_5a"
+  },
+  "hard_freeze": true,
+  "C1_artifacts_modified": false,
+  "audit_basis": "artifact accounting, filesystem ordering, key isolation, exact envelope/decision/truth reconstruction, split/hash checks, and descriptive frozen-score diagnostics",
+  "interpretation": "post-hoc diagnosis only; no recalibration or alternative decision evaluation",
+  "verdict": "FROZEN C1 RESULT REPRODUCED"
+}

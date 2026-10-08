@@ -1,0 +1,125 @@
+{
+  "bootstrap": {
+    "accepted": 100,
+    "maximum_attempts": 150,
+    "rejection_rules": [
+      "not_converged",
+      "nonfinite_parameters",
+      "nonpositive_covariance",
+      "spectral_radius_not_below_0.995"
+    ],
+    "target_accepted": 100,
+    "training_episode_count": 667,
+    "unit": "complete_training_episode"
+  },
+  "decision_labels": [
+    "SAFE",
+    "NOT CERTIFIED"
+  ],
+  "e2_preregistration_sha256": "a35c3919c64380f03e275558d9037b5de41ea2056a0e298552f074ebddc7f7df",
+  "ensemble": {
+    "candidates": [
+      10,
+      25,
+      50,
+      100
+    ],
+    "coherent_over_horizon": true,
+    "predictive_trajectories": 2000,
+    "selected": 10
+  },
+  "mondrian": {
+    "bin_edges": null,
+    "distance_formula": "L2 norm of (a-a_nominal)/(a_max-a_min)",
+    "groups": [],
+    "minimum_group_count": null,
+    "reason": "E2_BINS_NOT_PREDECLARED",
+    "supported": false,
+    "unsupported_decision": "NOT CERTIFIED"
+  },
+  "pooled_quantiles": {
+    "calibration_boundary": {
+      "0.01": {
+        "alpha": 0.01,
+        "corrected_rank": 460,
+        "quantile": 14.164732647450517,
+        "sample_count": 463,
+        "scope": "pooled_across_F1_F2_F3_and_actions_within_population"
+      },
+      "0.05": {
+        "alpha": 0.05,
+        "corrected_rank": 441,
+        "quantile": 11.349920831470156,
+        "sample_count": 463,
+        "scope": "pooled_across_F1_F2_F3_and_actions_within_population"
+      },
+      "0.1": {
+        "alpha": 0.1,
+        "corrected_rank": 418,
+        "quantile": 9.0228762395739,
+        "sample_count": 463,
+        "scope": "pooled_across_F1_F2_F3_and_actions_within_population"
+      }
+    },
+    "calibration_ordinary": {
+      "0.01": {
+        "alpha": 0.01,
+        "corrected_rank": 444,
+        "quantile": 15.956864471438763,
+        "sample_count": 447,
+        "scope": "pooled_across_F1_F2_F3_and_actions_within_population"
+      },
+      "0.05": {
+        "alpha": 0.05,
+        "corrected_rank": 426,
+        "quantile": 11.04859850832729,
+        "sample_count": 447,
+        "scope": "pooled_across_F1_F2_F3_and_actions_within_population"
+      },
+      "0.1": {
+        "alpha": 0.1,
+        "corrected_rank": 404,
+        "quantile": 9.291741027947406,
+        "sample_count": 447,
+        "scope": "pooled_across_F1_F2_F3_and_actions_within_population"
+      }
+    }
+  },
+  "process_bundle_sha256": "1bc228ee61c628bf44795a0f67c9a476973f630dcd95f9932d88c96682325624",
+  "prohibited_truth_accessed": [],
+  "roles_accessed": [
+    "training",
+    "model_selection_operational_inputs_only",
+    "calibration_ordinary",
+    "calibration_boundary"
+  ],
+  "schema_version": "FLASH_E4_CONFORMAL_CONFIG_1.0",
+  "score": {
+    "alpha_levels": [
+      0.1,
+      0.05,
+      0.01
+    ],
+    "directions": [
+      "high_pressure",
+      "high_temperature",
+      "high_level",
+      "low_level"
+    ],
+    "finite_sample_rank": "ceil((n_cal+1)*(1-alpha)), capped at n_cal",
+    "formula": "max_h,d direction-specific signed error / max(sigma,epsilon)",
+    "primary_alpha": 0.05,
+    "scale_floors": [
+      0.005,
+      0.005,
+      0.25
+    ]
+  },
+  "selected_e3_model_sha256": "f02d72b577b72f157001bb827b6685860f0b29384b2d1a28ba45e73cd874b51c",
+  "selected_mean_model": {
+    "latent_dimension": 3,
+    "no_model_passed": true,
+    "selection_status": "NO_MODEL_PASSED_PREDECLARED_FALLBACK"
+  },
+  "unsafe_certificate_defined": false
+}

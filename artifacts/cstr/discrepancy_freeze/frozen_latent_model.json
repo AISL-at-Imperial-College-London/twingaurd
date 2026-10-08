@@ -1,0 +1,83 @@
+{
+  "identity": "B9S_seed_91005_limit_100",
+  "original_B9_candidate_retained": false,
+  "selection_and_training_only_choice": true,
+  "new_untouched_final_population_required": true,
+  "parameters": {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949981833829651
+      ]
+    ],
+    "B": [
+      [
+        0.0004893302223648104,
+        -0.0021166122325617276,
+        0.00010095017923288589,
+        -0.003260146318036349
+      ]
+    ],
+    "C": [
+      [
+        3.429589866221147
+      ]
+    ],
+    "D": [
+      [
+        0.01247647877750585,
+        0.0003906622732443993,
+        -0.0764514664608944,
+        1.1735385163661525
+      ]
+    ],
+    "Q": [
+      [
+        0.00010231357723556351
+      ]
+    ],
+    "R": 0.009028239588431056,
+    "initial_mean": [
+      0.6168684482735486
+    ],
+    "initial_covariance": [
+      [
+        3.7420744281646545e-05
+      ]
+    ],
+    "z_mean": [
+      0.027839498733165706,
+      -4.967845222990598e-05,
+      309.15227967864786,
+      60.5
+    ],
+    "z_scale": [
+      0.00638189116283558,
+      0.002902874378445782,
+      0.5803004137389675,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 54622.95490355986,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 38.24762420001207,
+    "eigenvalues": [
+      {
+        "real": 0.9949981833829651,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949981833829651,
+    "stability_margin": 0.005001816617034915,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00020989933757117462
+  }
+}

@@ -1,0 +1,32 @@
+experiment: E_FLASH_RESS
+milestone: E1
+random_seed: 1601
+mixture:
+  component_1: benzene
+  component_2: toluene
+  vle_model: ideal_raoults_law
+  liquid_heat_capacity_model: constant_component_cp
+  feed_benzene_mole_fraction: 0.55
+  feed_temperature_k: 340.0
+vessel:
+  liquid_capacity_mol: 1000.0
+  downstream_pressure_bar_absolute: 0.20
+state_domain:
+  liquid_holdup_mol: [50.0, 1000.0]
+  temperature_k: [333.5, 373.0]
+action_order: [heat_duty_w, vapor_valve_opening, liquid_valve_opening, feed_flow_mol_s]
+action_bounds:
+  heat_duty_w: [10000.0, 22000.0]
+  vapor_valve_opening: [0.25, 0.85]
+  liquid_valve_opening: [0.25, 0.85]
+  feed_flow_mol_s: [0.75, 1.25]
+safety_limits:
+  pressure_max_bar_absolute: 0.90
+  level_min_fraction: 0.20
+  level_max_fraction: 0.85
+  temperature_max_k: 365.0
+simulation:
+  integration_step_s: 1.0
+  reporting_interval_s: 10.0
+  recovery_horizon_s: 1200.0
+  long_horizon_validation_s: 7200.0

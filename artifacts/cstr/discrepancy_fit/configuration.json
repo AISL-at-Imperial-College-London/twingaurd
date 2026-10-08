@@ -1,0 +1,47 @@
+{
+  "source_dir": "results/milestone_b5",
+  "b7b_dir": "results/milestone_b7b",
+  "b8_dir": "results/milestone_b8",
+  "output_dir": "results/milestone_b9",
+  "training_episodes": 600,
+  "training_steps": 120,
+  "posterior_samples": 2000,
+  "em_iterations": 15,
+  "initialization_seeds": [
+    91001,
+    91002
+  ],
+  "workers": 8,
+  "limit_evaluation_episodes": null,
+  "feature_names": [
+    "u_t",
+    "delta_u_t",
+    "y_dt_t",
+    "elapsed_since_detection_s"
+  ],
+  "em_relative_likelihood_tolerance": 0.0001,
+  "dynamics_optimizer": "L-BFGS-B over a_i=0.995*tanh(theta_i); max 100 row iterations",
+  "state_reset": "learned common initial mean/covariance reapplied independently to every episode",
+  "selection_rule": "smallest k within 5% of best selection recursive RMSE with max ACF within 20% of best among near-optimal candidates",
+  "decision_rule": {
+    "sufficient": {
+      "RMSE_reduction_min": 0.2,
+      "absolute_bias_reduction_min": 0.3,
+      "ACF_reduction_min": 0.5,
+      "final_ACF_max": 0.3,
+      "stable_required": true
+    },
+    "partial_meaningful_thresholds": {
+      "RMSE_reduction": 0.1,
+      "bias_or_ACF_reduction": 0.2
+    }
+  },
+  "decision": "LATENT STATE SUFFICIENT",
+  "decision_metrics": {
+    "median_recursive_RMSE_reduction": 0.7367162183011016,
+    "absolute_innovation_bias_reduction": 0.9894304575277711,
+    "maximum_innovation_ACF_reduction": 0.8264205706111598,
+    "final_maximum_innovation_ACF": 0.172545806807151,
+    "stable": true
+  }
+}

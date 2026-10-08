@@ -1,0 +1,67 @@
+population,audit_check,records_examined,failure_count,status,detail
+ALL_PRE_E7_RESULTS,frozen SHA-256 baseline,34222,0,PASS,Every pre-E7 result artifact.
+FLASH_ALL_SPLITS,training/calibration/test seed overlap,8,0,PASS,"All eight E2-reserved intervals, including E7 blocks."
+CSTR_ALL_SPLITS,training/calibration/test seed overlap,7,0,PASS,Frozen C1/C1.6 and new stress/reliability intervals.
+FLASH_E5,duplicates and missing episode records,1200,0,PASS,"Unique=1200, expected=1200; method rows share episode IDs by design."
+FLASH_E6_BOUNDARY,duplicates and missing episode records,1200,0,PASS,"Unique=1200, expected=1200; method rows share episode IDs by design."
+FLASH_E7_STRUCTURAL,duplicates and missing episode records,600,0,PASS,"Unique=600, expected=600; method rows share episode IDs by design."
+FLASH_E7_RELIABILITY,duplicates and missing episode records,3000,0,PASS,"Unique=3000, expected=3000; method rows share episode IDs by design."
+CSTR_E7_RELIABILITY,duplicates and missing episode records,3000,0,PASS,"Unique=3000, expected=3000; method rows share episode IDs by design."
+CSTR_C1,decision reconstruction,12000,0,PASS,All four methods at 90/95/99%.
+CSTR_C1,envelope reconstruction,3000,0,PASS,Saved one-sided upper envelope versus frozen q and scale floor.
+CSTR_C1,safety-indicator reconstruction,12000,0,PASS,Physical 313 K event and decision outcome.
+CSTR_C1,prediction-decision-truth chronology,12000,0,PASS,Legacy C1 stores a prospective boolean but not nanosecond timestamps.
+CSTR_C1,truth/fault/hidden-parameter leakage in prediction or decision keys,2000,0,PASS,"Key-level allowlist audit; residual histories are permitted observations, evaluator metadata is not."
+CSTR_C1_6B,decision reconstruction,600,0,PASS,Frozen pooled upper envelope.
+CSTR_C1_6B,envelope reconstruction,600,0,PASS,Stored conformal margin versus reconstructed upper maximum.
+CSTR_C1_6B,prediction hash binding,600,0,PASS,Decision SHA-256 binding.
+CSTR_C1_6B,safety-indicator reconstruction,1200,0,PASS,Physical upper limit 313.0.
+CSTR_C1_6B,prediction-decision-truth chronology,600,0,PASS,Nanosecond timestamps.
+CSTR_C1_6B,truth/fault/hidden-parameter leakage in prediction or decision keys,1200,0,PASS,"Key-level allowlist audit; residual histories are permitted observations, evaluator metadata is not."
+TWO_TANK_D2,decision reconstruction,600,0,PASS,Frozen pooled upper envelope.
+TWO_TANK_D2,envelope reconstruction,600,0,PASS,Stored conformal margin versus reconstructed upper maximum.
+TWO_TANK_D2,prediction hash binding,600,0,PASS,Decision SHA-256 binding.
+TWO_TANK_D2,safety-indicator reconstruction,1200,0,PASS,Physical upper limit 0.55.
+TWO_TANK_D2,prediction-decision-truth chronology,600,0,PASS,Nanosecond timestamps.
+TWO_TANK_D2,truth/fault/hidden-parameter leakage in prediction or decision keys,1200,0,PASS,"Key-level allowlist audit; residual histories are permitted observations, evaluator metadata is not."
+FLASH_E5,decision reconstruction,6000,0,PASS,M0-M4 from frozen prediction artifacts.
+FLASH_E5,envelope reconstruction,6000,0,PASS,Normalized margins.
+FLASH_E5,prediction hash binding,1200,0,PASS,Decision SHA-256 binding.
+FLASH_E5,prediction-decision-truth chronology,1200,0,PASS,Strict artifact timestamps.
+FLASH_E5,truth/fault/hidden-parameter leakage in prediction or decision keys,2400,0,PASS,"Key-level allowlist audit; residual histories are permitted observations, evaluator metadata is not."
+FLASH_E6_BOUNDARY,decision reconstruction,10800,0,PASS,All frozen confidence levels and baselines.
+FLASH_E6_BOUNDARY,envelope reconstruction,10800,0,PASS,All normalized margins.
+FLASH_E6_BOUNDARY,prediction hash binding,1200,0,PASS,Decision SHA-256 binding.
+FLASH_E6_BOUNDARY,candidate-prediction-decision-truth chronology,1200,0,PASS,Strict artifact timestamps.
+FLASH_E6_BOUNDARY,truth/fault/hidden-parameter leakage in prediction or decision keys,2400,0,PASS,"Key-level allowlist audit; residual histories are permitted observations, evaluator metadata is not."
+CSTR_E6_BOUNDARY,decision reconstruction,600,0,PASS,Nominal and frozen conformal decisions.
+CSTR_E6_BOUNDARY,envelope reconstruction,300,0,PASS,Frozen conformal margin.
+CSTR_E6_BOUNDARY,prediction hash binding,300,0,PASS,Decision SHA-256 binding.
+CSTR_E6_BOUNDARY,candidate-prediction-decision-truth chronology,300,0,PASS,Strict artifact timestamps.
+CSTR_E6_BOUNDARY,truth/fault/hidden-parameter leakage in prediction or decision keys,600,0,PASS,"Key-level allowlist audit; residual histories are permitted observations, evaluator metadata is not."
+FLASH_E7_STRUCTURAL,decision reconstruction,3000,0,PASS,M0-M4 from stored prediction artifacts.
+FLASH_E7_STRUCTURAL,envelope reconstruction,3000,0,PASS,Normalized margins.
+FLASH_E7_STRUCTURAL,prediction hash binding,600,0,PASS,Decision SHA-256 binding.
+FLASH_E7_STRUCTURAL,candidate-prediction-decision-truth chronology,600,0,PASS,Strict artifact timestamps.
+FLASH_E7_STRUCTURAL,truth/fault/hidden-parameter leakage in prediction or decision keys,1200,0,PASS,"Key-level allowlist audit; residual histories are permitted observations, evaluator metadata is not."
+FLASH_E7_RELIABILITY,decision reconstruction,15000,0,PASS,M0-M4 from stored prediction artifacts.
+FLASH_E7_RELIABILITY,envelope reconstruction,15000,0,PASS,Normalized margins.
+FLASH_E7_RELIABILITY,prediction hash binding,3000,0,PASS,Decision SHA-256 binding.
+FLASH_E7_RELIABILITY,candidate-prediction-decision-truth chronology,3000,0,PASS,Strict artifact timestamps.
+FLASH_E7_RELIABILITY,truth/fault/hidden-parameter leakage in prediction or decision keys,6000,0,PASS,"Key-level allowlist audit; residual histories are permitted observations, evaluator metadata is not."
+CSTR_E7_RELIABILITY,decision reconstruction,6000,0,PASS,Nominal and frozen conformal decisions.
+CSTR_E7_RELIABILITY,envelope reconstruction,6000,0,PASS,Nominal and conformal margins.
+CSTR_E7_RELIABILITY,prediction hash binding,3000,0,PASS,Decision SHA-256 binding.
+CSTR_E7_RELIABILITY,candidate-prediction-decision-truth chronology,3000,0,PASS,Strict artifact timestamps.
+CSTR_E7_RELIABILITY,truth/fault/hidden-parameter leakage in prediction or decision keys,6000,0,PASS,"Key-level allowlist audit; residual histories are permitted observations, evaluator metadata is not."
+FLASH_E5,safety-indicator reconstruction,12000,0,PASS,Complete multiconstraint horizon and false-safe indicator.
+FLASH_E6_BOUNDARY,safety-indicator reconstruction,21600,0,PASS,Complete multiconstraint horizon and false-safe indicator.
+FLASH_E7_STRUCTURAL,safety-indicator reconstruction,6000,0,PASS,Complete multiconstraint horizon and false-safe indicator.
+FLASH_E7_RELIABILITY,safety-indicator reconstruction,30000,0,PASS,Complete multiconstraint horizon and false-safe indicator.
+CSTR_E6_BOUNDARY,safety-indicator reconstruction,1200,0,PASS,Complete 313 K horizon and false-safe indicator.
+CSTR_E7_RELIABILITY,safety-indicator reconstruction,12000,0,PASS,Complete 313 K horizon and false-safe indicator.
+FLASH_E5,incorrect NaN-to-zero conversion,85,18,ISSUE,Conditional false-safe is undefined when no action is certified; E7 leaves it blank.
+E6,incorrect NaN-to-zero conversion,8,6,ISSUE,Conditional false-safe is undefined when no action is certified; E7 leaves it blank.
+E7_STRUCTURAL,incorrect NaN-to-zero conversion,5,0,PASS,Conditional false-safe is undefined when no action is certified; E7 leaves it blank.
+E7_FLASH_RELIABILITY,incorrect NaN-to-zero conversion,5,0,PASS,Conditional false-safe is undefined when no action is certified; E7 leaves it blank.
+E7_CSTR_RELIABILITY,incorrect NaN-to-zero conversion,2,0,PASS,Conditional false-safe is undefined when no action is certified; E7 leaves it blank.

@@ -1,0 +1,21 @@
+{
+  "config": {
+    "source_dir": "results/milestone_b5",
+    "b9_dir": "results/milestone_b9",
+    "output_dir": "results/milestone_b10",
+    "posterior_samples": 2000,
+    "bootstrap_samples": 2000,
+    "workers": 5,
+    "limit_calibration_episodes": null,
+    "limit_test_episodes": null
+  },
+  "variance_model": {
+    "U1_global_scale": 0.9386570924957488,
+    "U2_implemented": false,
+    "U2_support_rule": "|Spearman rho| >= 0.10 and max/min binned variance ratio >= 1.30",
+    "U2_features": []
+  },
+  "calibration_verdict": "UNDER-CONSERVATIVE",
+  "selected_uncertainty_model": "U0",
+  "final_decision": "UNCERTAINTY MODEL NEEDS REVISION"
+}

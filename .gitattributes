@@ -1,0 +1,17 @@
+# Source and documentation: always LF in the repository and working tree.
+*.py   text eol=lf
+*.md   text eol=lf
+*.toml text eol=lf
+*.cff  text eol=lf
+*.yml  text eol=lf
+*.txt  text eol=lf
+
+# Frozen artifacts and paper outputs are hash-bound: store and check out byte-exact.
+# (Several frozen CSVs use CRLF line endings, others LF; converting either breaks SHA-256 checks.)
+artifacts/**                    -text
+results/**                      -text
+reproducibility/provenance/**   -text
+*.npz -text
+*.npy -text
+*.png -text
+*.pdf -text

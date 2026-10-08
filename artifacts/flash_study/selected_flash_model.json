@@ -1,0 +1,313 @@
+{
+  "e2_preregistration_sha256": "a35c3919c64380f03e275558d9037b5de41ea2056a0e298552f074ebddc7f7df",
+  "model": {
+    "A": [
+      [
+        0.9949997926531529,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.994999845607727,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.9949997402081202
+      ]
+    ],
+    "B": [
+      [
+        0.02030104870710404,
+        -0.012672632027990086,
+        -0.0020125148094148216,
+        0.006775187594138997,
+        -0.024833629331712362,
+        0.0180224974687461,
+        0.002391627741528946,
+        -0.006318400190092161,
+        0.0008209102021481395,
+        0.00022663524721952996,
+        0.0042077655816577485
+      ],
+      [
+        0.0022358673471362185,
+        0.0016467850564920463,
+        -0.004109453794161681,
+        0.003142967908670255,
+        -0.0002005698067588643,
+        -0.0029395828334978415,
+        0.004782831067523568,
+        -0.004167074078649687,
+        0.006064926278396045,
+        -5.191420822080876e-05,
+        -0.007103303541886643
+      ],
+      [
+        -0.0032730730809712345,
+        0.014837486406243203,
+        0.012823874162082617,
+        -0.009013821759022515,
+        0.006735278980064495,
+        -0.01858001641559853,
+        -0.013435739625085466,
+        0.008727776544376913,
+        0.0007851879218854677,
+        0.00012295772776310006,
+        -0.004531055133166179
+      ]
+    ],
+    "C": [
+      [
+        -2.0272208580917694,
+        -0.227791018451807,
+        -0.09022699862867001
+      ],
+      [
+        -0.12915167799063634,
+        -0.9705324653810955,
+        0.01306737582989899
+      ],
+      [
+        -1.7113810166336985,
+        -0.19760827240368817,
+        0.17104695718509366
+      ]
+    ],
+    "D": [
+      [
+        -0.08566254262073152,
+        0.14245631356022015,
+        -0.01717631300468358,
+        0.08228712458115231,
+        -0.0003892754454092123,
+        -0.046054065899037905,
+        0.08730942230587227,
+        -0.048623113873251314,
+        -0.5712781178127255,
+        0.059545110608438416,
+        0.5568271831059288
+      ],
+      [
+        -0.0016160472467760835,
+        0.03468342044165053,
+        -0.014237294949672356,
+        -0.008943383456249938,
+        0.010072758741681606,
+        0.002081222620722056,
+        0.031047724714118298,
+        0.0113713890613262,
+        0.6050911896682989,
+        -0.08506631221265121,
+        -0.49387786361373714
+      ],
+      [
+        -0.07861328125,
+        0.11899566650390625,
+        0.000885009765625,
+        0.064208984375,
+        0.004505157470703125,
+        -0.030902862548828125,
+        0.0540771484375,
+        -0.04791259765625,
+        -0.2351680431932145,
+        0.02986023174982757,
+        0.13964101592190953
+      ]
+    ],
+    "Q": [
+      [
+        0.00022017310435753286,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0004642307549168576,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.002195120945114349
+      ]
+    ],
+    "R": [
+      [
+        0.00013896826124350442,
+        -2.1467285664815272e-05,
+        -0.00016723507177922645
+      ],
+      [
+        -2.1467285664815272e-05,
+        0.00022693799971888648,
+        -1.7832946503658475e-05
+      ],
+      [
+        -0.00016723507177922645,
+        -1.7832946503658475e-05,
+        0.0002123498556154657
+      ]
+    ],
+    "converged": true,
+    "feature_mean": [
+      15373.23355072094,
+      0.5208812569278559,
+      0.5171544858129106,
+      0.9878152100419866,
+      55.90319349834971,
+      0.019286533203985982,
+      0.017570302430961363,
+      -0.012184789957963002,
+      0.6094131588614542,
+      0.5841636337179142,
+      349.7913296833777
+    ],
+    "feature_names": [
+      "heat_duty_w",
+      "vapor_valve_opening",
+      "liquid_valve_opening",
+      "feed_flow_mol_s",
+      "delta_heat_duty_w",
+      "delta_vapor_valve_opening",
+      "delta_liquid_valve_opening",
+      "delta_feed_flow_mol_s",
+      "nominal_pressure_bar",
+      "nominal_level_fraction",
+      "nominal_temperature_k"
+    ],
+    "feature_scale": [
+      2620.0749664808823,
+      0.11281750664636574,
+      0.11535624325739037,
+      0.11751353655452913,
+      2620.074966481256,
+      0.112817506646376,
+      0.11535624325738848,
+      0.11751353655452966,
+      0.13796411740104886,
+      0.09515396359555336,
+      6.576821120761441
+    ],
+    "final_parameter_change": 0.005744565904881321,
+    "fit_seconds": 17.35469279999961,
+    "initial_covariance": [
+      [
+        0.0011895328246843582,
+        -0.0014387750352101078,
+        0.00038356015686981295
+      ],
+      [
+        -0.001438775035210108,
+        0.003262827394060218,
+        -0.002458993399337861
+      ],
+      [
+        0.00038356015686981295,
+        -0.002458993399337861,
+        0.01244614865169391
+      ]
+    ],
+    "initial_mean": [
+      0.003846247393987863,
+      -0.07229249942282001,
+      0.1386771511464985
+    ],
+    "initialization_seed": 33000003,
+    "iterations": 53,
+    "latent_dimension": 3,
+    "latent_state_interpretation": "statistical_discrepancy_state_only",
+    "log_likelihood": 709247.5410197749,
+    "output_names": [
+      "pressure_bar",
+      "level_fraction",
+      "temperature_k"
+    ],
+    "residual_scale": [
+      0.1,
+      0.1,
+      5.0
+    ],
+    "spectral_radius": 0.994999845607727
+  },
+  "no_model_passed": true,
+  "numerical_fit_protocol": {
+    "maximum_em_iterations": 100,
+    "note": "Uniform iteration ceiling extension after the 40-iteration attempt; gate thresholds unchanged",
+    "relative_likelihood_tolerance": 1e-05
+  },
+  "population_completion": {
+    "selection_complete": 143,
+    "selection_domain_exits": 37,
+    "selection_reserved": 180,
+    "training_complete": 667,
+    "training_domain_exits": 233,
+    "training_reserved": 900
+  },
+  "populations_accessed": [
+    "training",
+    "model_selection"
+  ],
+  "process_bundle_sha256": "1bc228ee61c628bf44795a0f67c9a476973f630dcd95f9932d88c96682325624",
+  "prohibited_populations_accessed": [],
+  "schema_version": "E3_SELECTED_FLASH_MODEL_1.0",
+  "selected_metrics": {
+    "action_changes_discrepancy_rollout": true,
+    "action_changes_nominal_rollout": true,
+    "all_predeclared_gates_passed": false,
+    "converged": true,
+    "counterfactual_rollout_finite": true,
+    "final_parameter_change": 0.005744565904881321,
+    "fit_seconds": 17.35469279999961,
+    "gate_converged_finite": true,
+    "gate_each_output_innovation_autocorrelation": true,
+    "gate_each_output_normalized_bias": false,
+    "gate_each_output_normalized_rmse": true,
+    "gate_spectral_radius": true,
+    "gate_worst_normalized_rmse": true,
+    "initialization_seed": 33000003,
+    "iterations": 53,
+    "latent_dimension": 3,
+    "level_bias_fraction": -0.0279049816928593,
+    "level_innovation_lag1": -0.14317723206603636,
+    "level_normalized_bias": -0.279049816928593,
+    "log_likelihood": 709247.5410197749,
+    "maximum_abs_predicted_discrepancy_normalized": 3.8236316109822166,
+    "maximum_discrepancy_action_sensitivity": 0.4042388918139661,
+    "maximum_nominal_action_sensitivity": 1.58618853126751,
+    "median_level_normalized_rmse": 0.22933110898247358,
+    "median_level_rmse_fraction": 0.022933110898247358,
+    "median_pressure_normalized_rmse": 0.19266190848349998,
+    "median_pressure_rmse_bar": 0.01926619084835,
+    "median_temperature_normalized_rmse": 0.19026499691000268,
+    "median_temperature_rmse_k": 0.9513249845500134,
+    "median_worst_output_normalized_rmse": 0.41892887739128054,
+    "numerically_stable": true,
+    "pressure_bias_bar": -0.02229486398166157,
+    "pressure_innovation_lag1": 0.3448939993645335,
+    "pressure_normalized_bias": -0.2229486398166157,
+    "reference_nominal_heat_duty_w": 15317.330357212402,
+    "selected": true,
+    "selection_complete": 143,
+    "selection_domain_exits": 37,
+    "selection_reserved": 180,
+    "selection_status": "NO_MODEL_PASSED_PREDECLARED_FALLBACK",
+    "spectral_radius": 0.994999845607727,
+    "temperature_bias_k": -0.9294785181980632,
+    "temperature_innovation_lag1": 0.2764985320176983,
+    "temperature_normalized_bias": -0.18589570363961264,
+    "training_complete": 667,
+    "training_domain_exits": 233,
+    "training_reserved": 900
+  },
+  "selection_gate_thresholds": {
+    "each_output_abs_innovation_lag1_max": 0.5,
+    "each_output_abs_normalized_bias_max": 0.1,
+    "each_output_median_normalized_rmse_max": 0.5,
+    "median_worst_normalized_rmse_max": 0.5,
+    "spectral_radius_max": 0.995
+  },
+  "selection_status": "NO_MODEL_PASSED_PREDECLARED_FALLBACK"
+}

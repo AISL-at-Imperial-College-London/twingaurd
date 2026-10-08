@@ -1,0 +1,2 @@
+classification,number_of_high_quality_fits,likelihood_threshold,spectral_radius_mean,spectral_radius_sd,spectral_radius_min,spectral_radius_max,selection_RMSE_mean_k,selection_RMSE_sd_k
+PREVIOUS FIT NOT CONVERGED ENOUGH,4,54349.84012904206,0.9949993299461768,6.70531568639408e-07,0.9949981833829651,0.9949998276721954,0.47955742222551734,0.004114904229857139

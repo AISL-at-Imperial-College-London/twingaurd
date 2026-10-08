@@ -1,0 +1,7 @@
+fault_mechanism,severity_label,N,actual_unsafe_fraction,nominal_DT_joint_false_safe_probability,proposed_method_SAFE_rate,proposed_method_false_safe_count,upper_envelope_coverage,median_conformal_width_k,median_prediction_RMSE_k,pooled_q_plus,formal_subgroup_guarantee_claimed
+ua_fouling,low,100,0.24,0.24,0.33,0,1.0,4.121993886936949,0.5095679778155446,6.678568221034516,0
+ua_fouling,medium,100,0.41,0.41,0.28,0,1.0,4.112619611366057,0.9528420667606925,6.678568221034516,0
+ua_fouling,high,100,0.7,0.7,0.25,0,0.85,4.110610793141689,1.704071190733099,6.678568221034516,0
+feed_temperature_step,low,100,0.16,0.16,0.32,0,1.0,4.114500951367532,0.6086068031936603,6.678568221034516,0
+feed_temperature_step,medium,100,0.43,0.43,0.22,0,1.0,4.120243604563328,0.7627261839571986,6.678568221034516,0
+feed_temperature_step,high,100,0.71,0.71,0.01,0,0.84,4.108174898687977,1.750810183591235,6.678568221034516,0

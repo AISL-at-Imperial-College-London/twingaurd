@@ -1,0 +1,88 @@
+{
+  "latent_dimension": 1,
+  "parameters": {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949994284450694
+      ]
+    ],
+    "B": [
+      [
+        0.0012041693335767833,
+        -0.0025391358695666787,
+        -0.00017198967118078347,
+        -0.00507525827977644
+      ]
+    ],
+    "C": [
+      [
+        2.898525724853236
+      ]
+    ],
+    "D": [
+      [
+        0.011745730430564205,
+        0.001239175349253177,
+        0.026548853581278564,
+        1.2278636358897201
+      ]
+    ],
+    "Q": [
+      [
+        0.0003190307040162892
+      ]
+    ],
+    "R": 0.008284510980519473,
+    "initial_mean": [
+      0.7268905070043462
+    ],
+    "initial_covariance": [
+      [
+        0.000573777862921232
+      ]
+    ],
+    "z_mean": [
+      0.027826025548226985,
+      -4.748397346822456e-05,
+      309.1502624141623,
+      60.5
+    ],
+    "z_scale": [
+      0.006390721940873596,
+      0.0028754220076209025,
+      0.5989835838998219,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50371.795822493,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 9.646737799999755,
+    "eigenvalues": [
+      {
+        "real": 0.9949994284450694,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949994284450694,
+    "stability_margin": 0.005000571554930611,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00014868978105714995
+  },
+  "selection_gate": {
+    "number_of_selection_episodes": 60,
+    "median_recursive_RMSE_k": 0.8541096219892896,
+    "absolute_mean_prediction_bias_k": 0.6519315357227832,
+    "absolute_mean_innovation_bias_k": 0.01062672256509831,
+    "spectral_radius": 0.9949994284450694,
+    "k1_passed_predefined_mean_dynamics_gate": 1
+  }
+}

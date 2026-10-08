@@ -1,0 +1,34 @@
+{
+  "configuration": {
+    "b11_dir": "results/milestone_b11",
+    "output_dir": "results/milestone_b12",
+    "calibration_count": 500,
+    "diagnostic_count": 150,
+    "final_count": 500,
+    "trajectories": 2000,
+    "ensemble_size": 10,
+    "bootstrap_samples": 2000,
+    "limit_episodes": null
+  },
+  "frozen_predictor": "B.11 U3, first 10 accepted bootstrap models, M=2000",
+  "centre": "posterior median",
+  "epsilon_scale_k": 1e-06,
+  "primary_score": "max_h |Y_h-m_h|/max(s_h,epsilon)",
+  "horizon_ablation": "31-point moving average of calibration median standardized absolute error, normalized to median one",
+  "quantile_convention": "k=ceil((n_cal+1)*(1-alpha)); kth ordered episode score",
+  "primary_guarantee": "marginal whole-trajectory coverage over the defined episode population; no conditional guarantee",
+  "decision_rule": {
+    "sufficient": "B2 pooled MACE <=.05, pooled 95% >=.90, every category 95% >=.88, width <=3x B0 and <=5 K",
+    "regime": "pooled adequate, a category <.88, and Mondrian improves minimum by >=.05",
+    "too_conservative": "coverage adequate but width rule fails"
+  },
+  "decision_metrics": {
+    "B2_pooled_MACE": 0.02359999999999999,
+    "B2_pooled_95_coverage": 0.934,
+    "B2_min_category_95_coverage": 0.8982035928143712,
+    "B2M_min_category_95_coverage": 0.9036144578313253,
+    "B2_to_B0_95_width_ratio": 1.7397619483266786,
+    "B2_mean_95_width_k": 3.5377252788120876
+  },
+  "decision": "TRAJECTORY CALIBRATION SUFFICIENT"
+}

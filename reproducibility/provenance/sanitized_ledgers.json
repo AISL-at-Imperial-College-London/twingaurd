@@ -1,0 +1,74 @@
+{
+ "artifacts/flash_margin_ladder/artifacts/CSTR_TEST_ARTIFACT_AUDIT.csv": {
+  "original_byte_form": "VERBATIM_HASH_MATCH",
+  "original_path": "E6B_MARGIN_LADDER/artifacts/CSTR_TEST_ARTIFACT_AUDIT.csv",
+  "original_sha256": "36a6ead35ba775f009f24b548693e0c1815da0d8899c3c44870a69a2621b69be",
+  "private_prefix_sha256": "b5196499d35142270c86ae70a8edf2b200ea333499668adcda0f7b23fb162caa",
+  "rule": "remove the private absolute prefix, then map original directories to release directories",
+  "sanitized_sha256": "09c79b08f50b3659d12a9c8e9076d41d2e973cddf9488976838effcae1c90a1d"
+ },
+ "artifacts/flash_margin_ladder/artifacts/FLASH_CALIBRATION_ARTIFACT_AUDIT.csv": {
+  "original_byte_form": "VERBATIM_HASH_MATCH",
+  "original_path": "E6B_MARGIN_LADDER/artifacts/FLASH_CALIBRATION_ARTIFACT_AUDIT.csv",
+  "original_sha256": "6d7f21c18603c4281f1acfe3922196db06a602f97221811b8264ad3c1cbab920",
+  "private_prefix_sha256": "b5196499d35142270c86ae70a8edf2b200ea333499668adcda0f7b23fb162caa",
+  "rule": "remove the private absolute prefix, then map original directories to release directories",
+  "sanitized_sha256": "c3cdd4fa7edd0758755f117c1bcfe846a52f848c39edd4615ec450d7346ea59b"
+ },
+ "artifacts/flash_margin_ladder/artifacts/FLASH_TEST_ARTIFACT_AUDIT.csv": {
+  "original_byte_form": "VERBATIM_HASH_MATCH",
+  "original_path": "E6B_MARGIN_LADDER/artifacts/FLASH_TEST_ARTIFACT_AUDIT.csv",
+  "original_sha256": "1fe8144d8338f4da76ed2f8200c9742a7b3e5c700212de531f280a1b56a50889",
+  "private_prefix_sha256": "b5196499d35142270c86ae70a8edf2b200ea333499668adcda0f7b23fb162caa",
+  "rule": "remove the private absolute prefix, then map original directories to release directories",
+  "sanitized_sha256": "51dc9f90cadc9d8f21fe7d6756821f6fe404bf0d36c241e41612742bedee0756"
+ },
+ "artifacts/flash_study/e5_artifact_audit.csv": {
+  "original_byte_form": "VERBATIM_HASH_MATCH",
+  "original_path": "E_FLASH_RESS/e5_artifact_audit.csv",
+  "original_sha256": "266dbcdf7979fef0afceb43937529e8151c48718ddb804ef7bc6b760e4704409",
+  "private_prefix_sha256": "b5196499d35142270c86ae70a8edf2b200ea333499668adcda0f7b23fb162caa",
+  "rule": "remove the private absolute prefix, then map original directories to release directories",
+  "sanitized_sha256": "681aff6d25e752c1a0e9e8af84b1598bf3d85e28ba1952d4188e4a29701567c3"
+ },
+ "artifacts/flash_study/e6_artifacts/CSTR_RESS_STRESS_ARTIFACT_AUDIT.csv": {
+  "original_byte_form": "VERBATIM_HASH_MATCH",
+  "original_path": "E_FLASH_RESS/e6_artifacts/CSTR_RESS_STRESS_ARTIFACT_AUDIT.csv",
+  "original_sha256": "4ea0078349b58276b1a63b040db313d79b392214a1b6263a240bb82d21414750",
+  "private_prefix_sha256": "b5196499d35142270c86ae70a8edf2b200ea333499668adcda0f7b23fb162caa",
+  "rule": "remove the private absolute prefix, then map original directories to release directories",
+  "sanitized_sha256": "e0493fb9f7147575d5787a457fb661b2c0e5146ec266348914d31aec7a143c72"
+ },
+ "artifacts/flash_study/e6_artifacts/FLASH_RESS_STRESS_ARTIFACT_AUDIT.csv": {
+  "original_byte_form": "VERBATIM_HASH_MATCH",
+  "original_path": "E_FLASH_RESS/e6_artifacts/FLASH_RESS_STRESS_ARTIFACT_AUDIT.csv",
+  "original_sha256": "f7669d891b94704692480d462c855beefd7802139463dae016426774a405288e",
+  "private_prefix_sha256": "b5196499d35142270c86ae70a8edf2b200ea333499668adcda0f7b23fb162caa",
+  "rule": "remove the private absolute prefix, then map original directories to release directories",
+  "sanitized_sha256": "2cbb2ac6ef5fbe87170b44c20717f575c4864db34c4d7e3e7e60b2822816b3d0"
+ },
+ "artifacts/flash_study/e7_artifacts/CSTR_RELIABILITY_ARTIFACT_AUDIT.csv": {
+  "original_byte_form": "VERBATIM_HASH_MATCH",
+  "original_path": "E_FLASH_RESS/e7_artifacts/CSTR_RELIABILITY_ARTIFACT_AUDIT.csv",
+  "original_sha256": "4a9caac07dd78d9c389e841c17b30ee10a25d18545cfe7c07888ca5d0c653208",
+  "private_prefix_sha256": "b5196499d35142270c86ae70a8edf2b200ea333499668adcda0f7b23fb162caa",
+  "rule": "remove the private absolute prefix, then map original directories to release directories",
+  "sanitized_sha256": "a9f4a24ecf1c3bcc321baf9f0078c16eb24012a16bc88d6f3bb78cd24f7aa8ce"
+ },
+ "artifacts/flash_study/e7_artifacts/FLASH_RELIABILITY_ARTIFACT_AUDIT.csv": {
+  "original_byte_form": "VERBATIM_HASH_MATCH",
+  "original_path": "E_FLASH_RESS/e7_artifacts/FLASH_RELIABILITY_ARTIFACT_AUDIT.csv",
+  "original_sha256": "e5885a700ebc3b4d02463914e5afb50f3344ae42f63e60b959bb2e1758f5b5e0",
+  "private_prefix_sha256": "b5196499d35142270c86ae70a8edf2b200ea333499668adcda0f7b23fb162caa",
+  "rule": "remove the private absolute prefix, then map original directories to release directories",
+  "sanitized_sha256": "d137df94bb46e018d8d61ea58d050e6cd00e630d5c256ffd9c057ab4561cb1f5"
+ },
+ "artifacts/flash_study/e7_artifacts/STRUCTURAL_ARTIFACT_AUDIT.csv": {
+  "original_byte_form": "VERBATIM_HASH_MATCH",
+  "original_path": "E_FLASH_RESS/e7_artifacts/STRUCTURAL_ARTIFACT_AUDIT.csv",
+  "original_sha256": "ddd283fb5791434ac380554d8f814f43ef90d6e2815d982f90f0944e78245342",
+  "private_prefix_sha256": "b5196499d35142270c86ae70a8edf2b200ea333499668adcda0f7b23fb162caa",
+  "rule": "remove the private absolute prefix, then map original directories to release directories",
+  "sanitized_sha256": "baf28118c5e7881232374943d327d66ebc6b8608e90a1cc65f2dc435a5dcfa8c"
+ }
+}

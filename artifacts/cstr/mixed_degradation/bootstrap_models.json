@@ -1,0 +1,3852 @@
+[
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949998930596777
+      ]
+    ],
+    "B": [
+      [
+        0.00041352438188438823,
+        -0.0043279947535014435,
+        0.0001631907589884524,
+        -0.005017057211611876
+      ]
+    ],
+    "C": [
+      [
+        2.960543523325896
+      ]
+    ],
+    "D": [
+      [
+        0.029029528671497967,
+        -0.00043899586384690825,
+        0.08098426116964608,
+        1.305499828122203
+      ]
+    ],
+    "Q": [
+      [
+        0.00030290289813058246
+      ]
+    ],
+    "R": 0.008325324198506779,
+    "initial_mean": [
+      0.730901364957655
+    ],
+    "initial_covariance": [
+      [
+        0.0006012231587368966
+      ]
+    ],
+    "z_mean": [
+      0.027923043020289733,
+      -4.795949605817899e-05,
+      309.1733658565338,
+      60.5
+    ],
+    "z_scale": [
+      0.006416547899623371,
+      0.002887929157416002,
+      0.5948191696995988,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50322.55446568782,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 18.469309300000532,
+    "eigenvalues": [
+      {
+        "real": 0.9949998930596777,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949998930596777,
+    "stability_margin": 0.005000106940322269,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015388475198773745
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949995451171754
+      ]
+    ],
+    "B": [
+      [
+        0.0020080004075713055,
+        -0.0017336337486957066,
+        -0.0004270427012333291,
+        -0.004953411283575634
+      ]
+    ],
+    "C": [
+      [
+        2.8768132537399844
+      ]
+    ],
+    "D": [
+      [
+        0.004194821954276562,
+        0.0015909153015724181,
+        -0.04496548368942643,
+        1.1529979247300572
+      ]
+    ],
+    "Q": [
+      [
+        0.0003192627565915566
+      ]
+    ],
+    "R": 0.008244588696819847,
+    "initial_mean": [
+      0.7237846934115607
+    ],
+    "initial_covariance": [
+      [
+        0.0005446434836605674
+      ]
+    ],
+    "z_mean": [
+      0.027690778851088334,
+      -4.2150159547006535e-05,
+      309.11530267357205,
+      60.5
+    ],
+    "z_scale": [
+      0.006358989577070255,
+      0.002868965375412111,
+      0.5989553084623657,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50647.94040698872,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 17.81745509999928,
+    "eigenvalues": [
+      {
+        "real": 0.9949995451171754,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949995451171754,
+    "stability_margin": 0.005000454882824634,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015425028668853425
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949999518257447
+      ]
+    ],
+    "B": [
+      [
+        0.001166612557151107,
+        -0.0012244827766644715,
+        2.932861559001657e-05,
+        -0.004890588005187187
+      ]
+    ],
+    "C": [
+      [
+        2.9110639313171034
+      ]
+    ],
+    "D": [
+      [
+        0.0041517896772166885,
+        0.0013853366626194186,
+        0.013262485114887701,
+        1.2171237684818002
+      ]
+    ],
+    "Q": [
+      [
+        0.00030748970742867796
+      ]
+    ],
+    "R": 0.00834582035332763,
+    "initial_mean": [
+      0.7223417514954869
+    ],
+    "initial_covariance": [
+      [
+        0.0005689563628885619
+      ]
+    ],
+    "z_mean": [
+      0.027874795870611754,
+      -4.430870692621e-05,
+      309.14098984939994,
+      60.5
+    ],
+    "z_scale": [
+      0.00637324264201305,
+      0.0028607196526468206,
+      0.5998170340246515,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50452.09579588923,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 18.698068499999863,
+    "eigenvalues": [
+      {
+        "real": 0.9949999518257447,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949999518257447,
+    "stability_margin": 0.005000048174255256,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001411237745270657
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949993818590037
+      ]
+    ],
+    "B": [
+      [
+        0.0018188478551134173,
+        -0.0026591029766641888,
+        -0.00037502576203691927,
+        -0.005032364080913137
+      ]
+    ],
+    "C": [
+      [
+        2.8764833332805906
+      ]
+    ],
+    "D": [
+      [
+        0.010553703481688853,
+        0.0016525382902417562,
+        -0.033450916570084255,
+        1.1865568297485916
+      ]
+    ],
+    "Q": [
+      [
+        0.0003320080902371306
+      ]
+    ],
+    "R": 0.008133407506938965,
+    "initial_mean": [
+      0.7358479429520134
+    ],
+    "initial_covariance": [
+      [
+        0.0005542818740769118
+      ]
+    ],
+    "z_mean": [
+      0.027991415147470805,
+      -4.858190735455106e-05,
+      309.1737418920703,
+      60.5
+    ],
+    "z_scale": [
+      0.006408909307454029,
+      0.0028910339101484986,
+      0.5848257124279843,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50615.19353352854,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 18.20191630000045,
+    "eigenvalues": [
+      {
+        "real": 0.9949993818590037,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949993818590037,
+    "stability_margin": 0.0050006181409962824,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001498636773975007
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949998902151483
+      ]
+    ],
+    "B": [
+      [
+        0.000890002841598511,
+        -0.0016381407707166853,
+        2.2796663010817932e-05,
+        -0.00475364507125296
+      ]
+    ],
+    "C": [
+      [
+        2.94673840312559
+      ]
+    ],
+    "D": [
+      [
+        0.006611145359554427,
+        0.0011542945154475598,
+        0.02712514478571082,
+        1.209685632223859
+      ]
+    ],
+    "Q": [
+      [
+        0.00027949244307585373
+      ]
+    ],
+    "R": 0.008403810111903618,
+    "initial_mean": [
+      0.7021349087781124
+    ],
+    "initial_covariance": [
+      [
+        0.00040224622566470414
+      ]
+    ],
+    "z_mean": [
+      0.027900069024738433,
+      -4.841760713791762e-05,
+      309.1589486335397,
+      60.5
+    ],
+    "z_scale": [
+      0.006322644803644596,
+      0.002864432029491809,
+      0.5813788381411191,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50991.877745627346,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 16.876667300000918,
+    "eigenvalues": [
+      {
+        "real": 0.9949998902151483,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949998902151483,
+    "stability_margin": 0.0050001097848516585,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00013961514471861098
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949999956241617
+      ]
+    ],
+    "B": [
+      [
+        0.0018150598187539246,
+        -0.0048732429790894,
+        -0.0003671260213940927,
+        -0.005077578185835973
+      ]
+    ],
+    "C": [
+      [
+        2.904277524357863
+      ]
+    ],
+    "D": [
+      [
+        0.02333512367137236,
+        0.0022362944214006364,
+        -0.01567553391247789,
+        1.2125487682913971
+      ]
+    ],
+    "Q": [
+      [
+        0.0003232839531323488
+      ]
+    ],
+    "R": 0.008289205679355493,
+    "initial_mean": [
+      0.7365995157903821
+    ],
+    "initial_covariance": [
+      [
+        0.0005165332787274712
+      ]
+    ],
+    "z_mean": [
+      0.02789817618039395,
+      -4.360571059525716e-05,
+      309.1577578800966,
+      60.5
+    ],
+    "z_scale": [
+      0.006383817943949077,
+      0.002880270543144334,
+      0.5877287093404464,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50206.285248937034,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 15.363190300000497,
+    "eigenvalues": [
+      {
+        "real": 0.9949999956241617,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949999956241617,
+    "stability_margin": 0.005000004375838252,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00017189142896932376
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949993811315206
+      ]
+    ],
+    "B": [
+      [
+        0.0011344394699927195,
+        -0.002975896844575373,
+        -0.00018927771511741587,
+        -0.004979746494369116
+      ]
+    ],
+    "C": [
+      [
+        2.9091934103729566
+      ]
+    ],
+    "D": [
+      [
+        0.014102244229561134,
+        0.0009698229685680265,
+        0.03020817635819717,
+        1.2285663737630346
+      ]
+    ],
+    "Q": [
+      [
+        0.0003105752561491665
+      ]
+    ],
+    "R": 0.008264178298078252,
+    "initial_mean": [
+      0.7233850294192289
+    ],
+    "initial_covariance": [
+      [
+        0.000596114929590108
+      ]
+    ],
+    "z_mean": [
+      0.027856580968053237,
+      -4.5209425914908736e-05,
+      309.1477168007813,
+      60.5
+    ],
+    "z_scale": [
+      0.0064006656487433635,
+      0.002881801926848145,
+      0.6034722393229638,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50618.07393418935,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 16.544887399999425,
+    "eigenvalues": [
+      {
+        "real": 0.9949993811315206,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949993811315206,
+    "stability_margin": 0.005000618868479356,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015439955424705003
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949995551257896
+      ]
+    ],
+    "B": [
+      [
+        0.0015786190985983561,
+        -0.003595413115358415,
+        -0.00045866150405935254,
+        -0.0052597782214568465
+      ]
+    ],
+    "C": [
+      [
+        2.8723115650505653
+      ]
+    ],
+    "D": [
+      [
+        0.017727518224760874,
+        0.0010076279791081527,
+        0.01635511556920677,
+        1.217399824608695
+      ]
+    ],
+    "Q": [
+      [
+        0.0003311803830322734
+      ]
+    ],
+    "R": 0.008297422448287965,
+    "initial_mean": [
+      0.7346164374861983
+    ],
+    "initial_covariance": [
+      [
+        0.0006896880506667147
+      ]
+    ],
+    "z_mean": [
+      0.027828507505825568,
+      -4.71750114857281e-05,
+      309.151730808783,
+      60.5
+    ],
+    "z_scale": [
+      0.006424930451192458,
+      0.0028746920556683435,
+      0.5971914297550681,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50113.996601760155,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 16.418538199999603,
+    "eigenvalues": [
+      {
+        "real": 0.9949995551257896,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949995551257896,
+    "stability_margin": 0.0050004448742103635,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015893009860552245
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949988831702343
+      ]
+    ],
+    "B": [
+      [
+        0.0017148027796342882,
+        -0.0016028254582908378,
+        -0.0004600715925355749,
+        -0.005117197228035339
+      ]
+    ],
+    "C": [
+      [
+        2.9626100913907423
+      ]
+    ],
+    "D": [
+      [
+        0.0030991958646091056,
+        0.0020261673084930737,
+        -0.005531943671341466,
+        1.2153186235829267
+      ]
+    ],
+    "Q": [
+      [
+        0.00028926502496570857
+      ]
+    ],
+    "R": 0.008404043996549768,
+    "initial_mean": [
+      0.7195432167003468
+    ],
+    "initial_covariance": [
+      [
+        0.0005232586149194196
+      ]
+    ],
+    "z_mean": [
+      0.02776020711424602,
+      -4.8364878951212655e-05,
+      309.14111217412585,
+      60.5
+    ],
+    "z_scale": [
+      0.006370210709027829,
+      0.0028604245500831217,
+      0.602192248396541,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50525.132255724246,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 15.550131599999077,
+    "eigenvalues": [
+      {
+        "real": 0.9949988831702343,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949988831702343,
+    "stability_margin": 0.005001116829765673,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001615824458610009
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949997171708507
+      ]
+    ],
+    "B": [
+      [
+        0.0017164045118934087,
+        -0.0025450479490534807,
+        -0.0002794843363210133,
+        -0.005037988668293408
+      ]
+    ],
+    "C": [
+      [
+        2.8823179426619365
+      ]
+    ],
+    "D": [
+      [
+        0.01013426033891196,
+        0.0015097767175652477,
+        -0.011998782966779142,
+        1.204843075696504
+      ]
+    ],
+    "Q": [
+      [
+        0.00032963051698813007
+      ]
+    ],
+    "R": 0.008180604297405808,
+    "initial_mean": [
+      0.7364330255166535
+    ],
+    "initial_covariance": [
+      [
+        0.0004993706123351815
+      ]
+    ],
+    "z_mean": [
+      0.027788934259574963,
+      -4.622720545615486e-05,
+      309.13460676765123,
+      60.5
+    ],
+    "z_scale": [
+      0.006388434696105454,
+      0.0028902261982973626,
+      0.6046776754995951,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50513.3024217135,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 15.916939000000639,
+    "eigenvalues": [
+      {
+        "real": 0.9949997171708507,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949997171708507,
+    "stability_margin": 0.005000282829149327,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001491615770543721
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949989550209085
+      ]
+    ],
+    "B": [
+      [
+        0.0004238249462766488,
+        -0.0034626592259002138,
+        0.00025070056738198083,
+        -0.00488909557714022
+      ]
+    ],
+    "C": [
+      [
+        2.9443011695827503
+      ]
+    ],
+    "D": [
+      [
+        0.02034184779937015,
+        -0.00028121259486157957,
+        0.08726887920583448,
+        1.272251660859541
+      ]
+    ],
+    "Q": [
+      [
+        0.0002913796635816563
+      ]
+    ],
+    "R": 0.008392078346512993,
+    "initial_mean": [
+      0.7118828288025797
+    ],
+    "initial_covariance": [
+      [
+        0.0005800445952073296
+      ]
+    ],
+    "z_mean": [
+      0.02775649125253748,
+      -4.4444735369323205e-05,
+      309.1442411573587,
+      60.5
+    ],
+    "z_scale": [
+      0.006335709633912472,
+      0.0028713788966040826,
+      0.600841554330956,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50595.80920713957,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 16.043774499999927,
+    "eigenvalues": [
+      {
+        "real": 0.9949989550209085,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949989550209085,
+    "stability_margin": 0.005001044979091485,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00014180699657457592
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949999131103274
+      ]
+    ],
+    "B": [
+      [
+        0.00013243881523858212,
+        -0.0026313662782332897,
+        0.0003683555053102236,
+        -0.004967454139023669
+      ]
+    ],
+    "C": [
+      [
+        2.8987514372949716
+      ]
+    ],
+    "D": [
+      [
+        0.014751696683124427,
+        -4.1743946507244445e-06,
+        0.10772712542089513,
+        1.2740495355235186
+      ]
+    ],
+    "Q": [
+      [
+        0.00031191174542253864
+      ]
+    ],
+    "R": 0.008273813129889378,
+    "initial_mean": [
+      0.7129613053849126
+    ],
+    "initial_covariance": [
+      [
+        0.0007476483398607403
+      ]
+    ],
+    "z_mean": [
+      0.02772007322271831,
+      -4.746384216116001e-05,
+      309.13585219365757,
+      60.5
+    ],
+    "z_scale": [
+      0.006342127858084277,
+      0.0028902236447574227,
+      0.598044073288743,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50575.50871935019,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 15.80359099999987,
+    "eigenvalues": [
+      {
+        "real": 0.9949999131103274,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949999131103274,
+    "stability_margin": 0.0050000868896725725,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001409901560450629
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949998944867603
+      ]
+    ],
+    "B": [
+      [
+        0.001223137349605748,
+        -0.0009466087188145177,
+        -7.672960803463679e-05,
+        -0.004872446934276646
+      ]
+    ],
+    "C": [
+      [
+        2.9298151971863806
+      ]
+    ],
+    "D": [
+      [
+        0.0018190569943046797,
+        0.002107142425461686,
+        0.020482684279014896,
+        1.2095259587934832
+      ]
+    ],
+    "Q": [
+      [
+        0.00029344010515488974
+      ]
+    ],
+    "R": 0.008401879952894686,
+    "initial_mean": [
+      0.7106930055540104
+    ],
+    "initial_covariance": [
+      [
+        0.0004628949869036614
+      ]
+    ],
+    "z_mean": [
+      0.02773294122104162,
+      -4.523844320275826e-05,
+      309.1358128248674,
+      60.5
+    ],
+    "z_scale": [
+      0.0063003697302273865,
+      0.0028620342049038177,
+      0.5997721269198335,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50630.507519833605,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 16.49752769999941,
+    "eigenvalues": [
+      {
+        "real": 0.9949998944867603,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949998944867603,
+    "stability_margin": 0.005000105513239705,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00013897962482433774
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949997279100213
+      ]
+    ],
+    "B": [
+      [
+        0.002126913989024788,
+        -0.0029105236552166027,
+        -0.0005725305984756993,
+        -0.005036274190766486
+      ]
+    ],
+    "C": [
+      [
+        2.9674670686593183
+      ]
+    ],
+    "D": [
+      [
+        0.01057307287752296,
+        0.0016769598138533653,
+        -0.05537931022339104,
+        1.1966758404717162
+      ]
+    ],
+    "Q": [
+      [
+        0.00028917816519238404
+      ]
+    ],
+    "R": 0.008239500529786812,
+    "initial_mean": [
+      0.7311410897007802
+    ],
+    "initial_covariance": [
+      [
+        0.0005540141419034805
+      ]
+    ],
+    "z_mean": [
+      0.02770903821726243,
+      -4.968188093813327e-05,
+      309.12910220114827,
+      60.5
+    ],
+    "z_scale": [
+      0.006426912287958536,
+      0.0029010481195339485,
+      0.609942882870559,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 51007.81352951226,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 15.852089300000443,
+    "eigenvalues": [
+      {
+        "real": 0.9949997279100213,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949997279100213,
+    "stability_margin": 0.0050002720899786635,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00016490424208788148
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949992668834886
+      ]
+    ],
+    "B": [
+      [
+        0.0007654447967924238,
+        -0.0028819821634333085,
+        -7.578441173041449e-06,
+        -0.004965526276986295
+      ]
+    ],
+    "C": [
+      [
+        2.8747641002661264
+      ]
+    ],
+    "D": [
+      [
+        0.014430612711331281,
+        0.0012983166069366753,
+        0.044700827197025506,
+        1.2156104091975468
+      ]
+    ],
+    "Q": [
+      [
+        0.0003175556492227138
+      ]
+    ],
+    "R": 0.008221379073587337,
+    "initial_mean": [
+      0.7165358511020943
+    ],
+    "initial_covariance": [
+      [
+        0.0006001142045217733
+      ]
+    ],
+    "z_mean": [
+      0.027810043946678423,
+      -4.868709087018609e-05,
+      309.14373520825086,
+      60.5
+    ],
+    "z_scale": [
+      0.006442839114307168,
+      0.0029052951681146624,
+      0.6049241210167626,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50771.56866732698,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 16.33840930000042,
+    "eigenvalues": [
+      {
+        "real": 0.9949992668834886,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949992668834886,
+    "stability_margin": 0.005000733116511391,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00014544974893051173
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949997250319939
+      ]
+    ],
+    "B": [
+      [
+        0.0012370213266078116,
+        -0.0022622139966903855,
+        -0.0003595465009174572,
+        -0.005074038777033849
+      ]
+    ],
+    "C": [
+      [
+        2.9426794567031203
+      ]
+    ],
+    "D": [
+      [
+        0.009145850477017353,
+        0.001618826590506467,
+        0.020123688907369486,
+        1.2079074440870077
+      ]
+    ],
+    "Q": [
+      [
+        0.000286560036150376
+      ]
+    ],
+    "R": 0.008414776688611406,
+    "initial_mean": [
+      0.7065346866462978
+    ],
+    "initial_covariance": [
+      [
+        0.00058005837002989
+      ]
+    ],
+    "z_mean": [
+      0.02786687098667141,
+      -5.022060706920245e-05,
+      309.1608203510825,
+      60.5
+    ],
+    "z_scale": [
+      0.006425561297053678,
+      0.00289731624303799,
+      0.6108771703569666,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50691.618182005666,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 16.553464300000996,
+    "eigenvalues": [
+      {
+        "real": 0.9949997250319939,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949997250319939,
+    "stability_margin": 0.0050002749680061465,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015071200557972798
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949997123786967
+      ]
+    ],
+    "B": [
+      [
+        0.0007376839508444008,
+        -0.002643556488928885,
+        0.00017270871448877393,
+        -0.005023436683234754
+      ]
+    ],
+    "C": [
+      [
+        2.8931570409059844
+      ]
+    ],
+    "D": [
+      [
+        0.01465615599375203,
+        0.0011428518941061783,
+        0.07219027037408998,
+        1.253654255774599
+      ]
+    ],
+    "Q": [
+      [
+        0.00031805630120365126
+      ]
+    ],
+    "R": 0.00832221217376678,
+    "initial_mean": [
+      0.7217813164570782
+    ],
+    "initial_covariance": [
+      [
+        0.0006617044356989066
+      ]
+    ],
+    "z_mean": [
+      0.027770904270153045,
+      -4.811884834647507e-05,
+      309.1386172241044,
+      60.5
+    ],
+    "z_scale": [
+      0.006331100100691311,
+      0.0028743235954221255,
+      0.5971640171532833,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50294.98905182717,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 14.280748400000448,
+    "eigenvalues": [
+      {
+        "real": 0.9949997123786967,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949997123786967,
+    "stability_margin": 0.005000287621303334,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00014606813240792424
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949998276254506
+      ]
+    ],
+    "B": [
+      [
+        0.0009989051787183652,
+        -0.002178192679330416,
+        -2.779845893951668e-05,
+        -0.00498228779777469
+      ]
+    ],
+    "C": [
+      [
+        2.924865331239999
+      ]
+    ],
+    "D": [
+      [
+        0.00961986946826579,
+        0.0013275607589621624,
+        0.02976234931300259,
+        1.2313548469132956
+      ]
+    ],
+    "Q": [
+      [
+        0.0003049856296344106
+      ]
+    ],
+    "R": 0.008310518697928475,
+    "initial_mean": [
+      0.7200867978182218
+    ],
+    "initial_covariance": [
+      [
+        0.0005368709768874824
+      ]
+    ],
+    "z_mean": [
+      0.027910046371794155,
+      -4.540696122237775e-05,
+      309.16223555544207,
+      60.5
+    ],
+    "z_scale": [
+      0.006361988201812325,
+      0.002858452552378791,
+      0.5910226089691455,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50559.27790240937,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 15.862831899999946,
+    "eigenvalues": [
+      {
+        "real": 0.9949998276254506,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949998276254506,
+    "stability_margin": 0.005000172374549416,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00014234546593319832
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.994999898380893
+      ]
+    ],
+    "B": [
+      [
+        0.001217337584991268,
+        -0.0016186333051875145,
+        -0.00030749944536118123,
+        -0.005174518212764946
+      ]
+    ],
+    "C": [
+      [
+        2.8616862621567427
+      ]
+    ],
+    "D": [
+      [
+        0.0049221139123397095,
+        0.001883309742321107,
+        0.028341688901391437,
+        1.1989943428046705
+      ]
+    ],
+    "Q": [
+      [
+        0.0003281234219499382
+      ]
+    ],
+    "R": 0.008358989853759541,
+    "initial_mean": [
+      0.717274945098776
+    ],
+    "initial_covariance": [
+      [
+        0.0006177732366606792
+      ]
+    ],
+    "z_mean": [
+      0.027654165844035815,
+      -4.803720247307536e-05,
+      309.122993409887,
+      60.5
+    ],
+    "z_scale": [
+      0.006376179527666008,
+      0.0028816702428291828,
+      0.6172238248749439,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50105.14290649628,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 16.047936900000423,
+    "eigenvalues": [
+      {
+        "real": 0.994999898380893,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.994999898380893,
+    "stability_margin": 0.0050001016191070224,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00014544338204519738
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.994998978815068
+      ]
+    ],
+    "B": [
+      [
+        0.0011317596088338993,
+        -0.0029005408822318623,
+        -0.0001537952638691874,
+        -0.0050953205498159735
+      ]
+    ],
+    "C": [
+      [
+        2.9048654957045947
+      ]
+    ],
+    "D": [
+      [
+        0.01301592642751176,
+        0.0015597545040003657,
+        0.030350843699738173,
+        1.240246972295429
+      ]
+    ],
+    "Q": [
+      [
+        0.00031621256538831707
+      ]
+    ],
+    "R": 0.008293470188843558,
+    "initial_mean": [
+      0.7304247422541357
+    ],
+    "initial_covariance": [
+      [
+        0.0005903968130022141
+      ]
+    ],
+    "z_mean": [
+      0.027863004653815575,
+      -4.841069446094353e-05,
+      309.1592119829868,
+      60.5
+    ],
+    "z_scale": [
+      0.006389135060252899,
+      0.0028856793507201013,
+      0.592492154396999,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50381.762278767856,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 15.674872999999934,
+    "eigenvalues": [
+      {
+        "real": 0.994998978815068,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.994998978815068,
+    "stability_margin": 0.005001021184931953,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001413491762126121
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949996537123242
+      ]
+    ],
+    "B": [
+      [
+        0.0009026538344966024,
+        -0.0012795176993246307,
+        3.1359932418525246e-05,
+        -0.005032440556062137
+      ]
+    ],
+    "C": [
+      [
+        2.875595335158567
+      ]
+    ],
+    "D": [
+      [
+        0.0047909159482212305,
+        0.0016388437567060876,
+        0.04876178632299211,
+        1.2312679497071655
+      ]
+    ],
+    "Q": [
+      [
+        0.00033220093921753426
+      ]
+    ],
+    "R": 0.008267141774315355,
+    "initial_mean": [
+      0.723008371373382
+    ],
+    "initial_covariance": [
+      [
+        0.0005744075529803272
+      ]
+    ],
+    "z_mean": [
+      0.027923332746661582,
+      -4.837515075876056e-05,
+      309.16616641817535,
+      60.5
+    ],
+    "z_scale": [
+      0.006429130339979336,
+      0.002860359664649612,
+      0.606947336030127,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50186.992196362684,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 14.638341500000024,
+    "eigenvalues": [
+      {
+        "real": 0.9949996537123242,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949996537123242,
+    "stability_margin": 0.005000346287675761,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00013774574419053736
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.994999781228734
+      ]
+    ],
+    "B": [
+      [
+        0.00031683905798123046,
+        -0.0014134617668900573,
+        0.00019950764837068106,
+        -0.004998913998981959
+      ]
+    ],
+    "C": [
+      [
+        2.9532507159803
+      ]
+    ],
+    "D": [
+      [
+        0.007555920655895915,
+        0.0008512715537793286,
+        0.08886279507677597,
+        1.2831200794880933
+      ]
+    ],
+    "Q": [
+      [
+        0.0002930219571923978
+      ]
+    ],
+    "R": 0.008399444544408148,
+    "initial_mean": [
+      0.7151908416127624
+    ],
+    "initial_covariance": [
+      [
+        0.0005767303181704042
+      ]
+    ],
+    "z_mean": [
+      0.02788988330177154,
+      -4.8578137157801184e-05,
+      309.16531455668934,
+      60.5
+    ],
+    "z_scale": [
+      0.006505876177503259,
+      0.0029046514270515836,
+      0.5979466191281754,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50462.2964201874,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 15.023402400000123,
+    "eigenvalues": [
+      {
+        "real": 0.994999781228734,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.994999781228734,
+    "stability_margin": 0.005000218771265996,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00014249378332688135
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949998497086615
+      ]
+    ],
+    "B": [
+      [
+        0.0014718119255619285,
+        -0.0016321692948790456,
+        -0.0002114937887873672,
+        -0.005024408940929927
+      ]
+    ],
+    "C": [
+      [
+        2.9460385753557174
+      ]
+    ],
+    "D": [
+      [
+        0.005672167348917401,
+        0.0018523931469779376,
+        -0.0007632386815628056,
+        1.2378457351661991
+      ]
+    ],
+    "Q": [
+      [
+        0.00030332539843406196
+      ]
+    ],
+    "R": 0.008358409250806694,
+    "initial_mean": [
+      0.7335711059693845
+    ],
+    "initial_covariance": [
+      [
+        0.0005478372646301466
+      ]
+    ],
+    "z_mean": [
+      0.027859568390024965,
+      -4.7923760412539456e-05,
+      309.14911423147726,
+      60.5
+    ],
+    "z_scale": [
+      0.006418606424188076,
+      0.0029034710977820224,
+      0.588402531647668,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50316.71759826048,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 15.482519399998637,
+    "eigenvalues": [
+      {
+        "real": 0.9949998497086615,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949998497086615,
+    "stability_margin": 0.00500015029133849,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015286023248982345
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949996242802956
+      ]
+    ],
+    "B": [
+      [
+        0.0009457173908665055,
+        -0.004125505547017659,
+        -7.045648216420295e-05,
+        -0.005084510677102669
+      ]
+    ],
+    "C": [
+      [
+        2.955907319947626
+      ]
+    ],
+    "D": [
+      [
+        0.02304518076142792,
+        0.000775112928084104,
+        0.05382446301103805,
+        1.2752383210195128
+      ]
+    ],
+    "Q": [
+      [
+        0.00030107833428064367
+      ]
+    ],
+    "R": 0.008315709355362438,
+    "initial_mean": [
+      0.7265903376149273
+    ],
+    "initial_covariance": [
+      [
+        0.0006712850525326663
+      ]
+    ],
+    "z_mean": [
+      0.027821655641788196,
+      -4.869719711702999e-05,
+      309.14582334577403,
+      60.5
+    ],
+    "z_scale": [
+      0.0063733413472062865,
+      0.002862547051267184,
+      0.5847968780362663,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50421.64554678702,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 16.261915099999896,
+    "eigenvalues": [
+      {
+        "real": 0.9949996242802956,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949996242802956,
+    "stability_margin": 0.005000375719704353,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015621967736122053
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949988372196221
+      ]
+    ],
+    "B": [
+      [
+        0.0016885279946498885,
+        -0.0026374230616778888,
+        -0.00029480885847436183,
+        -0.004908059665898399
+      ]
+    ],
+    "C": [
+      [
+        2.9227494192426593
+      ]
+    ],
+    "D": [
+      [
+        0.011661657951383991,
+        0.0015604426249425513,
+        -0.026269832722543685,
+        1.1931269516031078
+      ]
+    ],
+    "Q": [
+      [
+        0.00030458836534027686
+      ]
+    ],
+    "R": 0.0083893439037541,
+    "initial_mean": [
+      0.7251882424271323
+    ],
+    "initial_covariance": [
+      [
+        0.0005612866038036124
+      ]
+    ],
+    "z_mean": [
+      0.02785486915302268,
+      -4.8102746363075464e-05,
+      309.1674761441883,
+      60.5
+    ],
+    "z_scale": [
+      0.006356406026042852,
+      0.0028727479002100243,
+      0.5793091299460765,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50330.33279532242,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 17.14861529999871,
+    "eigenvalues": [
+      {
+        "real": 0.9949988372196221,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949988372196221,
+    "stability_margin": 0.005001162780377877,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00016015762037249507
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949997259095504
+      ]
+    ],
+    "B": [
+      [
+        0.0014535632229561604,
+        -0.0024106347130930738,
+        -0.00031740696399502243,
+        -0.0050578932107387745
+      ]
+    ],
+    "C": [
+      [
+        2.942032077426905
+      ]
+    ],
+    "D": [
+      [
+        0.01033425577428665,
+        0.0008896190602378784,
+        -0.00011130385793434172,
+        1.2245461209166006
+      ]
+    ],
+    "Q": [
+      [
+        0.0002998799410632258
+      ]
+    ],
+    "R": 0.008298289632663202,
+    "initial_mean": [
+      0.7268666594938816
+    ],
+    "initial_covariance": [
+      [
+        0.0005554012920711004
+      ]
+    ],
+    "z_mean": [
+      0.02767537060434033,
+      -4.3897205054154304e-05,
+      309.1194104676837,
+      60.5
+    ],
+    "z_scale": [
+      0.006449375268823084,
+      0.0028897167433817503,
+      0.6141843812287622,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50640.2767849198,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 16.609172799999214,
+    "eigenvalues": [
+      {
+        "real": 0.9949997259095504,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949997259095504,
+    "stability_margin": 0.0050002740904495635,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015730838992301731
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949999802292017
+      ]
+    ],
+    "B": [
+      [
+        0.0017759143487723953,
+        -0.002857190708601208,
+        -0.0003358536751651749,
+        -0.004979060960604619
+      ]
+    ],
+    "C": [
+      [
+        2.883333000985912
+      ]
+    ],
+    "D": [
+      [
+        0.01159147934460153,
+        0.002395048850031889,
+        -0.017088263183983043,
+        1.18520990549519
+      ]
+    ],
+    "Q": [
+      [
+        0.0003229636065350692
+      ]
+    ],
+    "R": 0.008312566246114633,
+    "initial_mean": [
+      0.7272447761397959
+    ],
+    "initial_covariance": [
+      [
+        0.0005831633761905763
+      ]
+    ],
+    "z_mean": [
+      0.02776788759902808,
+      -5.1338131077818794e-05,
+      309.14870923047044,
+      60.5
+    ],
+    "z_scale": [
+      0.006376044269058815,
+      0.002892416042429527,
+      0.5921583977954644,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50265.71806803776,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 18.262976100000742,
+    "eigenvalues": [
+      {
+        "real": 0.9949999802292017,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949999802292017,
+    "stability_margin": 0.005000019770798336,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001562550771725312
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949997857181722
+      ]
+    ],
+    "B": [
+      [
+        0.0016572633820598909,
+        -0.002160149139164584,
+        -0.0003746182249949897,
+        -0.005298116846881002
+      ]
+    ],
+    "C": [
+      [
+        2.856255769986321
+      ]
+    ],
+    "D": [
+      [
+        0.00825750607502318,
+        0.0014760800667978774,
+        -0.005229977280015952,
+        1.2180635574984326
+      ]
+    ],
+    "Q": [
+      [
+        0.0003502940971637919
+      ]
+    ],
+    "R": 0.008131647637549679,
+    "initial_mean": [
+      0.7477752446644242
+    ],
+    "initial_covariance": [
+      [
+        0.0005600623468214883
+      ]
+    ],
+    "z_mean": [
+      0.027728548751258693,
+      -4.433458720084843e-05,
+      309.119113032988,
+      60.5
+    ],
+    "z_scale": [
+      0.0063990547041553455,
+      0.0028421439537827955,
+      0.5995060983341364,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50224.5364368006,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 18.70229180000024,
+    "eigenvalues": [
+      {
+        "real": 0.9949997857181722,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949997857181722,
+    "stability_margin": 0.005000214281827842,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015324167256818174
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949999386752116
+      ]
+    ],
+    "B": [
+      [
+        0.0007675338635325399,
+        -0.0035387434526512975,
+        -9.042986411359296e-05,
+        -0.00524135195778262
+      ]
+    ],
+    "C": [
+      [
+        2.895456380068317
+      ]
+    ],
+    "D": [
+      [
+        0.019531098155220056,
+        0.00028892446398651184,
+        0.06752827395838357,
+        1.2605966590705082
+      ]
+    ],
+    "Q": [
+      [
+        0.0003287925100295918
+      ]
+    ],
+    "R": 0.008356985671243617,
+    "initial_mean": [
+      0.7286006222768125
+    ],
+    "initial_covariance": [
+      [
+        0.0005778736734407541
+      ]
+    ],
+    "z_mean": [
+      0.02790654080550522,
+      -4.990466247719346e-05,
+      309.16970701415596,
+      60.5
+    ],
+    "z_scale": [
+      0.006431136178026033,
+      0.002877052874463872,
+      0.6081050747132225,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 49870.35372151145,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 18.673993500000506,
+    "eigenvalues": [
+      {
+        "real": 0.9949999386752116,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949999386752116,
+    "stability_margin": 0.005000061324788363,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015329851873928214
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949992168310066
+      ]
+    ],
+    "B": [
+      [
+        0.0006213602902066284,
+        -0.0014229644214640218,
+        0.00016362511892659753,
+        -0.004980618702892021
+      ]
+    ],
+    "C": [
+      [
+        2.937790148660226
+      ]
+    ],
+    "D": [
+      [
+        0.008652983568280037,
+        7.184665367190868e-05,
+        0.06431424564253829,
+        1.2761625921088537
+      ]
+    ],
+    "Q": [
+      [
+        0.00030614644681969385
+      ]
+    ],
+    "R": 0.008283500276666017,
+    "initial_mean": [
+      0.7285516034273677
+    ],
+    "initial_covariance": [
+      [
+        0.0006163351749038926
+      ]
+    ],
+    "z_mean": [
+      0.027825841851736713,
+      -4.808108509433476e-05,
+      309.1498509770768,
+      60.5
+    ],
+    "z_scale": [
+      0.006430628666562969,
+      0.0028703920901009374,
+      0.6112414625177037,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50497.188780340424,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 19.455839500000366,
+    "eigenvalues": [
+      {
+        "real": 0.9949992168310066,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949992168310066,
+    "stability_margin": 0.005000783168993439,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001447151778809943
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949996711035243
+      ]
+    ],
+    "B": [
+      [
+        0.0009321522766285676,
+        -0.0027746557541134236,
+        -6.481658806660736e-05,
+        -0.0049714688352722036
+      ]
+    ],
+    "C": [
+      [
+        2.954083828640817
+      ]
+    ],
+    "D": [
+      [
+        0.014489866834189957,
+        0.0008551101355909058,
+        0.042148243247285055,
+        1.247556406865617
+      ]
+    ],
+    "Q": [
+      [
+        0.0002915284908809523
+      ]
+    ],
+    "R": 0.008311758056073612,
+    "initial_mean": [
+      0.7161768701427756
+    ],
+    "initial_covariance": [
+      [
+        0.0006162274977451476
+      ]
+    ],
+    "z_mean": [
+      0.027897226470100584,
+      -4.8810017372384695e-05,
+      309.1574122933107,
+      60.5
+    ],
+    "z_scale": [
+      0.006433735820156191,
+      0.0028682379860564622,
+      0.5937007186756987,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50769.98720946158,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 18.89047810000011,
+    "eigenvalues": [
+      {
+        "real": 0.9949996711035243,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949996711035243,
+    "stability_margin": 0.005000328896475725,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001442847029122758
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949984025593747
+      ]
+    ],
+    "B": [
+      [
+        0.001061725553048153,
+        -0.0014442207030860913,
+        -0.0001681178050995329,
+        -0.00494912639543874
+      ]
+    ],
+    "C": [
+      [
+        2.912273059871442
+      ]
+    ],
+    "D": [
+      [
+        0.005177542568198301,
+        0.0014901512344390466,
+        0.01888575575439866,
+        1.2072072692522393
+      ]
+    ],
+    "Q": [
+      [
+        0.00030053003246630853
+      ]
+    ],
+    "R": 0.008266165422371867,
+    "initial_mean": [
+      0.7130698950696789
+    ],
+    "initial_covariance": [
+      [
+        0.0005775629431954421
+      ]
+    ],
+    "z_mean": [
+      0.027937183965442244,
+      -4.900885709843945e-05,
+      309.1729539007324,
+      60.5
+    ],
+    "z_scale": [
+      0.006497886059971411,
+      0.0029144067419292308,
+      0.5934734555747063,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50911.51262142699,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 18.85723870000038,
+    "eigenvalues": [
+      {
+        "real": 0.9949984025593747,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949984025593747,
+    "stability_margin": 0.005001597440625338,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00014188519858135748
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.994999638444947
+      ]
+    ],
+    "B": [
+      [
+        0.0011726726633002145,
+        -0.0027850725500241026,
+        -0.00011230877439158913,
+        -0.0049153344601839824
+      ]
+    ],
+    "C": [
+      [
+        2.913510491957419
+      ]
+    ],
+    "D": [
+      [
+        0.012889684907121612,
+        0.0016046723661807955,
+        0.017728360591682257,
+        1.2177269630532255
+      ]
+    ],
+    "Q": [
+      [
+        0.0003060697286278652
+      ]
+    ],
+    "R": 0.008388103184172198,
+    "initial_mean": [
+      0.7209030513952693
+    ],
+    "initial_covariance": [
+      [
+        0.0005705599694524333
+      ]
+    ],
+    "z_mean": [
+      0.02782191829319115,
+      -5.011079779881873e-05,
+      309.15096872458616,
+      60.5
+    ],
+    "z_scale": [
+      0.0064073125788129195,
+      0.002907098847833538,
+      0.5924082448693487,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50347.09463907789,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 17.562175400000342,
+    "eigenvalues": [
+      {
+        "real": 0.994999638444947,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.994999638444947,
+    "stability_margin": 0.005000361555053012,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00014775173541403734
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949996664425088
+      ]
+    ],
+    "B": [
+      [
+        0.0018837514933007643,
+        -0.002347455691286456,
+        -0.0003157221382851316,
+        -0.005069365789386415
+      ]
+    ],
+    "C": [
+      [
+        2.8979531013413906
+      ]
+    ],
+    "D": [
+      [
+        0.007595866786065886,
+        0.002029531790141745,
+        -0.029479137121600107,
+        1.2044230005161198
+      ]
+    ],
+    "Q": [
+      [
+        0.0003256930884925255
+      ]
+    ],
+    "R": 0.008305831168551069,
+    "initial_mean": [
+      0.742761469827129
+    ],
+    "initial_covariance": [
+      [
+        0.0006865559127056109
+      ]
+    ],
+    "z_mean": [
+      0.02761573653513426,
+      -4.916139593449794e-05,
+      309.11531262133184,
+      60.5
+    ],
+    "z_scale": [
+      0.00645363659697166,
+      0.002907961282569878,
+      0.60957310446977,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50074.4091520663,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 17.28288800000155,
+    "eigenvalues": [
+      {
+        "real": 0.9949996664425088,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949996664425088,
+    "stability_margin": 0.005000333557491188,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015621176719907948
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949990011811463
+      ]
+    ],
+    "B": [
+      [
+        0.0007868367702746745,
+        -0.003115909578393262,
+        5.9009382006470575e-05,
+        -0.005019668061511519
+      ]
+    ],
+    "C": [
+      [
+        2.990898257806269
+      ]
+    ],
+    "D": [
+      [
+        0.01657877058423729,
+        0.001537508401900478,
+        0.058040971575553435,
+        1.2943360599680325
+      ]
+    ],
+    "Q": [
+      [
+        0.0002850754409714797
+      ]
+    ],
+    "R": 0.008403624608381101,
+    "initial_mean": [
+      0.7286045685416633
+    ],
+    "initial_covariance": [
+      [
+        0.000608325678703725
+      ]
+    ],
+    "z_mean": [
+      0.027613212788496964,
+      -4.810990009648787e-05,
+      309.10428895970614,
+      60.5
+    ],
+    "z_scale": [
+      0.006469491571968727,
+      0.0029133386560743994,
+      0.6207011041045077,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50455.961300491355,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 17.170731300000625,
+    "eigenvalues": [
+      {
+        "real": 0.9949990011811463,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949990011811463,
+    "stability_margin": 0.005000998818853741,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015172647648339655
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949995442207928
+      ]
+    ],
+    "B": [
+      [
+        0.001305118679970788,
+        -0.002385757354629045,
+        -0.00010274318139159235,
+        -0.004821682470745329
+      ]
+    ],
+    "C": [
+      [
+        2.8591048088944295
+      ]
+    ],
+    "D": [
+      [
+        0.010170334074291687,
+        0.0020231840345710517,
+        0.007865570669194355,
+        1.1811709168259923
+      ]
+    ],
+    "Q": [
+      [
+        0.00032355042981784086
+      ]
+    ],
+    "R": 0.008291935359964555,
+    "initial_mean": [
+      0.7176734480245689
+    ],
+    "initial_covariance": [
+      [
+        0.0005758560198476648
+      ]
+    ],
+    "z_mean": [
+      0.02769763355195923,
+      -4.69934076488169e-05,
+      309.1303938906237,
+      60.5
+    ],
+    "z_scale": [
+      0.006472293497455105,
+      0.0029117675822623507,
+      0.6006679946488834,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50481.43276274722,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 17.45426899999984,
+    "eigenvalues": [
+      {
+        "real": 0.9949995442207928,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949995442207928,
+    "stability_margin": 0.005000455779207158,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001379690183678308
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.994999293488379
+      ]
+    ],
+    "B": [
+      [
+        0.0006297291995074586,
+        -0.0030407248184708877,
+        0.00011297193693911027,
+        -0.004969182553346118
+      ]
+    ],
+    "C": [
+      [
+        2.8845658202309212
+      ]
+    ],
+    "D": [
+      [
+        0.016462379964680307,
+        0.0014932520028836521,
+        0.06611649556193777,
+        1.2453476522400093
+      ]
+    ],
+    "Q": [
+      [
+        0.00032309370826242076
+      ]
+    ],
+    "R": 0.008272860635771293,
+    "initial_mean": [
+      0.7209448545638286
+    ],
+    "initial_covariance": [
+      [
+        0.0006362330539602112
+      ]
+    ],
+    "z_mean": [
+      0.027862257634740026,
+      -4.9314936704425575e-05,
+      309.15790592972775,
+      60.5
+    ],
+    "z_scale": [
+      0.006358987407151515,
+      0.0028552608327133133,
+      0.5934253227269849,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50362.60736121617,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 17.462098399999377,
+    "eigenvalues": [
+      {
+        "real": 0.994999293488379,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.994999293488379,
+    "stability_margin": 0.005000706511620989,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00014394660155950874
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.994999918811899
+      ]
+    ],
+    "B": [
+      [
+        0.0010450126460355424,
+        -0.002348118825363778,
+        -0.00014956581419595184,
+        -0.005039439731289678
+      ]
+    ],
+    "C": [
+      [
+        2.909829007456386
+      ]
+    ],
+    "D": [
+      [
+        0.012726227197738998,
+        0.0009746573527630031,
+        0.03320279711760388,
+        1.2312308716606346
+      ]
+    ],
+    "Q": [
+      [
+        0.00031088574699299665
+      ]
+    ],
+    "R": 0.008216188962430654,
+    "initial_mean": [
+      0.7219404615177893
+    ],
+    "initial_covariance": [
+      [
+        0.0005592286407539726
+      ]
+    ],
+    "z_mean": [
+      0.02791158003795064,
+      -4.825895153904124e-05,
+      309.16742825351196,
+      60.5
+    ],
+    "z_scale": [
+      0.006328522143359335,
+      0.002862425975623199,
+      0.5937770003863923,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50767.20900149743,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 17.24460160000126,
+    "eigenvalues": [
+      {
+        "real": 0.994999918811899,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.994999918811899,
+    "stability_margin": 0.005000081188101024,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00014620733629626943
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949995069153978
+      ]
+    ],
+    "B": [
+      [
+        0.001819356774401513,
+        -0.0029885885651525883,
+        -0.0004420924084757406,
+        -0.0052058076205237
+      ]
+    ],
+    "C": [
+      [
+        2.8809432679277958
+      ]
+    ],
+    "D": [
+      [
+        0.013115119390607943,
+        0.0011164490898769447,
+        -0.019608048337955708,
+        1.198941682374443
+      ]
+    ],
+    "Q": [
+      [
+        0.0003335119584840124
+      ]
+    ],
+    "R": 0.008225838830211918,
+    "initial_mean": [
+      0.7373692638864573
+    ],
+    "initial_covariance": [
+      [
+        0.0006007803293920366
+      ]
+    ],
+    "z_mean": [
+      0.027911480078467353,
+      -4.7653923923529696e-05,
+      309.17655793584066,
+      60.5
+    ],
+    "z_scale": [
+      0.006383641397352349,
+      0.0028706025777072964,
+      0.5941567187162984,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50233.28218066144,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 17.20732450000105,
+    "eigenvalues": [
+      {
+        "real": 0.9949995069153978,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949995069153978,
+    "stability_margin": 0.005000493084602153,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00016308759154979647
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.99499968005666
+      ]
+    ],
+    "B": [
+      [
+        0.0012898427186477546,
+        -0.0014476585192746785,
+        -0.00013450296678642183,
+        -0.0049230538042746574
+      ]
+    ],
+    "C": [
+      [
+        2.908655466813382
+      ]
+    ],
+    "D": [
+      [
+        0.00524570800507812,
+        0.001361044420894686,
+        0.006335693649281993,
+        1.1873459440478267
+      ]
+    ],
+    "Q": [
+      [
+        0.00030127368247086255
+      ]
+    ],
+    "R": 0.008386601171578351,
+    "initial_mean": [
+      0.7081778487429944
+    ],
+    "initial_covariance": [
+      [
+        0.0005535173482513756
+      ]
+    ],
+    "z_mean": [
+      0.027723663838100834,
+      -4.816649872563091e-05,
+      309.1361346732275,
+      60.5
+    ],
+    "z_scale": [
+      0.006368977627559988,
+      0.0028794508919694644,
+      0.6037766013914598,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50539.358246856405,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 18.161341500001072,
+    "eigenvalues": [
+      {
+        "real": 0.99499968005666,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.99499968005666,
+    "stability_margin": 0.005000319943340048,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001497914505854336
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949992152462885
+      ]
+    ],
+    "B": [
+      [
+        0.001698972644234427,
+        -0.002932855538791578,
+        -0.00047045119039075046,
+        -0.005156689836490583
+      ]
+    ],
+    "C": [
+      [
+        2.8696241633398376
+      ]
+    ],
+    "D": [
+      [
+        0.01146950530032298,
+        0.0017721291982840115,
+        -0.007159862423653074,
+        1.1855376223179899
+      ]
+    ],
+    "Q": [
+      [
+        0.0003293070813858986
+      ]
+    ],
+    "R": 0.008321004001842488,
+    "initial_mean": [
+      0.7256027551118287
+    ],
+    "initial_covariance": [
+      [
+        0.000560732289627941
+      ]
+    ],
+    "z_mean": [
+      0.02772447440057268,
+      -4.7699316016288995e-05,
+      309.1271407289863,
+      60.5
+    ],
+    "z_scale": [
+      0.006391434031932704,
+      0.0028747224687697063,
+      0.604807173121773,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50150.22872281278,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 26.549894499999937,
+    "eigenvalues": [
+      {
+        "real": 0.9949992152462885,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949992152462885,
+    "stability_margin": 0.0050007847537114625,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015562036506264375
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949994078990817
+      ]
+    ],
+    "B": [
+      [
+        0.0013627539922347798,
+        -0.0023286692347132916,
+        -0.00024801733988876466,
+        -0.004843804607285829
+      ]
+    ],
+    "C": [
+      [
+        2.930519950204732
+      ]
+    ],
+    "D": [
+      [
+        0.009533693024212475,
+        0.0008844377572469198,
+        -0.010450659978427979,
+        1.1958105967432735
+      ]
+    ],
+    "Q": [
+      [
+        0.00029480757609523175
+      ]
+    ],
+    "R": 0.008378594274052981,
+    "initial_mean": [
+      0.7168027437826088
+    ],
+    "initial_covariance": [
+      [
+        0.0004625753448634917
+      ]
+    ],
+    "z_mean": [
+      0.02783555621081484,
+      -4.6429831778567286e-05,
+      309.14821088032505,
+      60.5
+    ],
+    "z_scale": [
+      0.0064013481130959825,
+      0.002877736013988122,
+      0.5980322452612415,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50655.51071891282,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 27.91002060000028,
+    "eigenvalues": [
+      {
+        "real": 0.9949994078990817,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949994078990817,
+    "stability_margin": 0.0050005921009183,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00016174753767160224
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949995151687464
+      ]
+    ],
+    "B": [
+      [
+        0.0008460164802031222,
+        -0.0024901002019761392,
+        4.71480288988796e-05,
+        -0.005001765273327906
+      ]
+    ],
+    "C": [
+      [
+        2.8716866974457917
+      ]
+    ],
+    "D": [
+      [
+        0.014177536477377961,
+        0.0007149781266270472,
+        0.045174491841673214,
+        1.2423902333294297
+      ]
+    ],
+    "Q": [
+      [
+        0.00033562496840395476
+      ]
+    ],
+    "R": 0.008169264015248498,
+    "initial_mean": [
+      0.7329122059994002
+    ],
+    "initial_covariance": [
+      [
+        0.0005537931847541255
+      ]
+    ],
+    "z_mean": [
+      0.027841870702023385,
+      -4.662349766978314e-05,
+      309.1572550515981,
+      60.5
+    ],
+    "z_scale": [
+      0.006398890408272329,
+      0.0028195725482264176,
+      0.6058329326380835,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50427.62363977542,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 29.94815329999983,
+    "eigenvalues": [
+      {
+        "real": 0.9949995151687464,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949995151687464,
+    "stability_margin": 0.005000484831253593,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001413096277777485
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949997432198061
+      ]
+    ],
+    "B": [
+      [
+        0.0009667902423012562,
+        -0.003320847784925767,
+        -0.00010692088671767686,
+        -0.00498960825219765
+      ]
+    ],
+    "C": [
+      [
+        2.9464186846021096
+      ]
+    ],
+    "D": [
+      [
+        0.017688734735102518,
+        0.0007766575806550796,
+        0.03660878489960839,
+        1.2407630379372172
+      ]
+    ],
+    "Q": [
+      [
+        0.00029524893275843946
+      ]
+    ],
+    "R": 0.008402981178425964,
+    "initial_mean": [
+      0.7160768841701158
+    ],
+    "initial_covariance": [
+      [
+        0.00046194952026334946
+      ]
+    ],
+    "z_mean": [
+      0.02774045766853936,
+      -4.8532594357446095e-05,
+      309.13130521127295,
+      60.5
+    ],
+    "z_scale": [
+      0.006378393892134225,
+      0.002855860905991059,
+      0.6062607256138138,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50461.377970502035,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 32.210404200000994,
+    "eigenvalues": [
+      {
+        "real": 0.9949997432198061,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949997432198061,
+    "stability_margin": 0.00500025678019389,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001530914512481852
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949997297812483
+      ]
+    ],
+    "B": [
+      [
+        0.0010692435329984881,
+        -0.003022087142071922,
+        -0.00020051305358274017,
+        -0.005186437449857454
+      ]
+    ],
+    "C": [
+      [
+        2.926543934714941
+      ]
+    ],
+    "D": [
+      [
+        0.01411434404079312,
+        0.001524166713950656,
+        0.045963377437455044,
+        1.251144043034405
+      ]
+    ],
+    "Q": [
+      [
+        0.0003073069943243596
+      ]
+    ],
+    "R": 0.008390149490009612,
+    "initial_mean": [
+      0.7246264696468699
+    ],
+    "initial_covariance": [
+      [
+        0.0005947718412524505
+      ]
+    ],
+    "z_mean": [
+      0.027759841273731416,
+      -4.7476221160440734e-05,
+      309.153800439306,
+      60.5
+    ],
+    "z_scale": [
+      0.006473879550259174,
+      0.002908782499215285,
+      0.6101203433700078,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50208.06521577405,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 30.439301200000045,
+    "eigenvalues": [
+      {
+        "real": 0.9949997297812483,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949997297812483,
+    "stability_margin": 0.005000270218751712,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015040874881988976
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949993054702927
+      ]
+    ],
+    "B": [
+      [
+        0.001631138306847887,
+        -0.0027653368421964894,
+        -0.00038854494229830194,
+        -0.005111971164594994
+      ]
+    ],
+    "C": [
+      [
+        2.950470123288126
+      ]
+    ],
+    "D": [
+      [
+        0.01200379587674183,
+        0.00198821521490479,
+        -0.009826374816898076,
+        1.218997193233998
+      ]
+    ],
+    "Q": [
+      [
+        0.00029778643871793044
+      ]
+    ],
+    "R": 0.008373199468434905,
+    "initial_mean": [
+      0.7257629164065238
+    ],
+    "initial_covariance": [
+      [
+        0.0005421847659298207
+      ]
+    ],
+    "z_mean": [
+      0.027790889502364566,
+      -4.599376978188754e-05,
+      309.14534841895295,
+      60.5
+    ],
+    "z_scale": [
+      0.0064667283386640245,
+      0.0029343359838418,
+      0.5917169437482487,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50419.720918111285,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 31.41675380000015,
+    "eigenvalues": [
+      {
+        "real": 0.9949993054702927,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949993054702927,
+    "stability_margin": 0.005000694529707306,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001555137742299532
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949992120173844
+      ]
+    ],
+    "B": [
+      [
+        0.0012897661617805453,
+        -0.0017388581696831267,
+        -0.00013988954070671644,
+        -0.004963198495102323
+      ]
+    ],
+    "C": [
+      [
+        2.9076751597254473
+      ]
+    ],
+    "D": [
+      [
+        0.005210995197282409,
+        0.0016622170826282728,
+        0.017809616333140932,
+        1.2099106277979939
+      ]
+    ],
+    "Q": [
+      [
+        0.00031166578381364634
+      ]
+    ],
+    "R": 0.008254847306163961,
+    "initial_mean": [
+      0.7183947240587174
+    ],
+    "initial_covariance": [
+      [
+        0.0005733045405861281
+      ]
+    ],
+    "z_mean": [
+      0.02779886253039514,
+      -4.605355957660452e-05,
+      309.1383943699069,
+      60.5
+    ],
+    "z_scale": [
+      0.006419913661342798,
+      0.0028446485769671646,
+      0.610152613508454,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50630.2869000388,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 31.108062900000732,
+    "eigenvalues": [
+      {
+        "real": 0.9949992120173844,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949992120173844,
+    "stability_margin": 0.0050007879826156065,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.0001341708411777798
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949995197372771
+      ]
+    ],
+    "B": [
+      [
+        0.0008505543465424264,
+        -0.0034659129013095333,
+        -6.411938111865289e-05,
+        -0.005061292092822318
+      ]
+    ],
+    "C": [
+      [
+        2.9043529656635085
+      ]
+    ],
+    "D": [
+      [
+        0.019027769343724826,
+        0.0007325277860786156,
+        0.059677902405237404,
+        1.2489636659256065
+      ]
+    ],
+    "Q": [
+      [
+        0.00031502179767591134
+      ]
+    ],
+    "R": 0.008238223123957545,
+    "initial_mean": [
+      0.7209158783415553
+    ],
+    "initial_covariance": [
+      [
+        0.0005737486536671055
+      ]
+    ],
+    "z_mean": [
+      0.02769117067787182,
+      -4.7514107944290204e-05,
+      309.13450775177006,
+      60.5
+    ],
+    "z_scale": [
+      0.006432877699664487,
+      0.002892131589724018,
+      0.5978999211635836,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50601.80882566764,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 30.86159620000035,
+    "eigenvalues": [
+      {
+        "real": 0.9949995197372771,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949995197372771,
+    "stability_margin": 0.005000480262722928,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00015359779623287488
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949995151369658
+      ]
+    ],
+    "B": [
+      [
+        0.0011853860775129805,
+        -0.002607364125674515,
+        -7.772982717480385e-05,
+        -0.00525207399548393
+      ]
+    ],
+    "C": [
+      [
+        2.8738561070143547
+      ]
+    ],
+    "D": [
+      [
+        0.011840819058962643,
+        0.0006263270842900986,
+        0.04169080870571906,
+        1.250103878461164
+      ]
+    ],
+    "Q": [
+      [
+        0.0003396613031300429
+      ]
+    ],
+    "R": 0.008234013997429025,
+    "initial_mean": [
+      0.738544874046904
+    ],
+    "initial_covariance": [
+      [
+        0.0006503390108062446
+      ]
+    ],
+    "z_mean": [
+      0.02781269703353407,
+      -4.458359783994221e-05,
+      309.1514861725851,
+      60.5
+    ],
+    "z_scale": [
+      0.006373397539435945,
+      0.0028772841806799397,
+      0.5965467817967048,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50061.52949037983,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 29.184210299999904,
+    "eigenvalues": [
+      {
+        "real": 0.9949995151369658,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949995151369658,
+    "stability_margin": 0.005000484863034171,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00014717925638951945
+  },
+  {
+    "latent_dimension": 1,
+    "A": [
+      [
+        0.9949997090748853
+      ]
+    ],
+    "B": [
+      [
+        0.0006101316971538642,
+        -0.002757116254734554,
+        7.017310818035952e-05,
+        -0.005051591659717291
+      ]
+    ],
+    "C": [
+      [
+        2.896134449922082
+      ]
+    ],
+    "D": [
+      [
+        0.01475212671818793,
+        0.0007575554653591332,
+        0.05643100423298675,
+        1.2571462012055952
+      ]
+    ],
+    "Q": [
+      [
+        0.0003217346005378601
+      ]
+    ],
+    "R": 0.008161339640488829,
+    "initial_mean": [
+      0.7285384078547306
+    ],
+    "initial_covariance": [
+      [
+        0.0006151393797237947
+      ]
+    ],
+    "z_mean": [
+      0.027756527124370912,
+      -4.607692032745183e-05,
+      309.136245062321,
+      60.5
+    ],
+    "z_scale": [
+      0.006371194681078424,
+      0.002879384170154738,
+      0.5919138681098428,
+      34.63981331743384
+    ],
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "log_likelihood": 50683.04191988573,
+    "iterations": 100,
+    "converged": true,
+    "initialization_seed": 91005,
+    "fit_seconds": 28.35033470000053,
+    "eigenvalues": [
+      {
+        "real": 0.9949997090748853,
+        "imaginary": 0.0
+      }
+    ],
+    "spectral_radius": 0.9949997090748853,
+    "stability_margin": 0.00500029092511467,
+    "stability_parameterization": "diagonal modes a_i=0.995*tanh(theta_i); stable throughout optimization; no clipping",
+    "identifiability_note": "latent coordinates are abstract, nonphysical, and not compared across fitted k",
+    "final_parameter_change": 0.00013891634964853256
+  }
+]

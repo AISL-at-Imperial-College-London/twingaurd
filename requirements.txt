@@ -1,0 +1,7 @@
+# Runtime dependencies (detected from imports). Lower bounds follow the development
+# repository; exact versions used for the frozen results were not recorded.
+numpy>=1.24
+scipy>=1.10
+matplotlib>=3.7
+# Tests
+pytest>=7.0

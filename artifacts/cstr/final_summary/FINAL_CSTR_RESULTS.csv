@@ -1,0 +1,26 @@
+result_id,research_question,evidence_stage,population,n,metric,estimate,ci_95_lower,ci_95_upper,units,interpretation,source_artifact
+R01,RQ1,Milestone A,single UA-fouling trajectory,1,postfault residual lag-1 autocorrelation,0.959,,,correlation,Post-fault discrepancy is structured rather than white noise,results/milestone_a/README.md
+R02,RQ1,Milestone A,single UA-fouling trajectory,1,static-residual 95% pointwise coverage,0.017,,,fraction,A constant residual does not track evolving post-fault mismatch,results/milestone_a/README.md
+R03,RQ2,Milestone B,held-out actions at N=100,,static residual rollout RMSE,1.0096,,,K,Static correction improves the nominal DT but remains inadequate,results/milestone_b/README.md
+R04,RQ2,Milestone B,held-out actions at N=100,,dynamic residual rollout RMSE,0.1747,,,K,Residual dynamics are predictive on the developmental action split,results/milestone_b/README.md
+R05,RQ2,Milestone B.8,final assessment,240,observable-conditioned F1 median recursive RMSE,2.582,,,K,Observable conditioning helps but leaves strong temporal dependence,results/milestone_b8/README.md
+R06,RQ2,Milestone B.9,final assessment,240,latent k=1 median recursive RMSE,0.679708,,,K,Fault-blind latent inference substantially improves counterfactual means,results/milestone_b9/final_assessment_summary.csv
+R07,RQ3,Milestone B.10,final assessment,240,raw U0 95% simultaneous coverage,0.525,,,fraction,Raw latent uncertainty is strongly under-calibrated,results/milestone_b10/calibration_summary.csv
+R08,RQ3,Milestone B.11,final assessment,240,U3 parameter-ensemble 95% simultaneous coverage,0.616667,,,fraction,Parameter uncertainty helps but does not solve calibration,results/milestone_b11/calibration_summary.csv
+R09,RQ3,Milestone B.12,final conformal test,500,B2 95% simultaneous coverage,0.934,0.908761,0.952621,fraction,Pooled episode-level conformalization restores useful marginal coverage,results/milestone_b12/coverage_summary.csv
+R10,RQ3,Milestone B.12,final conformal test,500,B2 mean trajectory width,3.537725,,,K,Coverage is obtained with measurable but finite inflation,results/milestone_b12/sharpness_summary.csv
+R11,RQ4,Milestone C1,UA-fouling final test,1000,nominal-DT joint false-safe probability,0.394,0.364176,0.424636,fraction,Uncorrected nominal rollouts are unsafe as certificates,results/milestone_c1/safety_summary.csv
+R12,RQ4,Milestone C1,UA-fouling final test,1000,proposed joint false-safe probability,0.0,0.0,0.003827,fraction,No false-safe event was observed in the frozen single-fault test,results/milestone_c1/safety_summary.csv
+R13,RQ4,Milestone C1,UA-fouling final test,1000,SAFE certification rate,0.338,,,fraction,The safety layer is selective rather than universally permissive,results/milestone_c1/safety_summary.csv
+R14,RQ4,Milestone C1,UA-fouling final test,1000,upper trajectory coverage,0.957,,,fraction,Upper-envelope behavior is strong at the pooled population level,results/milestone_c1/safety_summary.csv
+R15,RQ4,Milestone C1,UA-fouling final test,1000,lower trajectory coverage,0.928,,,fraction,Lower-envelope evidence is weaker and does not validate strong UNSAFE claims,results/milestone_c1/safety_summary.csv
+R16,RQ4,Milestone C1.5A,interpolation subgroup,334,upper trajectory coverage,0.916,,,fraction,Interpolation abstention accompanies subgroup undercoverage,results/milestone_c1_5a/AUDIT_VERDICT.md
+R17,RQ5,Milestone C1.5C,K=1 screening states,56,conditional screening success,0.714286,0.585247,0.815812,fraction,One candidate often misses a certifiable option,results/milestone_c15c/SCREENING_SUMMARY.csv
+R18,RQ5,Milestone C1.5C,K=20 screening states,100,conditional screening success,1.0,0.963007,1.0,fraction,Nested multi-action screening found a certified option whenever a safe option existed,results/milestone_c15c/SCREENING_SUMMARY.csv
+R19,RQ5,Milestone C1.5C,K=20 screened actions,2000,false-safe certified actions,0,,,count,Expanded screening introduced no observed false-safe action,results/milestone_c15c/SCREENING_SUMMARY.csv
+R20,RQ4,Milestone C1.6B,multi-fault final test,600,nominal-DT joint false-safe probability,0.441667,0.402428,0.481647,fraction,Nominal safety failure persists across two fault mechanisms,results/milestone_c16b/MULTIFAULT_SUMMARY.csv
+R21,RQ4,Milestone C1.6B,multi-fault final test,600,proposed joint false-safe probability,0.0,0.0,0.006362,fraction,No false-safe event was observed after multi-fault refitting and calibration,results/milestone_c16b/MULTIFAULT_SUMMARY.csv
+R22,RQ4,Milestone C1.6B,multi-fault final test,600,SAFE certification rate,0.235,,,fraction,Fault diversity reduces certification relative to original C1,results/milestone_c16b/MULTIFAULT_SUMMARY.csv
+R23,RQ4,Milestone C1.6B,multi-fault final test,600,upper trajectory coverage,0.948333,,,fraction,Pooled multi-fault coverage remains near nominal,results/milestone_c16b/MULTIFAULT_SUMMARY.csv
+R24,RQ4,Milestone C1.6B,high-severity UA subgroup,100,upper trajectory coverage,0.85,,,fraction,High-severity UA undercoverage persists,results/milestone_c16b/SEVERITY_RESULTS.csv
+R25,RQ4,Milestone C1.6B,high-severity feed-temperature subgroup,100,upper trajectory coverage,0.84,,,fraction,Conditional undercoverage also appears for the added fault,results/milestone_c16b/SEVERITY_RESULTS.csv

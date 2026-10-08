@@ -1,0 +1,21 @@
+runtime_type,latent_dimension,initialization_seed,action_category,N_postfault,seconds,notes
+offline_fit,1,91001,,,227.7868661999819,15 EM iterations; converged=False; loglik=52242.06623931643
+offline_fit,1,91002,,,226.10784079995938,15 EM iterations; converged=False; loglik=51380.71149567008
+offline_fit,2,91001,,,276.3078215000569,15 EM iterations; converged=False; loglik=53028.64613553841
+offline_fit,2,91002,,,280.6267971000052,15 EM iterations; converged=False; loglik=52990.169256738656
+offline_fit,3,91001,,,307.5524010999943,15 EM iterations; converged=False; loglik=53210.22075325422
+offline_fit,3,91002,,,309.9308965000091,15 EM iterations; converged=False; loglik=53220.23360149806
+offline_fit,4,91001,,,327.9032913999981,15 EM iterations; converged=False; loglik=52820.632850596085
+offline_fit,4,91002,,,328.3730863999808,15 EM iterations; converged=False; loglik=51605.74845479883
+online_filter_N50,1,,interpolation,50,0.003729700023541227,median per episode
+analytical_propagation_H240,1,,interpolation,50,0.009765550028532743,median per episode
+monte_carlo_2000_trajectories,1,,interpolation,50,0.03277609997894615,coherent state/process/observation sampling
+online_filter_N50,1,,boundary,50,0.004208750004181638,median per episode
+analytical_propagation_H240,1,,boundary,50,0.010138200013898313,median per episode
+monte_carlo_2000_trajectories,1,,boundary,50,0.03344164998270571,coherent state/process/observation sampling
+online_filter_N50,1,,extrapolation,50,0.003963349969126284,median per episode
+analytical_propagation_H240,1,,extrapolation,50,0.009947249985998496,median per episode
+monte_carlo_2000_trajectories,1,,extrapolation,50,0.03365050000138581,coherent state/process/observation sampling
+online_filter_N50,1,,pooled,50,0.003995200007921085,median per episode
+analytical_propagation_H240,1,,pooled,50,0.009968600032152608,median per episode
+monte_carlo_2000_trajectories,1,,pooled,50,0.03327734998310916,coherent state/process/observation sampling

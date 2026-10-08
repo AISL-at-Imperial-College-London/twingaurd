@@ -1,0 +1,3 @@
+fault_mechanism,N,actual_unsafe_fraction,nominal_DT_joint_false_safe_probability,proposed_method_SAFE_rate,proposed_method_false_safe_count,upper_envelope_coverage,median_conformal_width_k,median_prediction_RMSE_k,pooled_q_plus,formal_subgroup_guarantee_claimed
+ua_fouling,300,0.45,0.45,0.2866666666666667,0,0.95,4.113192318275722,0.9528420667606925,6.678568221034516,0
+feed_temperature_step,300,0.43333333333333335,0.43333333333333335,0.18333333333333332,0,0.9466666666666667,4.111944212240999,0.8614003591712933,6.678568221034516,0

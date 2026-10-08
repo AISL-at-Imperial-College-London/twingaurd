@@ -1,0 +1,55 @@
+{
+  "configuration": {
+    "output_dir": "results/milestone_c16b",
+    "training_count": 600,
+    "selection_count": 60,
+    "calibration_count": 400,
+    "final_count": 600,
+    "training_steps": 120,
+    "trajectories": 2000,
+    "bootstrap_target": 50,
+    "ensemble_size": 10,
+    "workers": 4
+  },
+  "method": {
+    "latent_dimension": 1,
+    "feature_names": [
+      "u_t",
+      "delta_u_t",
+      "y_dt_t",
+      "elapsed_since_detection_s"
+    ],
+    "bootstrap_unit": "whole episode",
+    "bootstrap_fits": 50,
+    "online_ensemble_size": 10,
+    "trajectories": 2000,
+    "upper_score": "max_h (T_true-m)/max(s,epsilon)",
+    "q_plus": 6.678568221034516,
+    "q_minus_for_width_reporting": 2.454587152342575,
+    "q_plus_rank": 381,
+    "q_minus_rank": 381,
+    "T_max_k": 313.0,
+    "safe_rule": "max_h U_conf(h) <= 313 K"
+  },
+  "population_seed_blocks": {
+    "training": 2100000,
+    "selection": 2200000,
+    "calibration": 2300000,
+    "final_test": 2400000
+  },
+  "model_selection": {
+    "number_of_selection_episodes": 60,
+    "median_recursive_RMSE_k": 0.8541096219892896,
+    "absolute_mean_prediction_bias_k": 0.6519315357227832,
+    "absolute_mean_innovation_bias_k": 0.01062672256509831,
+    "spectral_radius": 0.9949994284450694,
+    "k1_passed_predefined_mean_dynamics_gate": 1
+  },
+  "method_frozen_before_final_generation_ns": 1786463322062365700,
+  "verdict_rule": {
+    "successful": "joint false-safe <=.05, upper coverage >=.90, pooled SAFE >=.15, each fault SAFE >=.05",
+    "conservative": "safety gates pass but usefulness gate fails",
+    "inadequate": "safety gates fail"
+  },
+  "verdict": "MULTI-FAULT REVALIDATION SUCCESSFUL"
+}

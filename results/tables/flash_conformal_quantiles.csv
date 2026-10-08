@@ -1,0 +1,7 @@
+calibration_population,alpha,calibration_episodes,corrected_rank,conformal_quantile,source
+calibration_boundary,0.01,463,460,14.164732647450517,artifacts/flash_study/flash_conformal_config.json
+calibration_boundary,0.05,463,441,11.349920831470156,artifacts/flash_study/flash_conformal_config.json
+calibration_boundary,0.1,463,418,9.0228762395739,artifacts/flash_study/flash_conformal_config.json
+calibration_ordinary,0.01,447,444,15.956864471438763,artifacts/flash_study/flash_conformal_config.json
+calibration_ordinary,0.05,447,426,11.04859850832729,artifacts/flash_study/flash_conformal_config.json
+calibration_ordinary,0.1,447,404,9.291741027947406,artifacts/flash_study/flash_conformal_config.json

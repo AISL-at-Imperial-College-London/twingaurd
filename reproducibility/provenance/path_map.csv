@@ -1,0 +1,16 @@
+original_prefix,release_prefix
+E6B_MARGIN_LADDER/,artifacts/flash_margin_ladder/
+E_FLASH_RESS/,artifacts/flash_study/
+results/cstr_final/,artifacts/cstr/final_summary/
+results/milestone_b10/,artifacts/cstr/discrepancy_freeze/
+results/milestone_b11/,artifacts/cstr/bootstrap_ensemble/
+results/milestone_b12/,artifacts/cstr/conformal_calibration/
+results/milestone_b5/,artifacts/cstr/episode_design/
+results/milestone_b6/,artifacts/cstr/recursive_rollout_diagnostics/
+results/milestone_b7b/,artifacts/cstr/stable_arx_order_study/
+results/milestone_b8/,artifacts/cstr/observable_conditioning_study/
+results/milestone_b9/,artifacts/cstr/discrepancy_fit/
+results/milestone_c1/,artifacts/cstr/primary_evaluation/
+results/milestone_c16a/,artifacts/cstr/feed_temperature_fault/
+results/milestone_c16b/,artifacts/cstr/mixed_degradation/
+results/milestone_c1_5a/,artifacts/cstr/primary_decision_audit/
