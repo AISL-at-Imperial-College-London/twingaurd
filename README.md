@@ -1,5 +1,9 @@
 # TwinGuard
 
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Test suite: pytest](https://img.shields.io/badge/test%20suite-pytest-0A9EDC?logo=pytest&logoColor=white)](https://docs.pytest.org/)
+
 **Reliability-aware revalidation and selective certification for degraded digital twins.**
 
 TwinGuard implements action-specific counterfactual revalidation for degraded digital twins. It
@@ -9,13 +13,11 @@ uses three components:
 - bootstrap predictive uncertainty;
 - whole-trajectory conformal calibration.
 
-The repository accompanies the RESS manuscript *"Reliability-Aware Revalidation of Degraded
-Digital Twins Using Fault-Blind Discrepancy Modelling and Conformal Prediction."* It contains:
+This repository contains the TwinGuard implementation and its research materials:
 
-- the code;
-- the frozen calibration artifacts;
-- per-episode evaluation records and hash manifests;
-- the audit used to check the results reported in the paper.
+- the code and tests;
+- frozen calibration and evaluation artifacts;
+- paper-facing tables, figures and reproducibility checks.
 
 ## 1. Overview
 
@@ -86,7 +88,7 @@ tests that probe where the marginal assumptions hold or break.
 ## 3. Repository structure
 
 ```
-README.md  LICENSE  CITATION.cff  pyproject.toml  requirements.txt
+README.md  LICENSE  pyproject.toml  requirements.txt
 src/twinguard/
   plants/            cstr.py (CSTR plant; also the nominal CSTR twin with faults off), flash_drum.py,
                      flash_drum_valve_lag.py (plant-only structural mismatch)
@@ -109,25 +111,44 @@ results/
   tables/            paper-facing tables with semantic names (derived from artifacts/)
   figures/main/      figures used in the main text
   figures/appendix/  appendix / repository figures
-reproducibility/     read-only audit, provenance ledger, seed and artifact manifests, checks/
+reproducibility/     read-only audit, provenance records, seed and artifact manifests, checks/
 data/                data availability, population manifest, frozen archive instructions
 paper/               result_mapping.md, reproducibility_mapping.md
 tests/               unit, regression and integrity tests
 ```
 
-Inside `artifacts/`, file names are kept exactly as written by the frozen runs, because the frozen
-SHA-256 manifests refer to them. `reproducibility/provenance/file_map.csv` maps every original
-development path to its release path.
+Frozen artifact hashes and source/path provenance records are kept under `reproducibility/`.
 
 ## 4. Installation
 
 Requires Python ≥ 3.10.
 
 ```bash
-git clone <repository-url> TwinGuard && cd TwinGuard
-python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -e ".[test]"                               # or: pip install -r requirements.txt
-pytest                                                  # ~2 min; archive-only tests are skipped
+git clone https://github.com/AISL-at-Imperial-College-London/twingaurd.git
+cd twingaurd
+python -m venv .venv
+```
+
+Activate the environment using the command for your shell, then install the package and test
+dependencies.
+
+Windows PowerShell:
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+macOS / Linux:
+
+```bash
+source .venv/bin/activate
+```
+
+Install and run the tests:
+
+```bash
+pip install -e ".[test]"
+pytest
 ```
 
 Run all commands from the repository root. Line endings matter for the hash checks:
@@ -255,21 +276,12 @@ All data are simulated. Every population can be regenerated from the code and it
 - **This repository (git):** frozen models, calibration sets, configurations, hash manifests,
   per-episode result tables and ledgers (≈ 100 MB).
 - **Frozen archive:** the ≈ 66,000 per-episode candidate, prediction, decision and truth files
-  (≈ 580 MB). These prove prospective chronology for every reported decision, and are deposited
-  separately (see `data/README.md`). Extract the archive at the repository root to enable
-  `--archive` checks and the archive-dependent tests.
+  (≈ 580 MB) are intended for separate distribution. The archive has not yet been deposited; see
+  `data/README.md` for its contents and the expected extraction layout. Extract it at the repository
+  root to enable `--archive` checks and archive-dependent tests.
 
   On Windows, the longest archived path is 126 characters relative to the repository root. Keep
   the repository root path under about 130 characters, or enable Windows long-path support,
   before extracting.
 
-## 10. Citation
-
-If you use this code or its frozen results, please cite the manuscript (see `CITATION.cff`):
-
-```
-<Authors>. Reliability-Aware Revalidation of Degraded Digital Twins Using Fault-Blind Discrepancy
-Modelling and Conformal Prediction. Reliability Engineering & System Safety (submitted).
-```
-
-Licensed under the MIT License (see `LICENSE`).
+Licensed under the MIT License; see [LICENSE](LICENSE).

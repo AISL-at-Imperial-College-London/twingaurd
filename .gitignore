@@ -19,6 +19,7 @@ venv/
 # OS / editor
 .DS_Store
 Thumbs.db
+.history/
 .vscode/
 .idea/
 .matplotlib/
