@@ -1,0 +1,2 @@
+method,n_cal,n_test,alpha,q_K,certified_count,availability,false_safe_count,joint_false_safe,conditional_false_safe,upper_trajectory_coverage,safe_certified
+Offset-C_mean_L10,500,1000,0.05,2.951987619483873,16,0.016,0,0.0,0.0,0.951,16

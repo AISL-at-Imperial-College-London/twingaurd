@@ -2162,6 +2162,196 @@
      ]
     }
    ]
+  },
+  "src/twinguard/baselines/cstr_conformal_controls.py": {
+   "original_path": "cp_restoration_test/cstr_reviewer_conformal_controls.py",
+   "frozen_sha256": "64a9ec2bee382a615c46501b53fa88f2dea415cc6a90bdc0460ffc2eb0db9e55",
+   "frozen_form": "LF-normalized analysis script (post-freeze retrospective baseline)",
+   "frozen_sha256_recorded_in_manifests": null,
+   "release_sha256": "16253309be1bcc370326042a69694e0ed7f002c22a195c958de0743c152844ee",
+   "hunks": [
+    {
+     "release_line": 6,
+     "release_lines": [
+      "    artifacts/cstr/primary_evaluation/"
+     ],
+     "frozen_lines": [
+      "    results/milestone_c1/"
+     ]
+    },
+    {
+     "release_line": 483,
+     "release_lines": [
+      "    parser.add_argument(\"--c1-dir\", default=\"artifacts/cstr/primary_evaluation\")"
+     ],
+     "frozen_lines": [
+      "    parser.add_argument(\"--c1-dir\", default=\"results/milestone_c1\")"
+     ]
+    },
+    {
+     "release_line": 486,
+     "release_lines": [
+      "        default=\"runs/cstr_conformal_controls\","
+     ],
+     "frozen_lines": [
+      "        default=\"results/reviewer_controls_cstr_final\","
+     ]
+    }
+   ]
+  },
+  "src/twinguard/baselines/flash_conformal_controls.py": {
+   "original_path": "cp_restoration_test/flash_final_conformal_baselines.py",
+   "frozen_sha256": "f29fef88416796737ca0f6bbe7dfd832268508b408114ed874315e5c0989729f",
+   "frozen_form": "LF-normalized analysis script (post-freeze retrospective baseline)",
+   "frozen_sha256_recorded_in_manifests": null,
+   "release_sha256": "55179ce920bae63fdb1650e1ee371493ff34b3d380c7495b1c2f5a50dfe47fa1",
+   "hunks": [
+    {
+     "release_line": 42,
+     "release_lines": [
+      "    python experiments/evaluate_flash_conformal_controls.py"
+     ],
+     "frozen_lines": [
+      "    python flash_final_conformal_baselines.py"
+     ]
+    },
+    {
+     "release_line": 44,
+     "release_lines": [
+      "The frozen flash-study artifacts, with the per-episode archive extracted, must already exist."
+     ],
+     "frozen_lines": [
+      "The E_FLASH_RESS package and frozen E4/E5 artifacts must already exist."
+     ]
+    },
+    {
+     "release_line": 71,
+     "release_lines": [
+      "from twinguard.flash import bootstrap_and_calibrate as e4",
+      "from twinguard.uncertainty.flash_bootstrap import PREDICTIVE_SCALE_FLOORS",
+      "from twinguard.conformal.flash_conformal import ("
+     ],
+     "frozen_lines": [
+      "from E_FLASH_RESS import run_flash_e4 as e4",
+      "from E_FLASH_RESS.flash_bootstrap import PREDICTIVE_SCALE_FLOORS",
+      "from E_FLASH_RESS.flash_conformal import ("
+     ]
+    },
+    {
+     "release_line": 77,
+     "release_lines": [
+      "from twinguard.discrepancy.flash_state_space import ("
+     ],
+     "frozen_lines": [
+      "from E_FLASH_RESS.flash_discrepancy_model import ("
+     ]
+    },
+    {
+     "release_line": 82,
+     "release_lines": [
+      "from twinguard.scenarios.flash_population_design import ("
+     ],
+     "frozen_lines": [
+      "from E_FLASH_RESS.flash_population import ("
+     ]
+    },
+    {
+     "release_line": 766,
+     "release_lines": [
+      "        default=\"artifacts/flash_study\","
+     ],
+     "frozen_lines": [
+      "        default=\"E_FLASH_RESS\","
+     ]
+    },
+    {
+     "release_line": 771,
+     "release_lines": [
+      "        default=\"runs/flash_conformal_controls\","
+     ],
+     "frozen_lines": [
+      "        default=\"results/reviewer_controls_flash_final\","
+     ]
+    }
+   ]
+  },
+  "src/twinguard/baselines/cstr_persistent_offset.py": {
+   "original_path": "cp_restoration_test/offset_conformal_cstr.py",
+   "frozen_sha256": "84f0771a81e475fe72b0c414dc90cfd5dc2ecd805b68c5533147f8c4a8e35203",
+   "frozen_form": "LF-normalized analysis script (post-freeze retrospective baseline)",
+   "frozen_sha256_recorded_in_manifests": null,
+   "release_sha256": "15e1e56ab9eb42b27fc3900fb2021e6a58fce81a2d4f0f1462bca8600742600e",
+   "hunks": [
+    {
+     "release_line": 4,
+     "release_lines": [
+      "Requires the frozen CSTR primary-evaluation artifacts (with the per-episode archive extracted)."
+     ],
+     "frozen_lines": [
+      "Requires original CSTR modules and results/milestone_c1/ in repository root."
+     ]
+    },
+    {
+     "release_line": 16,
+     "release_lines": [
+      "from twinguard.cstr import safety_certification as c1",
+      "from twinguard.cstr import episode_design as b5"
+     ],
+     "frozen_lines": [
+      "import milestone_c1_safety_certification as c1",
+      "import milestone_b5_posterior_calibration as b5"
+     ]
+    },
+    {
+     "release_line": 117,
+     "release_lines": [
+      "    p.add_argument('--c1-dir',default='artifacts/cstr/primary_evaluation')",
+      "    p.add_argument('--output-dir',default='runs/cstr_persistent_offset')"
+     ],
+     "frozen_lines": [
+      "    p.add_argument('--c1-dir',default='results/milestone_c1')",
+      "    p.add_argument('--output-dir',default='results/offset_cstr')"
+     ]
+    }
+   ]
+  },
+  "src/twinguard/baselines/flash_persistent_offset.py": {
+   "original_path": "cp_restoration_test/offset_conformal_flash.py",
+   "frozen_sha256": "c2c75e639c963b6a7976594f583d92b18123ec48fee13f143283141eec039f04",
+   "frozen_form": "LF-normalized analysis script (post-freeze retrospective baseline)",
+   "frozen_sha256_recorded_in_manifests": null,
+   "release_sha256": "68e9e90a96bdbbf1ad250d1fc1a432735138487a9516bb1593b37ce8b19d7ecf",
+   "hunks": [
+    {
+     "release_line": 6,
+     "release_lines": [
+      "Uses twinguard.baselines.flash_conformal_controls."
+     ],
+     "frozen_lines": [
+      "Place beside flash_final_conformal_baselines.py at repository root."
+     ]
+    },
+    {
+     "release_line": 14,
+     "release_lines": [
+      "from twinguard.baselines import flash_conformal_controls as base"
+     ],
+     "frozen_lines": [
+      "import flash_final_conformal_baselines as base"
+     ]
+    },
+    {
+     "release_line": 90,
+     "release_lines": [
+      "    p.add_argument('--experiment-dir',default='artifacts/flash_study')",
+      "    p.add_argument('--output-dir',default='runs/flash_persistent_offset')"
+     ],
+     "frozen_lines": [
+      "    p.add_argument('--experiment-dir',default='E_FLASH_RESS')",
+      "    p.add_argument('--output-dir',default='results/offset_flash')"
+     ]
+    }
+   ]
   }
  }
 }

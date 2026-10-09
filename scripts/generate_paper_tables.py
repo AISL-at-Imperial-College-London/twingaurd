@@ -115,6 +115,37 @@ def headline() -> list[dict[str, object]]:
     return rows
 
 
+def retrospective_baselines() -> list[dict[str, object]]:
+    """Retrospective controls at alpha = 0.05 next to the reconstructed frozen methods (post hoc, not prospective)."""
+    base = ROOT / "artifacts" / "retrospective_baselines"
+    rows: list[dict[str, object]] = []
+
+    def add(process, method, n, q, certified, availability, false_safe, joint, coverage, coverage_n, source):
+        rows.append({"process": process, "method": method, "test_episodes": n, "conformal_quantile": q,
+                     "certified_safe": certified, "certification_availability": availability, "false_safe": false_safe,
+                     "joint_false_safe": joint, "whole_trajectory_coverage": coverage, "coverage_denominator": coverage_n,
+                     "source_file": source})
+
+    source = "artifacts/retrospective_baselines/cstr_conformal_controls/cstr_final_baseline_comparison_alpha_0p05.csv"
+    for r in read(ROOT / source):
+        add("CSTR", r["method"], r["test_episodes"], r["conformal_quantile"], r["certified_count"], r["certification_availability"],
+            r["false_safe_count"], r["joint_false_safe_frequency"], r["upper_trajectory_coverage"], r["test_episodes"], source)
+    source = "artifacts/retrospective_baselines/cstr_persistent_offset/offset_summary.csv"
+    for r in read(ROOT / source):
+        add("CSTR", r["method"], r["n_test"], r["q_K"], r["certified_count"], r["availability"], r["false_safe_count"],
+            r["joint_false_safe"], r["upper_trajectory_coverage"], r["n_test"], source)
+    source = "artifacts/retrospective_baselines/flash_conformal_controls/flash_final_baseline_comparison_alpha_0p05.csv"
+    for r in read(ROOT / source):
+        add("flash", r["method"], r["episode_count"], r["conformal_quantile"], r["certified_count"], r["certification_availability"],
+            r["false_safe_count"], r["joint_false_safe_frequency"], r["whole_trajectory_safety_direction_coverage"],
+            r["coverage_denominator_complete_pairs"], source)
+    source = "artifacts/retrospective_baselines/flash_persistent_offset/offset_summary.csv"
+    for r in read(ROOT / source):
+        add("flash", r["method"], r["n_test_reserved"], r["quantile"], r["certified_count"], r["availability"], r["false_safe_count"],
+            r["joint_false_safe"], r["coverage_complete_pairs"], r["n_coverage_pairs"], source)
+    return rows
+
+
 def without_unsupported(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     return [row for row in rows if row.get("method") not in UNSUPPORTED]
 
@@ -148,6 +179,7 @@ def build() -> dict[str, str]:
         "margin_ladder_risk_availability.csv": render(read(LADDER / "E6B_RISK_AVAILABILITY.csv")),
         "flash_healthy_parity_summary.csv": render(read(FLASH / "e1_validation/HEALTHY_SCENARIO_SUMMARY.csv")),
         "flash_action_step_responses.csv": render(read(FLASH / "e1_validation/ACTION_STEP_RESPONSES.csv")),
+        "retrospective_baseline_comparison.csv": render(retrospective_baselines()),
     }
 
 

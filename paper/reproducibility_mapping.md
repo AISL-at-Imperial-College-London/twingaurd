@@ -104,3 +104,11 @@ follows from the stored prediction.
 | Flash simulator validation regenerates its outputs identically | `python scripts/reproduce_main_results.py --rerun flash-simulator` |
 | CSTR certification pipeline runs end to end from the frozen inputs | `python scripts/reproduce_main_results.py --rerun cstr-primary-smoke` |
 | Full prospective reruns of any population, compared cell by cell with the frozen summaries | `python scripts/reproduce_main_results.py --rerun <stage>` |
+
+## Retrospective baselines
+
+| Evidence | Check |
+|---|---|
+| Each Offset-C summary equals the counts recomputed from its per-episode decisions. The calibration populations have the expected sizes (CSTR 500, flash 447 complete). | `tests/test_retrospective_baselines.py` |
+| The baseline scripts reconstruct the frozen M0–M3 results exactly before adding the controls | `tests/test_retrospective_baselines.py`; `flash_e4_calibration_regeneration_checks.csv` (447/447 inputs match the frozen E4 inputs) |
+| The baseline code is the analysis scripts plus ledgered import and path edits | `source_provenance_reversal` |

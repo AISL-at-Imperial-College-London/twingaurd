@@ -170,3 +170,34 @@ The 853 unsafe flash episodes comprise 587 complete-and-unsafe trajectories and 
 The figures in `results/figures/` are byte-identical to the frozen figures
 (`python scripts/generate_paper_figures.py`). To redraw them with the original plotting code, run
 `python scripts/generate_paper_figures.py --regenerate --workspace runs/figures`.
+
+## Retrospective comparison baselines (post hoc; not prospective)
+
+These controls were computed after the prospective study, on the same frozen calibration and test
+populations. They are not part of the TwinGuard method. The numbers below are at α = 0.05.
+
+| | |
+|---|---|
+| Combined table | `results/tables/retrospective_baseline_comparison.csv`, built by `scripts/generate_paper_tables.py` |
+| Test | `tests/test_retrospective_baselines.py` recomputes each Offset-C summary from its per-episode decisions. It also checks that the reconstructed M0–M3 rows equal the frozen primary results. |
+
+| Process | Control | Frozen output | Code / entry point | Result |
+|---|---|---|---|---|
+| CSTR | C0, C1 (constant-width one-sided conformal) and reconstructed M0–M3 | `artifacts/retrospective_baselines/cstr_conformal_controls/` | `twinguard.baselines.cstr_conformal_controls` / `experiments/evaluate_cstr_conformal_controls.py` | C0: 0 certified. C1: 194 certified, 0 false-safe. |
+| CSTR | Offset-C (persistent offset) | `artifacts/retrospective_baselines/cstr_persistent_offset/` | `twinguard.baselines.cstr_persistent_offset` / `experiments/evaluate_cstr_persistent_offset.py` | 16 / 1000 certified, 0 false-safe, coverage 0.951 |
+| Flash | C0, C1 (fixed engineering scales) and reconstructed M0–M3 | `artifacts/retrospective_baselines/flash_conformal_controls/` | `twinguard.baselines.flash_conformal_controls` / `experiments/evaluate_flash_conformal_controls.py` | C0: 0 certified. C1: 49 certified, 1 false-safe. |
+| Flash | Offset-C (persistent offset) | `artifacts/retrospective_baselines/flash_persistent_offset/` | `twinguard.baselines.flash_persistent_offset` / `experiments/evaluate_flash_persistent_offset.py` | 207 / 1200 certified, 2 false-safe (both on simulator-domain exits), coverage 0.943 |
+
+For comparison, TwinGuard (M3) certified 338 / 1000 with 0 false-safe on CSTR, and 177 / 1200 with
+5 false-safe on flash.
+
+**How the inputs were obtained.** Offset-C uses only information available before the decision:
+the observed residual window and the nominal-twin rollout under the candidate action. Two inputs
+were never stored by the frozen runs, so they were rebuilt from the frozen seeds and cached next
+to the outputs:
+
+- **CSTR:** the pre-decision residual histories.
+- **Flash:** the E4 calibration futures. Every regenerated input matched the frozen E4 inputs
+  exactly.
+
+All 11,184 frozen files these baselines read are byte-identical to the released artifacts.

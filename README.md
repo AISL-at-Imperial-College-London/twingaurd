@@ -161,6 +161,23 @@ Individual experiments can also be run directly, for example
 
 `paper/result_mapping.md` lists the exact file, row and script behind every table and figure.
 
+### Retrospective comparison baselines
+
+Three post-hoc controls were evaluated on the same frozen calibration and test populations, after
+the prospective study. They are **not** part of the TwinGuard method and **not** prospective
+results.
+
+| Control | Prediction | Calibration |
+|---|---|---|
+| C0 | nominal twin | constant-width conformal |
+| C1 | discrepancy mean | constant-width conformal |
+| Offset-C (persistent offset) | nominal twin under the candidate action + the mean of the last 10 observed pre-decision residuals | conformal |
+
+Code: `src/twinguard/baselines/`. Entry points: `experiments/evaluate_*_conformal_controls.py` and
+`experiments/evaluate_*_persistent_offset.py`. Frozen outputs: `artifacts/retrospective_baselines/`.
+Comparison table: `results/tables/retrospective_baseline_comparison.csv`. These runs need the
+frozen archive.
+
 ## 6. Experimental populations
 
 All populations are disjoint seed blocks, declared in frozen manifests before their truth was

@@ -1,0 +1,15 @@
+process,method,test_episodes,conformal_quantile,certified_safe,certification_availability,false_safe,joint_false_safe,whole_trajectory_coverage,coverage_denominator,source_file
+CSTR,M0_nominal_DT,1000,,1000,1.0,394,0.394,0.0,1000,artifacts/retrospective_baselines/cstr_conformal_controls/cstr_final_baseline_comparison_alpha_0p05.csv
+CSTR,C0_nominal_constant_conformal,1000,5.266325694312059,0,0.0,0,0.0,0.951,1000,artifacts/retrospective_baselines/cstr_conformal_controls/cstr_final_baseline_comparison_alpha_0p05.csv
+CSTR,M1_corrected_center,1000,,681,0.681,121,0.121,0.233,1000,artifacts/retrospective_baselines/cstr_conformal_controls/cstr_final_baseline_comparison_alpha_0p05.csv
+CSTR,C1_corrected_constant_conformal,1000,2.076985931671743,194,0.194,0,0.0,0.948,1000,artifacts/retrospective_baselines/cstr_conformal_controls/cstr_final_baseline_comparison_alpha_0p05.csv
+CSTR,M2_raw_bootstrap_95,1000,,390,0.39,0,0.0,0.746,1000,artifacts/retrospective_baselines/cstr_conformal_controls/cstr_final_baseline_comparison_alpha_0p05.csv
+CSTR,M3_adaptive_conformal,1000,5.464557586938352,338,0.338,0,0.0,0.957,1000,artifacts/retrospective_baselines/cstr_conformal_controls/cstr_final_baseline_comparison_alpha_0p05.csv
+CSTR,Offset-C_mean_L10,1000,2.951987619483873,16,0.016,0,0.0,0.951,1000,artifacts/retrospective_baselines/cstr_persistent_offset/offset_summary.csv
+flash,M0_nominal_DT,1200,,779,0.6491666666666667,207,0.1725,0.0,899,artifacts/retrospective_baselines/flash_conformal_controls/flash_final_baseline_comparison_alpha_0p05.csv
+flash,C0_nominal_fixedscale_conformal,1200,3.7107814440576012,0,0.0,0,0.0,0.9577308120133482,899,artifacts/retrospective_baselines/flash_conformal_controls/flash_final_baseline_comparison_alpha_0p05.csv
+flash,M1_discrepancy_mean,1200,,672,0.56,103,0.08583333333333333,0.0,899,artifacts/retrospective_baselines/flash_conformal_controls/flash_final_baseline_comparison_alpha_0p05.csv
+flash,C1_corrected_fixedscale_conformal,1200,2.3924845805728245,49,0.04083333333333333,1,0.0008333333333333334,0.9477196885428254,899,artifacts/retrospective_baselines/flash_conformal_controls/flash_final_baseline_comparison_alpha_0p05.csv
+flash,M2_raw_bootstrap,1200,,623,0.5191666666666667,72,0.06,0.2413793103448276,899,artifacts/retrospective_baselines/flash_conformal_controls/flash_final_baseline_comparison_alpha_0p05.csv
+flash,M3_pooled_conformal,1200,11.04859850832729,177,0.1475,5,0.004166666666666667,0.9399332591768632,899,artifacts/retrospective_baselines/flash_conformal_controls/flash_final_baseline_comparison_alpha_0p05.csv
+flash,Offset-C_mean_L10,1200,1.8548189352185884,207,0.1725,2,0.0016666666666666668,0.9432703003337041,899,artifacts/retrospective_baselines/flash_persistent_offset/offset_summary.csv

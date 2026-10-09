@@ -79,3 +79,15 @@ The frozen files keep their original method identifiers:
 | `M5_margin_conditioned` | a margin-ladder stress comparator |
 | `S0`…`S3` | CSTR primary comparators; S3 is the TwinGuard one-sided conformal rule |
 | `proposed_method` / `frozen_CSTR_conformal` | the TwinGuard CSTR rule |
+
+## `retrospective_baselines/`
+
+These are post-hoc comparison controls on the frozen populations. They are not prospective and
+not part of the method. See `paper/result_mapping.md`.
+
+| Directory | Content |
+|---|---|
+| `cstr_conformal_controls/` | CSTR C0/C1 constant-width conformal controls with the reconstructed M0–M3 results, plus α sensitivity |
+| `flash_conformal_controls/` | flash C0/C1 fixed-scale controls with the reconstructed M0–M3 results, α sensitivity and E4 regeneration checks |
+| `cstr_persistent_offset/` | CSTR Offset-C: calibration scores, per-episode test decisions and summary. Cache: `offset_residual_histories.npz` (pre-decision residuals rebuilt from the frozen seeds). |
+| `flash_persistent_offset/` | flash Offset-C: calibration scores, per-episode decisions and summary. Cache: `e4_calibration_truths_verified.npz` (verified E4 calibration futures). |

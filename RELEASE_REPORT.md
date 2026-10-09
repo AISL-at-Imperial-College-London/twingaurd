@@ -198,3 +198,57 @@ python scripts/reproduce_main_results.py --rerun boundary structural-and-mixed-r
 1. Remove or move `archive/` (it is git-ignored, but large) and `runs/` if present.
 2. Run `git init`, then `git add .` and check `git status`. The `.gitignore` already excludes the
    archived paths, caches and run workspaces.
+
+## 9. Addendum (2026-10-09): retrospective comparison baselines
+
+Four post-hoc analysis scripts and their outputs were added from the `cp_restoration_test`
+working copy. They are not prospective and not part of the TwinGuard method.
+
+| Script | Release module |
+|---|---|
+| `cstr_reviewer_conformal_controls.py` | `src/twinguard/baselines/cstr_conformal_controls.py` |
+| `flash_final_conformal_baselines.py` | `src/twinguard/baselines/flash_conformal_controls.py` |
+| `offset_conformal_cstr.py` | `src/twinguard/baselines/cstr_persistent_offset.py` |
+| `offset_conformal_flash.py` | `src/twinguard/baselines/flash_persistent_offset.py` |
+
+**What was added**
+
+- **Code.** The four modules above. The only edits are imports, default paths and run
+  instructions, recorded in the provenance ledger.
+- **Entry points.** `experiments/evaluate_{cstr,flash}_{conformal_controls,persistent_offset}.py`.
+- **Outputs.** `artifacts/retrospective_baselines/`: 22 files, about 2.2 MB, copied byte-exact.
+  They include two caches of inputs rebuilt from the frozen seeds.
+- **Table and test.** `results/tables/retrospective_baseline_comparison.csv` and
+  `tests/test_retrospective_baselines.py`.
+
+**Checks**
+
+- **Inputs.** All 11,184 frozen inputs these scripts read in `cp_restoration_test` are
+  byte-identical to the released artifacts.
+- **Reruns.** Running all four through the release entry points, with the archive, reproduced every
+  output table identically (15/15 CSVs). Run time was about 11 minutes; reruns that find the
+  caches are faster.
+- **Excluded.** `results/reviewer_conformal_controls_cstr/` came from an earlier version of the
+  CSTR control script, on the B12 diagnostic population, and its code no longer exists. It is
+  superseded and excluded.
+
+**Results** (α = 0.05; TwinGuard M3 in brackets)
+
+| Process | Control | Certified | False-safe | Note |
+|---|---|---:|---:|---|
+| CSTR | Offset-C | 16 / 1000 | 0 | [M3: 338, 0] |
+| CSTR | C1 | 194 / 1000 | 0 | |
+| CSTR | C0 | 0 | 0 | |
+| Flash | Offset-C | 207 / 1200 | 2 | both false-safes on simulator-domain exits [M3: 177, 5] |
+| Flash | C1 | 49 / 1200 | 1 | |
+| Flash | C0 | 0 | 0 | |
+
+**Interpretation for the manuscript**
+
+- On flash, the plant-minus-twin error stays close to a constant offset: the correlation between
+  the observed offset and the future mean error is 0.97–0.99. A persistent bias is therefore
+  competitive there.
+- On CSTR, the error keeps growing over the horizon: on average it exceeds the held offset by
+  about 1.8 K. A persistent bias therefore needs a wide band and certifies almost nothing.
+
+The flash result should be addressed in the paper.

@@ -51,6 +51,7 @@ imports and two additive changes, documented in `REORGANIZATION_AUDIT.md`.
 | `prompts/milestone_*.txt` | 15 | coding-agent task instructions used during development (contain no secrets) |
 | `twingaurd/aggregate_milestone_c1_5c.py` | 1 | one-off aggregation that runs at import and needs shard directories that are absent |
 | `E_FLASH_RESS/IMPLEMENTATION_PLAN.md` | 1 | planning document from the start of the flash study |
+| `cp_restoration_test/results/reviewer_conformal_controls_cstr/` | 5 | output of an earlier version of the CSTR conformal-control script, on the B12 diagnostic population. The generating code no longer exists; it is superseded by `artifacts/retrospective_baselines/cstr_conformal_controls/` (C1 population). |
 | `tests/test_e_flash_ress_isolation.py` | 1 | asserts the exact development `results/` inventory. Its output-guard checks are covered by the release guard and audit. |
 | `.gitignore`, `pyproject.toml`, `requirements.txt` | 3 | development packaging, replaced by release files |
 

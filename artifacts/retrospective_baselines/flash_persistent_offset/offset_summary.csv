@@ -1,0 +1,2 @@
+method,alpha,n_cal_complete,n_test_reserved,n_coverage_pairs,quantile,certified_count,availability,false_safe_count,joint_false_safe,conditional_false_safe,coverage_complete_pairs,certified_domain_exits
+Offset-C_mean_L10,0.05,447,1200,899,1.8548189352185884,207,0.1725,2,0.0016666666666666668,0.00966183574879227,0.9432703003337041,2
