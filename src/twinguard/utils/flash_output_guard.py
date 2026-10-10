@@ -1,9 +1,9 @@
-"""Filesystem boundary for all E_FLASH_RESS output.
+"""Keep flash experiment outputs out of frozen artifact directories.
 
-Every future flash entry point must validate its output directory with
-``assert_isolated_output_path`` before creating a directory or file. Existing
-CSTR and two-tank results are inputs for comparison only and are never output
-targets for the flash study.
+Each entry point must validate its output path before writing files with
+``assert_isolated_output_path``.
+Frozen CSTR artifacts are comparison inputs, not output targets.
+The guard centralizes that check for the flash study.
 """
 
 from __future__ import annotations
@@ -25,31 +25,7 @@ FROZEN_RESULT_ROOTS = tuple(
     for relative in FROZEN_RESULT_RELATIVE_PATHS
 )
 
-FROZEN_RESULT_ROOT_FILE_NAMES = (
-    "milestone_b5_stderr.log",
-    "milestone_b5_stdout.log",
-    "milestone_b6_stderr.log",
-    "milestone_b6_stdout.log",
-    "milestone_b7a_stderr.log",
-    "milestone_b7a_stdout.log",
-    "milestone_b7b_stderr.log",
-    "milestone_b7b_stdout.log",
-    "milestone_b9_stderr.log",
-    "milestone_b9_stdout.log",
-    "milestone_c15c_shard0_stderr.log",
-    "milestone_c15c_shard0_stdout.log",
-    "milestone_c15c_shard1_stderr.log",
-    "milestone_c15c_shard1_stdout.log",
-    "milestone_c15c_shard2_stderr.log",
-    "milestone_c15c_shard2_stdout.log",
-    "milestone_c15c_shard3_stderr.log",
-    "milestone_c15c_shard3_stdout.log",
-    "milestone_c15c_stderr.log",
-    "milestone_c15c_stdout.log",
-    "milestone_c16b_stderr.log",
-    "milestone_c16b_stdout.log",
-    "second_case_final.zip",
-)
+FROZEN_RESULT_ROOT_FILE_NAMES: tuple[str, ...] = ()
 
 
 def _contains(root: Path, candidate: Path) -> bool:

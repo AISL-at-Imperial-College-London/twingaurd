@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from twinguard.digital_twins.flash_drum import FlashDigitalTwin
+from twinguard.flash.digital_twin import FlashDigitalTwin
 from twinguard.scenarios.flash_population_design import (
     ACTION_NAMES,
     BOUNDARY_DELTA_NORMALIZED,
@@ -31,8 +31,8 @@ from twinguard.plants.flash_drum import FlashParameters, FlashPlant
 from twinguard.utils.flash_output_guard import EXPERIMENT_ROOT
 
 
-def test_e1_go_is_a_hard_e2_precondition() -> None:
-    summary = (EXPERIMENT_ROOT / "e1_validation" / "E1_VALIDATION_SUMMARY.json").read_text(
+def test_simulator_validation_go_is_a_hard_population_design_precondition() -> None:
+    summary = (EXPERIMENT_ROOT / "simulator_validation" / "simulator_validation_summary.json").read_text(
         encoding="utf-8"
     )
     assert '"go": true' in summary
@@ -140,8 +140,8 @@ def test_boundary_selection_uses_nominal_dt_and_is_reproducible() -> None:
 
 
 def test_preregistration_hash_sidecar_matches_exact_bytes() -> None:
-    prereg = EXPERIMENT_ROOT / "FLASH_E2_PREDECLARATION.md"
-    sidecar = EXPERIMENT_ROOT / "FLASH_E2_PREDECLARATION.sha256"
+    prereg = EXPERIMENT_ROOT / "population_preregistration.md"
+    sidecar = EXPERIMENT_ROOT / "population_preregistration.sha256"
     expected = sidecar.read_text(encoding="ascii").split()[0]
     assert hashlib.sha256(prereg.read_bytes()).hexdigest() == expected
 

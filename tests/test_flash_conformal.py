@@ -13,7 +13,7 @@ from twinguard.conformal.flash_conformal import (
     safety_decision,
     safety_direction_score,
 )
-from twinguard.digital_twins.flash_drum import FlashDigitalTwin
+from twinguard.flash.digital_twin import FlashDigitalTwin
 from twinguard.discrepancy.flash_state_space import FEATURE_NAMES, FlashStateSpaceParameters
 from twinguard.scenarios.flash_population_design import MEASURED_OUTPUTS, SafetySpecification
 from twinguard.flash.bootstrap_and_calibrate import batch_nominal_dt_margins
@@ -85,7 +85,7 @@ def test_safe_decision_requires_every_envelope_direction() -> None:
     assert safety_decision(center, scale, None, supported=False) == "NOT CERTIFIED"
 
 
-def test_no_mondrian_group_is_invented_without_e2_edges() -> None:
+def test_no_mondrian_group_is_invented_without_population_design_edges() -> None:
     assert mondrian_group(FlashDigitalTwin().nominal_action().as_array(), None) is None
 
 

@@ -1,8 +1,8 @@
 {
   "configuration": {
-    "b11_dir": "results/milestone_b11",
-    "b12_dir": "results/milestone_b12",
-    "output_dir": "results/milestone_c1",
+    "bootstrap_dir": "artifacts/cstr/bootstrap_ensemble",
+    "conformal_dir": "artifacts/cstr/conformal_calibration",
+    "output_dir": "artifacts/cstr/primary_evaluation",
     "calibration_count": 500,
     "final_count": 1000,
     "screening_states": 30,
@@ -16,9 +16,9 @@
     "source": "cstr_case.SafeStateChecker default and explicit project instantiations",
     "horizon_steps": 240,
     "dt_s": 1.0,
-    "evaluator_note": "B.11 measured-output reveal is deterministically de-noised with its saved RNG seed for physical C1 labels; both measured and physical trajectories are retained"
+    "evaluator_note": "bootstrap ensemble measured-output reveal is deterministically de-noised with its saved RNG seed for physical primary certification labels; both measured and physical trajectories are retained"
   },
-  "frozen_predictor": "B.11 U3: first 10 accepted bootstrap models, M=2000, posterior median; no refit",
+  "frozen_predictor": "bootstrap ensemble U3: first 10 accepted bootstrap models, M=2000, posterior median; no refit",
   "scale_floor_k": 1e-06,
   "one_sided_score_upper": "max_h (T_true_h-m_h)/max(s_h,epsilon)",
   "one_sided_score_lower": "max_h (m_h-T_true_h)/max(s_h,epsilon)",
@@ -37,7 +37,7 @@
   },
   "source_hashes": {
     "bootstrap_models_sha256": "247376d2cfdcb33696f922ef2895a008a9dbd00f03673c7f8728f0b5c70095ad",
-    "b12_quantiles_sha256": "6e205be89586dc2a2822926b53fc7ab2e6125a7cb9c3b44f8533e9bdcd17fcf1"
+    "trajectory_conformal_quantiles_sha256": "6e205be89586dc2a2822926b53fc7ab2e6125a7cb9c3b44f8533e9bdcd17fcf1"
   },
   "predeclared_decision_rule": {
     "successful": "95% pooled joint false-safe <=.05, <=half both S0 and S1, SAFE rate >=.10, and no regime joint false-safe >.10",

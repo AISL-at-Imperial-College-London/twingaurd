@@ -1,8 +1,8 @@
-"""Fit the CSTR latent discrepancy model: generate the training population, run EM for each
-latent dimension and select k (frozen output: artifacts/cstr/discrepancy_fit).
+"""Fit the CSTR latent discrepancy model: generate the training population, run EM for each latent
+dimension and select k (recorded output: artifacts/cstr/discrepancy_fit).
 
-Requires the frozen archive: the stage reads the B5 episodes and the B7B/B8 baseline tables
-(pass --source-dir/--b7b-dir/--b8-dir pointing at archive/artifacts/cstr/...).
+Reads the CSTR episode population and the ARX / observable-conditioning baseline tables; regenerate
+them first with run_cstr_episode_design.py and pass --source-dir, --arx-dir and --observable-dir accordingly.
 """
 
 from _runner import cstr_stage

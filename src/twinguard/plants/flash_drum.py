@@ -82,7 +82,7 @@ class VaporizationCorrelation:
 
 @dataclass(frozen=True)
 class FlashParameters:
-    """Nominal parameters and predeclared physical limits for E1."""
+    """Flash-drum operating parameters and physical validity limits."""
 
     reference_temperature_k: float = 298.15
     benzene_cp_liquid_j_mol_k: float = 135.69
@@ -514,7 +514,7 @@ class DynamicFlashModel:
 
 
 class FlashPlant(DynamicFlashModel):
-    """Healthy E1 plant; future hidden faults belong in later milestones only."""
+    """Simulate the flash drum under a supplied parameter set."""
 
 
 def trajectory_max_abs_difference(

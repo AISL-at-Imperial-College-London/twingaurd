@@ -8,8 +8,6 @@ point that root at a workspace copy, which ``scripts/reproduce_main_results.py``
     flash-study root (frozen default: ``artifacts/flash_study``)
 ``TWINGUARD_MARGIN_LADDER_ROOT``
     margin-ladder root (frozen default: ``artifacts/flash_margin_ladder``)
-``TWINGUARD_ARCHIVE_ROOT``
-    extracted frozen per-episode archive (default: ``archive/``)
 ``TWINGUARD_ROOT``
     repository root, when it cannot be found from the package location
 """
@@ -40,5 +38,3 @@ ARTIFACTS_ROOT = REPOSITORY_ROOT / "artifacts"
 CSTR_ARTIFACTS_ROOT = ARTIFACTS_ROOT / "cstr"
 FLASH_STUDY_ROOT = _configured("TWINGUARD_FLASH_STUDY_ROOT", ARTIFACTS_ROOT / "flash_study")
 MARGIN_LADDER_ROOT = _configured("TWINGUARD_MARGIN_LADDER_ROOT", ARTIFACTS_ROOT / "flash_margin_ladder")
-ARCHIVE_ROOT = _configured("TWINGUARD_ARCHIVE_ROOT", REPOSITORY_ROOT / "archive")
-PROVENANCE_ROOT = REPOSITORY_ROOT / "reproducibility" / "provenance"

@@ -1,4 +1,4 @@
-"""Artifact and leakage checks for the frozen flash E4 calibration."""
+"""Checks flash calibration artifacts and evaluator-only data leakage."""
 
 from __future__ import annotations
 
@@ -8,7 +8,6 @@ import json
 from math import ceil
 from pathlib import Path
 
-from twinguard.utils.provenance import frozen_sha256
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -94,7 +93,7 @@ def test_stored_quantiles_match_corrected_score_order_statistics() -> None:
 
 
 def test_frozen_artifact_hashes_match() -> None:
-    manifest = FLASH / "FLASH_E4_ARTIFACT_HASHES.txt"
+    manifest = FLASH / "calibration_artifact_hashes.txt"
     entries = [
         line.split("  ", maxsplit=1)
         for line in manifest.read_text(encoding="utf-8").splitlines()
@@ -103,5 +102,5 @@ def test_frozen_artifact_hashes_match() -> None:
 
     assert entries
     for expected, relative in entries:
-        actual = frozen_sha256("E_FLASH_RESS/" + relative)
+        actual = hashlib.sha256((FLASH / relative).read_bytes()).hexdigest()
         assert actual == expected, relative

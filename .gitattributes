@@ -10,7 +10,6 @@
 # (Several frozen CSVs use CRLF line endings, others LF; converting either breaks SHA-256 checks.)
 artifacts/**                    -text
 results/**                      -text
-reproducibility/provenance/**   -text
 *.npz -text
 *.npy -text
 *.png -text

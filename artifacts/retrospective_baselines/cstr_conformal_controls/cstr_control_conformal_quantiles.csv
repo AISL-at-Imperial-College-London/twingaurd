@@ -1,0 +1,16 @@
+method,alpha,target_coverage,n_calibration,corrected_rank_k,quantile,quantile_is_infinite
+C0_nominal_constant_conformal,0.1,0.9,500,451,5.042019957403113,0
+C0_nominal_constant_conformal,0.05,0.95,500,476,5.266325694312059,0
+C0_nominal_constant_conformal,0.025,0.975,500,489,5.401996422237062,0
+C0_nominal_constant_conformal,0.01,0.99,500,496,5.464217257584778,0
+C0_nominal_constant_conformal,0.005,0.995,500,499,5.842374297788183,0
+CERTIFICATION_corrected_constant_conformal,0.1,0.9,500,451,1.9115950600389056,0
+CERTIFICATION_corrected_constant_conformal,0.05,0.95,500,476,2.076985931671743,0
+CERTIFICATION_corrected_constant_conformal,0.025,0.975,500,489,2.2455262655315096,0
+CERTIFICATION_corrected_constant_conformal,0.01,0.99,500,496,2.313390777290863,0
+CERTIFICATION_corrected_constant_conformal,0.005,0.995,500,499,2.4395147594152036,0
+M3_adaptive_conformal,0.1,0.9,500,451,4.817657283300313,0
+M3_adaptive_conformal,0.05,0.95,500,476,5.464557586938352,0
+M3_adaptive_conformal,0.025,0.975,500,489,5.772192752812305,0
+M3_adaptive_conformal,0.01,0.99,500,496,6.096371299137879,0
+M3_adaptive_conformal,0.005,0.995,500,499,6.2492698141644745,0

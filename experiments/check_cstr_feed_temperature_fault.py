@@ -1,5 +1,5 @@
-"""Define and smoke-test the CSTR feed-temperature-step degradation used in the
-mixed-degradation evaluation (frozen output: artifacts/cstr/feed_temperature_fault).
+"""Define and smoke-test the CSTR feed-temperature-step degradation used in the mixed-degradation
+evaluation (recorded output: artifacts/cstr/feed_temperature_fault).
 """
 
 from _runner import cstr_stage

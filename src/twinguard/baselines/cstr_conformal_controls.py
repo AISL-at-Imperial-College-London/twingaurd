@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-Exact reviewer-facing conformal control baselines for the FINAL CSTR C1 population.
+Retrospective conformal controls for the primary CSTR safety evaluation.
 
-This script is READ-ONLY with respect to the frozen C1 experiment:
+This script reads the frozen primary CSTR evaluation artifacts:
     artifacts/cstr/primary_evaluation/
 
 It does NOT:
 - regenerate any plant trajectory,
 - refit the discrepancy model,
 - regenerate bootstrap models,
-- overwrite C1 artifacts,
+- overwrite primary evaluation artifacts,
 - tune anything on final-test outcomes.
 
 It reconstructs the paper's final 500-calibration / 1000-test CSTR experiment,
-verifies the headline M3/S3 result, and adds reviewer-facing controls:
+compares the main M3/S3 method with fixed-width conformal controls:
 
     M0  nominal DT (point prediction)
     C0  nominal DT + constant-width one-sided conformal back-off
@@ -33,7 +33,7 @@ The adaptive method uses:
 Safety:
     CERTIFIED SAFE iff max_h upper_bound(h) <= 313 K.
 
-Outputs are written to a new directory and frozen C1 files are never modified.
+Outputs go to a separate directory; primary evaluation files are never modified.
 """
 
 from __future__ import annotations
@@ -153,10 +153,10 @@ def paired_files(pred_dir: Path, truth_dir: Path) -> list[tuple[str, Path, Path]
     return [(eid, predictions[eid], truths[eid]) for eid in sorted(predictions)]
 
 
-def calibration_scores(c1_dir: Path) -> dict[str, np.ndarray]:
+def calibration_scores(primary_dir: Path) -> dict[str, np.ndarray]:
     pairs = paired_files(
-        c1_dir / "calibration_predictions",
-        c1_dir / "revealed_calibration_truth",
+        primary_dir / "calibration_predictions",
+        primary_dir / "revealed_calibration_truth",
     )
     if len(pairs) != EXPECTED_CALIBRATION:
         raise RuntimeError(
@@ -191,8 +191,8 @@ def calibration_scores(c1_dir: Path) -> dict[str, np.ndarray]:
     }
 
 
-def frozen_upper_q95(c1_dir: Path) -> float:
-    rows = read_csv(c1_dir / "one_sided_quantiles.csv")
+def frozen_upper_q95(primary_dir: Path) -> float:
+    rows = read_csv(primary_dir / "one_sided_quantiles.csv")
     matches = [
         row for row in rows
         if row["direction"] == "upper" and np.isclose(float(row["nominal_level"]), 0.95)
@@ -231,11 +231,11 @@ def upper_bound(pred: dict[str, np.ndarray], method: str, q: float | None) -> np
 
 
 def summarize_test(
-    c1_dir: Path,
+    primary_dir: Path,
     method: str,
     q: float | None,
 ) -> dict[str, object]:
-    pairs = paired_files(c1_dir / "predictions", c1_dir / "revealed_final_truth")
+    pairs = paired_files(primary_dir / "predictions", primary_dir / "revealed_final_truth")
     if len(pairs) != EXPECTED_TEST:
         raise RuntimeError(f"expected {EXPECTED_TEST} final C1 episodes, got {len(pairs)}")
 
@@ -286,16 +286,16 @@ def summarize_test(
     }
 
 
-def verify_frozen_m3(c1_dir: Path, recomputed_q95: float) -> dict[str, object]:
-    frozen_q = frozen_upper_q95(c1_dir)
+def verify_frozen_m3(primary_dir: Path, recomputed_q95: float) -> dict[str, object]:
+    frozen_q = frozen_upper_q95(primary_dir)
     if not np.isclose(recomputed_q95, frozen_q, rtol=0.0, atol=1e-10):
         raise RuntimeError(
             f"recomputed M3 q95={recomputed_q95:.12g} does not match "
             f"frozen C1 q95={frozen_q:.12g}"
         )
 
-    m0 = summarize_test(c1_dir, "M0_nominal_DT", None)
-    m3 = summarize_test(c1_dir, "M3_adaptive_conformal", frozen_q)
+    m0 = summarize_test(primary_dir, "M0_nominal_DT", None)
+    m3 = summarize_test(primary_dir, "M3_adaptive_conformal", frozen_q)
 
     failures = []
     if m0["false_safe_count"] != EXPECTED_M0_FALSE_SAFE:
@@ -349,27 +349,27 @@ def make_plot(rows: list[dict[str, object]], output: Path) -> None:
     ax.set_xlim(left=-0.02)
     ax.set_ylim(bottom=-0.005)
     fig.tight_layout()
-    fig.savefig(output / "cstr_final_control_baselines.png", dpi=220)
+    fig.savefig(output / "cstr_control_comparison.png", dpi=220)
     plt.close(fig)
 
 
 def main(args: argparse.Namespace) -> None:
-    c1_dir = Path(args.c1_dir)
+    primary_dir = Path(args.primary_dir)
     output = Path(args.output_dir)
     output.mkdir(parents=True, exist_ok=True)
 
     required = [
-        c1_dir / "calibration_predictions",
-        c1_dir / "revealed_calibration_truth",
-        c1_dir / "predictions",
-        c1_dir / "revealed_final_truth",
-        c1_dir / "one_sided_quantiles.csv",
+        primary_dir / "calibration_predictions",
+        primary_dir / "revealed_calibration_truth",
+        primary_dir / "predictions",
+        primary_dir / "revealed_final_truth",
+        primary_dir / "one_sided_quantiles.csv",
     ]
     missing = [str(path) for path in required if not path.exists()]
     if missing:
         raise FileNotFoundError("missing required frozen C1 artifacts:\n- " + "\n- ".join(missing))
 
-    scores = calibration_scores(c1_dir)
+    scores = calibration_scores(primary_dir)
 
     quantile_rows: list[dict[str, object]] = []
     q_lookup: dict[tuple[str, float], float] = {}
@@ -393,25 +393,25 @@ def main(args: argparse.Namespace) -> None:
         raise ValueError("alpha list must include 0.05 for the paper comparison")
 
     verification = verify_frozen_m3(
-        c1_dir, q_lookup[("M3_adaptive_conformal", 0.05)]
+        primary_dir, q_lookup[("M3_adaptive_conformal", 0.05)]
     )
 
     comparison = [
-        summarize_test(c1_dir, "M0_nominal_DT", None),
+        summarize_test(primary_dir, "M0_nominal_DT", None),
         summarize_test(
-            c1_dir,
+            primary_dir,
             "C0_nominal_constant_conformal",
             q_lookup[("C0_nominal_constant_conformal", 0.05)],
         ),
-        summarize_test(c1_dir, "M1_corrected_center", None),
+        summarize_test(primary_dir, "M1_corrected_center", None),
         summarize_test(
-            c1_dir,
+            primary_dir,
             "C1_corrected_constant_conformal",
             q_lookup[("C1_corrected_constant_conformal", 0.05)],
         ),
-        summarize_test(c1_dir, "M2_raw_bootstrap_95", None),
+        summarize_test(primary_dir, "M2_raw_bootstrap_95", None),
         summarize_test(
-            c1_dir,
+            primary_dir,
             "M3_adaptive_conformal",
             q_lookup[("M3_adaptive_conformal", 0.05)],
         ),
@@ -424,17 +424,17 @@ def main(args: argparse.Namespace) -> None:
             "C1_corrected_constant_conformal",
             "M3_adaptive_conformal",
         ):
-            row = summarize_test(c1_dir, method, q_lookup[(method, alpha)])
+            row = summarize_test(primary_dir, method, q_lookup[(method, alpha)])
             row.update({"alpha": alpha, "target_coverage": 1.0 - alpha})
             alpha_rows.append(row)
 
-    write_csv(output / "cstr_final_conformal_quantiles.csv", quantile_rows)
-    write_csv(output / "cstr_final_baseline_comparison_alpha_0p05.csv", comparison)
-    write_csv(output / "cstr_final_alpha_sensitivity.csv", alpha_rows)
+    write_csv(output / "cstr_control_conformal_quantiles.csv", quantile_rows)
+    write_csv(output / "cstr_control_comparison_alpha_0p05.csv", comparison)
+    write_csv(output / "cstr_alpha_sensitivity.csv", alpha_rows)
     make_plot(comparison, output)
 
     report = [
-        "# Final CSTR reviewer-control analysis",
+        "# Final CSTR comparison-control analysis",
         "",
         "This analysis uses the exact frozen C1 500-episode calibration population",
         "and exact frozen C1 1000-episode untouched final-test population.",
@@ -447,7 +447,7 @@ def main(args: argparse.Namespace) -> None:
         f"- M3 false-safe: {verification['m3']['false_safe_count']}/1000",
         f"- M3 upper-trajectory coverage: {verification['m3']['upper_trajectory_coverage']:.4f}",
         "",
-        "## Reviewer-facing 95% controls",
+        "## Comparison 95% controls",
     ]
     for row in comparison:
         report.append(
@@ -463,7 +463,7 @@ def main(args: argparse.Namespace) -> None:
         "- M3 asks whether state/action-dependent scale improves authority beyond constant width.",
         "- The formal guarantee remains marginal over the represented episode population.",
     ]
-    (output / "CSTR_FINAL_REVIEWER_CONTROLS.md").write_text(
+    (output / "cstr_conformal_controls_report.md").write_text(
         "\n".join(report) + "\n", encoding="utf-8"
     )
 
@@ -480,7 +480,7 @@ def main(args: argparse.Namespace) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--c1-dir", default="artifacts/cstr/primary_evaluation")
+    parser.add_argument("--primary-dir", default="artifacts/cstr/primary_evaluation")
     parser.add_argument(
         "--output-dir",
         default="runs/cstr_conformal_controls",

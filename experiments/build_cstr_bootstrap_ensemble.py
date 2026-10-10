@@ -1,5 +1,5 @@
 """Build the CSTR whole-episode bootstrap ensemble of latent discrepancy models
-(frozen output: artifacts/cstr/bootstrap_ensemble).
+(recorded output: artifacts/cstr/bootstrap_ensemble).
 """
 
 from _runner import cstr_stage

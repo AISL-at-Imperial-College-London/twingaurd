@@ -1,4 +1,4 @@
-"""Materialize E2 seed reservations and freeze the preregistration hash."""
+"""Reserve flash population seeds and record the predeclared design."""
 
 from __future__ import annotations
 
@@ -24,14 +24,14 @@ class PopulationReservation:
 
 
 RESERVATIONS = (
-    PopulationReservation("training", "model_fit", 900, 22_000_000, "ordinary_lhs", "balanced_F1_F2_F3", "E3", "none"),
-    PopulationReservation("model_selection", "model_selection", 180, 23_000_000, "ordinary_lhs", "balanced_F1_F2_F3", "E3", "none"),
-    PopulationReservation("calibration_ordinary", "conformal_calibration", 600, 24_000_000, "ordinary_lhs", "balanced_F1_F2_F3", "E4", "ordinary"),
-    PopulationReservation("calibration_boundary", "conformal_calibration", 600, 25_000_000, "nominal_dt_boundary", "balanced_F1_F2_F3", "E4", "boundary"),
-    PopulationReservation("final_ordinary", "untouched_final_test", 1200, 26_000_000, "ordinary_lhs", "balanced_F1_F2_F3", "E5", "ordinary"),
-    PopulationReservation("final_boundary", "boundary_challenge_test", 1200, 27_000_000, "nominal_dt_boundary", "balanced_F1_F2_F3", "E6", "boundary"),
-    PopulationReservation("stress_structural", "structural_mismatch_stress", 600, 28_000_000, "half_ordinary_half_boundary", "F4_only", "E7", "descriptive_only"),
-    PopulationReservation("reliability_rare_event", "large_rare_event_test", 12000, 29_000_000, "half_ordinary_half_boundary", "balanced_F1_F2_F3", "E7", "frozen_matching_quantile"),
+    PopulationReservation("training", "model_fit", 900, 22_000_000, "ordinary_lhs", "balanced_F1_F2_F3", "model selection", "none"),
+    PopulationReservation("model_selection", "model_selection", 180, 23_000_000, "ordinary_lhs", "balanced_F1_F2_F3", "model selection", "none"),
+    PopulationReservation("calibration_ordinary", "conformal_calibration", 600, 24_000_000, "ordinary_lhs", "balanced_F1_F2_F3", "calibration", "ordinary"),
+    PopulationReservation("calibration_boundary", "conformal_calibration", 600, 25_000_000, "nominal_dt_boundary", "balanced_F1_F2_F3", "calibration", "boundary"),
+    PopulationReservation("final_ordinary", "untouched_final_test", 1200, 26_000_000, "ordinary_lhs", "balanced_F1_F2_F3", "primary evaluation", "ordinary"),
+    PopulationReservation("final_boundary", "boundary_challenge_test", 1200, 27_000_000, "nominal_dt_boundary", "balanced_F1_F2_F3", "boundary challenge", "boundary"),
+    PopulationReservation("stress_structural", "structural_mismatch_stress", 600, 28_000_000, "half_ordinary_half_boundary", "F4_only", "reliability evaluation", "descriptive_only"),
+    PopulationReservation("reliability_rare_event", "large_rare_event_test", 12000, 29_000_000, "half_ordinary_half_boundary", "balanced_F1_F2_F3", "reliability evaluation", "frozen_matching_quantile"),
 )
 
 
@@ -50,7 +50,7 @@ def _fault_for(reservation: PopulationReservation, index: int) -> str:
 
 
 def main() -> None:
-    prereg = assert_isolated_output_path(EXPERIMENT_ROOT / "FLASH_E2_PREDECLARATION.md")
+    prereg = assert_isolated_output_path(EXPERIMENT_ROOT / "population_preregistration.md")
     if not prereg.is_file():
         raise FileNotFoundError(prereg)
     population_rows: list[dict[str, object]] = []
@@ -69,7 +69,7 @@ def main() -> None:
                 "action_generator": item.action_generator,
                 "conformal_target": item.conformal_target,
                 "earliest_generation_stage": item.earliest_stage,
-                "trajectory_status_at_e2_freeze": "NOT_GENERATED_SEEDS_RESERVED_ONLY",
+                "trajectory_status_at_population_design_freeze": "NOT_GENERATED_SEEDS_RESERVED_ONLY",
             }
         )
         for index in range(item.size):
@@ -102,8 +102,8 @@ def main() -> None:
         seed_rows,
     )
     digest = hashlib.sha256(prereg.read_bytes()).hexdigest()
-    sidecar = assert_isolated_output_path(EXPERIMENT_ROOT / "FLASH_E2_PREDECLARATION.sha256")
-    sidecar.write_text(f"{digest}  FLASH_E2_PREDECLARATION.md\n", encoding="ascii")
+    sidecar = assert_isolated_output_path(EXPERIMENT_ROOT / "population_preregistration.sha256")
+    sidecar.write_text(f"{digest}  population_preregistration.md\n", encoding="ascii")
     print(f"Reserved {len(seed_rows)} unique episode seeds; preregistration SHA-256 {digest}")
 
 

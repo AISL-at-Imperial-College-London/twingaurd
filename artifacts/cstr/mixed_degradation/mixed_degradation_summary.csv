@@ -1,0 +1,5 @@
+population,method,number_of_episodes,upper_trajectory_coverage,SAFE_certification_rate,SAFE_count,false_safe_count,joint_false_safe_probability,joint_false_safe_CI_lower,joint_false_safe_CI_upper,conditional_false_safe_rate,conditional_false_safe_CI_lower,conditional_false_safe_CI_upper,NOT_CERTIFIED_rate,mean_conformal_width_k,median_online_latency_seconds
+CSTR primary evaluation,nominal_DT,1000,0.0,1.0,1000,394,0.394,0.3641755734830001,0.4246356993159376,0.394,0.3641755734830001,0.4246356993159376,0.0,0.0,0.16670105000957847
+CSTR primary evaluation,proposed_method,1000,0.957,0.338,338,0,0.0,0.0,0.0038267584855551234,0.0,0.0,0.011237545129682716,0.6619999999999999,2.4714150445758847,0.16670105000957847
+CSTR mixed degradation,nominal_DT,600,0.0,1.0,600,265,0.44166666666666665,0.40242822773279685,0.48164730405213496,0.44166666666666665,0.40242822773279685,0.48164730405213496,0.0,0.0,0.0
+CSTR mixed degradation,proposed_method,600,0.9483333333333334,0.235,141,0,0.0,0.0,0.00636170101370071,0.0,0.0,0.026521818075925647,0.765,3.875375337645288,0.7546049999991737

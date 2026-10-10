@@ -1,0 +1,23 @@
+audit_check,records_examined,failure_count,status,detail
+margin ladder/prior-reserved root seed intersection,5000,0,PASS,Must equal zero.
+duplicate margin ladder root seeds,5000,0,PASS,Calibration and test roots are disjoint.
+flash calibration/test seed overlap,3500,0,PASS,Must equal zero.
+flash calibration chronology,1500,0,PASS,Candidate precedes prediction; test prediction precedes decision and truth.
+flash test chronology,2000,0,PASS,Candidate precedes prediction; test prediction precedes decision and truth.
+CSTR test chronology,1500,0,PASS,Candidate precedes prediction; test prediction precedes decision and truth.
+pre-truth truth/fault/hidden-state key leakage,7831,0,PASS,Schema-level audit.
+flash decision reconstruction,10000,0,PASS,All five methods.
+flash envelope/margin reconstruction,10000,0,PASS,Frozen and band-specific q values.
+flash prediction hash binding,2000,0,PASS,Decision binds prediction SHA-256.
+CSTR decision reconstruction,3000,0,PASS,Nominal and frozen conformal methods.
+CSTR envelope/margin reconstruction,3000,0,PASS,Frozen q+ and 313 K threshold.
+CSTR prediction hash binding,1500,0,PASS,Decision binds prediction SHA-256.
+margin-conditioned config frozen before test candidates/truth,2000,0,PASS,Calibration config precedes the margin ladder test population.
+duplicate flash test action vectors,2000,0,PASS,152 repeated records all originate from the predeclared shared nominal/axial/corner set.
+reserved flash test episode accounting,2000,0,PASS,NO_ELIGIBLE_ACTION reservations remain explicit.
+reserved CSTR test episode accounting,1500,0,PASS,Repeated grid actions are intentional across distinct states.
+silent domain-exit replacement,2000,0,PASS,Every reserved test seed has one retained episode row; incomplete rollouts have a separate classification.
+flash physical-safety reconstruction,2000,0,PASS,Full normalized four-direction event with separate incomplete classification.
+CSTR physical-safety reconstruction,1500,0,PASS,Complete 313 K trajectory event.
+preregistration hash,1,0,PASS,Frozen before margin ladder truth.
+frozen source hashes,9,0,PASS,Critical simulator validation-reliability evaluation/model/calibration inputs from preregistration.

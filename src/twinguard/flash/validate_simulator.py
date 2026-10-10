@@ -1,4 +1,4 @@
-"""Generate the reproducible, healthy-only Milestone E1 validation package."""
+"""Check flash simulator behavior, plant-twin agreement, and physical constraints."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from twinguard.digital_twins.flash_drum import FlashDigitalTwin
+from twinguard.flash.digital_twin import FlashDigitalTwin
 from twinguard.plants.flash_drum import (
     FlashAction,
     FlashPlant,
@@ -195,7 +195,7 @@ def _make_figures(
 
 
 def main() -> dict[str, object]:
-    _safe_directory("e1_validation")
+    _safe_directory("simulator_validation")
     _safe_directory("figures")
     rng = np.random.default_rng(SEED)
     plant = FlashPlant()
@@ -337,7 +337,7 @@ def main() -> dict[str, object]:
             )
 
     summary: dict[str, object] = {
-        "milestone": "E1",
+        "stage": "simulator validation",
         "seed": SEED,
         "mixture": "benzene/toluene",
         "healthy_scenario_count": len(scenario_summaries),
@@ -367,10 +367,10 @@ def main() -> dict[str, object]:
         ),
     }
 
-    _write_csv(_safe_file("e1_validation/HEALTHY_TRAJECTORIES.csv"), healthy_rows)
-    _write_csv(_safe_file("e1_validation/HEALTHY_SCENARIO_SUMMARY.csv"), scenario_summaries)
-    _write_csv(_safe_file("e1_validation/ACTION_STEP_RESPONSES.csv"), response_rows)
-    with _safe_file("e1_validation/E1_VALIDATION_SUMMARY.json").open("w", encoding="utf-8") as handle:
+    _write_csv(_safe_file("simulator_validation/HEALTHY_TRAJECTORIES.csv"), healthy_rows)
+    _write_csv(_safe_file("simulator_validation/HEALTHY_SCENARIO_SUMMARY.csv"), scenario_summaries)
+    _write_csv(_safe_file("simulator_validation/ACTION_STEP_RESPONSES.csv"), response_rows)
+    with _safe_file("simulator_validation/simulator_validation_summary.json").open("w", encoding="utf-8") as handle:
         json.dump(summary, handle, indent=2, sort_keys=True)
         handle.write("\n")
     _make_figures(parity_plant, parity_twin, responses)
@@ -380,7 +380,7 @@ def main() -> dict[str, object]:
 
 def _write_validation_report(summary: Mapping[str, object]) -> None:
     deltas = summary["response_deltas"]
-    report = f"""# Flash E1 Validation
+    report = f"""# Flash simulator validation Validation
 
 ## Scope
 
@@ -425,15 +425,15 @@ from `N_L=650 mol`, `x_B=0.47`, and `T=352 K` back toward nominal operation.
 
 ## Decision
 
-### E1 GO
+### simulator validation GO
 
 Plant/DT mismatch is zero at numerical precision, all extensive balances and
 VLE identities close, sampled trajectories remain physical, the perturbed state
 recovers stably over two hours, and all four manipulated variables produce
 nontrivial, physically directed responses. Fault work may proceed in a later
-milestone; none was introduced here.
+stage; none was introduced here.
 """
-    _safe_file("FLASH_E1_VALIDATION.md").write_text(report, encoding="utf-8")
+    _safe_file("simulator_validation_report.md").write_text(report, encoding="utf-8")
 
 
 if __name__ == "__main__":

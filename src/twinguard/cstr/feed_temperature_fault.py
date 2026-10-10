@@ -1,4 +1,4 @@
-"""Milestone C1.6A: diagnostic validation of additional CSTR faults."""
+"""Define and evaluate the CSTR feed-temperature-step fault."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from twinguard.cstr import episode_design as b5
+from twinguard.cstr import episode_design as episode_design
 from twinguard.plants.cstr import FaultConfig, FaultManager
 
 
@@ -95,7 +95,7 @@ def _lag1(values: np.ndarray) -> float:
 def generate(config: Config):
     output = Path(config.output_dir)
     output.mkdir(parents=True, exist_ok=True)
-    template = b5.build_template(b5.MilestoneB5Config())
+    template = episode_design.build_template(episode_design.EpisodeDesignConfig())
     onset = float(template.t + PREFAULT_STEPS)
     rows: list[dict[str, object]] = []
     summaries: list[dict[str, object]] = []
@@ -108,7 +108,7 @@ def generate(config: Config):
                 for _ in range(PREFAULT_STEPS):
                     nominal.simulate_step(Fin_sp_normal=2 / 60, Fin_sp_startup=2 / 60)
                     plant.simulate_step(Fin_sp_normal=2 / 60, Fin_sp_startup=2 / 60)
-                trajectory_id = f"c16a_{trajectory_index:03d}_{mechanism}_{severity_label}_a{action_index}"
+                trajectory_id = f"cstr_fault_check_{trajectory_index:03d}_{mechanism}_{severity_label}_a{action_index}"
                 local_rows = []
                 for horizon in range(1, HORIZON + 1):
                     nominal_out = nominal.simulate_step(Fin_sp_normal=float(action), Fin_sp_startup=float(action))
@@ -157,8 +157,8 @@ def generate(config: Config):
                 residual_series[trajectory_id] = values
                 rows.extend(local_rows)
                 trajectory_index += 1
-    _write_csv(output / "FAULT_SMOKE_TEST_RESULTS.csv", rows)
-    _write_csv(output / "FAULT_TRAJECTORY_SUMMARY.csv", summaries)
+    _write_csv(output / "fault_smoke_test_results.csv", rows)
+    _write_csv(output / "fault_trajectory_summary.csv", summaries)
     return rows, summaries, residual_series
 
 
@@ -213,7 +213,7 @@ def create_reports(config: Config, summaries) -> str:
 
 - **Physical interpretation:** progressive heat-transfer surface fouling.
 - **Modified parameter:** plant `UA_eff`; nominal `UA = 500 J/s/K`.
-- **Diagnostic range:** 25%, 40%, and 55% loss, matching the established C1 fault family.
+- **Diagnostic range:** 25%, 40%, and 55% loss, matching the established primary certification fault family.
 - **Scope:** hidden plant only; nominal DT unchanged.
 - **Status:** the existing `UA_eff` implementation was not modified.
 
@@ -228,9 +228,9 @@ def create_reports(config: Config, summaries) -> str:
 
 Only the feed-temperature mechanism was added. Outlet-pump degradation was considered but rejected after a range probe because its temperature mismatch was <=0.14 K over 120 s, failing the nontrivial mismatch criterion. No false-safe behavior was used to set the feed-temperature range.
 """
-    (output/"FAULT_DEFINITIONS.md").write_text(definitions,encoding="utf-8")
+    (output/"fault_definitions.md").write_text(definitions,encoding="utf-8")
     table="\n".join(f"| {m.replace('_',' ')} | {n} | {safe} | {unsafe} | {lo:.3f} | {hi:.3f} | {stable}/{n} |" for m,n,safe,unsafe,lo,hi,stable in lines)
-    report=f"""# Milestone C1.6A fault smoke-test verdict
+    report=f"""# feed-temperature fault definition fault smoke-test verdict
 
 | Mechanism | Trajectories | Safe | Boundary crossing | Min max-residual (K) | Max max-residual (K) | Numerically stable |
 |---|---:|---:|---:|---:|---:|---:|
@@ -242,7 +242,7 @@ The feed-temperature fault is nontrivial and action-dependent, includes safe and
 
 ### {verdict}
 """
-    (output/"GO_NO_GO.md").write_text(report,encoding="utf-8")
+    (output/"decision_summary.md").write_text(report,encoding="utf-8")
     return verdict
 
 

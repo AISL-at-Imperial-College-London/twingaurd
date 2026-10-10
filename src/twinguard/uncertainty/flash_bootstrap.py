@@ -40,7 +40,7 @@ def coherent_predictive_summary(
     """Sample coherent paths by keeping one model for every path and horizon."""
 
     if ensemble_size not in ENSEMBLE_CANDIDATES:
-        raise ValueError("ensemble size is not an E2-predeclared candidate")
+        raise ValueError("ensemble size is not an population design-predeclared candidate")
     if len(models) < ensemble_size:
         raise ValueError("insufficient accepted bootstrap models")
     if trajectory_count % ensemble_size:

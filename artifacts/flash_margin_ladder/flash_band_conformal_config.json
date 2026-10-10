@@ -1,0 +1,56 @@
+{
+  "bands": {
+    "B0": {
+      "alpha": 0.05,
+      "complete_calibration_count": 236,
+      "minimum_required": 200,
+      "quantile": 10.068457977101797,
+      "rank": 226,
+      "supported": true
+    },
+    "B1": {
+      "alpha": 0.05,
+      "complete_calibration_count": 242,
+      "minimum_required": 200,
+      "quantile": 9.612978545240104,
+      "rank": 231,
+      "supported": true
+    },
+    "B2": {
+      "alpha": 0.05,
+      "complete_calibration_count": 252,
+      "minimum_required": 200,
+      "quantile": 11.8277879559331,
+      "rank": 241,
+      "supported": true
+    },
+    "B3": {
+      "alpha": 0.05,
+      "complete_calibration_count": 262,
+      "minimum_required": 200,
+      "quantile": 11.203469573791013,
+      "rank": 250,
+      "supported": true
+    },
+    "B4": {
+      "alpha": 0.05,
+      "complete_calibration_count": 275,
+      "minimum_required": 200,
+      "quantile": 12.046427403897065,
+      "rank": 263,
+      "supported": true
+    }
+  },
+  "calibration_scores_sha256": "534f9c3213e5f81e5cfc30b120743bf13c71afe87dfb93028bfd554436175d3b",
+  "finite_sample_rank": "ceil((n_cal+1)*(1-alpha))",
+  "frozen_before_test_truth": true,
+  "frozen_pooled_analysis_a_quantile": 11.04859850832729,
+  "preregistration_sha256": "e321aa3a4650cc323e5a03d8477c401befdb82257be920355572297ebe7651f8",
+  "scale_floors": [
+    0.005,
+    0.005,
+    0.25
+  ],
+  "schema_version": "FLASH_BAND_CONFORMAL_CONFIG_1.0",
+  "score": "max over horizon and high-P/high-T/high-L/low-L standardized directions"
+}

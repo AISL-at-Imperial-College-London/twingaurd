@@ -1,8 +1,8 @@
 {
   "configuration": {
-    "b9_dir": "results/milestone_b9",
-    "b10_dir": "results/milestone_b10",
-    "output_dir": "results/milestone_b11",
+    "fit_dir": "artifacts/cstr/discrepancy_fit",
+    "freeze_dir": "artifacts/cstr/discrepancy_freeze",
+    "output_dir": "artifacts/cstr/bootstrap_ensemble",
     "bootstrap_target": 50,
     "bootstrap_max_attempts": 75,
     "calibration_per_category": 20,
@@ -13,7 +13,7 @@
     "limit_episodes": null
   },
   "frozen_U0_identity": "B9S_seed_91005_limit_100",
-  "bootstrap_source": "original results/milestone_b9/training_population.npz only",
+  "bootstrap_source": "original artifacts/cstr/discrepancy_fit/training_population.npz only",
   "bootstrap_unit": "complete episode",
   "acceptance": "converged by 100 iterations, finite likelihood, spectral radius < 1; attempts up to 75 declared before fitting",
   "selected_J": 10,

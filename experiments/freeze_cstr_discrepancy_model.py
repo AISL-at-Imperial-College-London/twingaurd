@@ -1,6 +1,6 @@
 """Freeze the selected CSTR latent discrepancy model and run its variance diagnostics
-(frozen output: artifacts/cstr/discrepancy_freeze). Requires the frozen archive (B5 episodes;
-pass --source-dir archive/artifacts/cstr/episode_design).
+(recorded output: artifacts/cstr/discrepancy_freeze). Reads the CSTR episode population
+(see run_cstr_episode_design.py).
 """
 
 from _runner import cstr_stage

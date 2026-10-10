@@ -1,4 +1,4 @@
-"""Freeze the E6B design and seed namespace before any physical truth."""
+"""Define the margin-ladder populations, seed blocks, and evaluation settings."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from pathlib import Path
 
 from twinguard.scenarios.flash_population_design import purpose_seed
 
-from twinguard.utils.margin_ladder_output_guard import EXPERIMENT_ROOT, REPOSITORY_ROOT, assert_e6b_output
+from twinguard.utils.margin_ladder_output_guard import EXPERIMENT_ROOT, REPOSITORY_ROOT, assert_margin_ladder_output
 
 
 FLASH_CALIBRATION_START = 70_000_000
@@ -26,29 +26,29 @@ BANDS = (
 )
 
 PRIOR_RESERVED_INTERVALS = (
-    ("CSTR_C1_calibration", 1_630_000, 1_630_999),
-    ("CSTR_C1_final", 1_730_000, 1_730_999),
-    ("CSTR_C1_screening", 1_830_000, 1_830_999),
-    ("CSTR_C16_training", 2_100_000, 2_100_599),
-    ("CSTR_C16_selection", 2_200_000, 2_200_059),
-    ("CSTR_C16_calibration", 2_300_000, 2_300_399),
-    ("CSTR_C16_final", 2_400_000, 2_400_599),
-    ("TWO_TANK_D2_training", 3_100_000, 3_100_479),
-    ("TWO_TANK_D2_selection", 3_200_000, 3_200_053),
-    ("TWO_TANK_D2_calibration", 3_300_000, 3_300_299),
-    ("TWO_TANK_D2_final", 3_400_000, 3_400_599),
-    ("TWO_TANK_D2_bootstrap", 3_500_000, 3_500_044),
-    ("CSTR_E6_boundary", 9_300_000, 9_300_299),
-    ("FLASH_E3_training", 22_000_000, 22_000_899),
-    ("FLASH_E3_selection", 23_000_000, 23_000_179),
-    ("FLASH_E4_calibration_ordinary", 24_000_000, 24_000_599),
-    ("FLASH_E4_calibration_boundary", 25_000_000, 25_000_599),
-    ("FLASH_E5_final", 26_000_000, 26_001_199),
-    ("FLASH_E6_boundary", 27_000_000, 27_001_199),
-    ("FLASH_E7_structural", 28_000_000, 28_000_599),
-    ("FLASH_E7_rare_event_reserved", 29_000_000, 29_011_999),
-    ("FLASH_E4_bootstrap", 31_000_000, 31_000_149),
-    ("CSTR_E7_reliability", 50_000_000, 50_002_999),
+    ("CSTR_PRIMARY_calibration", 1_630_000, 1_630_999),
+    ("CSTR_PRIMARY_final", 1_730_000, 1_730_999),
+    ("CSTR_PRIMARY_screening", 1_830_000, 1_830_999),
+    ("CSTR_MIXED_DEGRADATION_training", 2_100_000, 2_100_599),
+    ("CSTR_MIXED_DEGRADATION_selection", 2_200_000, 2_200_059),
+    ("CSTR_MIXED_DEGRADATION_calibration", 2_300_000, 2_300_399),
+    ("CSTR_MIXED_DEGRADATION_final", 2_400_000, 2_400_599),
+    ("TWO_TANK_training", 3_100_000, 3_100_479),
+    ("TWO_TANK_selection", 3_200_000, 3_200_053),
+    ("TWO_TANK_calibration", 3_300_000, 3_300_299),
+    ("TWO_TANK_final", 3_400_000, 3_400_599),
+    ("TWO_TANK_bootstrap", 3_500_000, 3_500_044),
+    ("CSTR_boundary", 9_300_000, 9_300_299),
+    ("FLASH_training", 22_000_000, 22_000_899),
+    ("FLASH_selection", 23_000_000, 23_000_179),
+    ("FLASH_calibration_ordinary", 24_000_000, 24_000_599),
+    ("FLASH_calibration_boundary", 25_000_000, 25_000_599),
+    ("FLASH_primary", 26_000_000, 26_001_199),
+    ("FLASH_boundary", 27_000_000, 27_001_199),
+    ("FLASH_structural", 28_000_000, 28_000_599),
+    ("FLASH_rare_event_reserved", 29_000_000, 29_011_999),
+    ("FLASH_bootstrap", 31_000_000, 31_000_149),
+    ("CSTR_reliability", 50_000_000, 50_002_999),
 )
 
 
@@ -85,7 +85,7 @@ def _write_seed_manifest() -> None:
             )
     roots = {int(row["episode_seed"]) for row in rows}
     if len(roots) != len(rows):
-        raise RuntimeError("duplicate E6B episode seed")
+        raise RuntimeError("duplicate margin ladder episode seed")
     prior_overlap = {
         seed
         for seed in roots
@@ -93,8 +93,8 @@ def _write_seed_manifest() -> None:
         if lower <= seed <= upper
     }
     if prior_overlap:
-        raise RuntimeError(f"E6B/prior seed overlap: {sorted(prior_overlap)[:5]}")
-    path = assert_e6b_output(EXPERIMENT_ROOT / "E6B_SEED_MANIFEST.csv")
+        raise RuntimeError(f"margin ladder/prior seed overlap: {sorted(prior_overlap)[:5]}")
+    path = assert_margin_ladder_output(EXPERIMENT_ROOT / "margin_ladder_seed_manifest.csv")
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
         writer.writeheader()
@@ -103,13 +103,13 @@ def _write_seed_manifest() -> None:
 
 def _source_hashes() -> dict[str, str]:
     files = (
-        "E_FLASH_RESS/flash_process.py",
-        "E_FLASH_RESS/flash_digital_twin.py",
-        "E_FLASH_RESS/selected_flash_model.json",
-        "E_FLASH_RESS/flash_bootstrap_models.json",
-        "E_FLASH_RESS/flash_conformal_config.json",
-        "E_FLASH_RESS/FLASH_E4_ARTIFACT_HASHES.txt",
-        "E_FLASH_RESS/RESS_FINAL_ARTIFACT_HASHES.txt",
+        "artifacts/flash_study/flash_drum.py",
+        "artifacts/flash_study/digital_twin.py",
+        "artifacts/flash_study/selected_flash_model.json",
+        "artifacts/flash_study/flash_bootstrap_models.json",
+        "artifacts/flash_study/flash_conformal_config.json",
+        "artifacts/flash_study/calibration_artifact_hashes.txt",
+        "artifacts/flash_study/reliability_artifact_hashes.txt",
         "artifacts/cstr/bootstrap_ensemble/bootstrap_models.json",
         "artifacts/cstr/primary_evaluation/one_sided_quantiles.csv",
     )
@@ -120,31 +120,31 @@ def write_preregistration() -> None:
     EXPERIMENT_ROOT.mkdir(parents=True, exist_ok=True)
     forbidden_truth = list(EXPERIMENT_ROOT.rglob("*truth*"))
     if forbidden_truth:
-        raise RuntimeError("cannot preregister after E6B truth artifacts exist")
+        raise RuntimeError("cannot preregister after margin ladder truth artifacts exist")
     _write_seed_manifest()
     hashes = _source_hashes()
     hash_lines = "\n".join(f"- `{path}`: `{digest}`" for path, digest in hashes.items())
     prior_lines = "\n".join(
         f"- `{name}`: `{lower}-{upper}`" for name, lower, upper in PRIOR_RESERVED_INTERVALS
     )
-    text = f"""# E6B Prospective Preregistration
+    text = f"""# margin ladder Prospective Preregistration
 
-Status: frozen before any E6B physical future was generated. This is a
-post-E6 prospective extension; it was not preregistered in E2.
+Status: frozen before any margin ladder physical future was generated. This is a
+post-boundary challenge prospective extension; it was not preregistered in population design.
 
 ## Immutable Inputs
 
 The CSTR and flash nominal twins, mean models, bootstrap ensembles, physical
 limits, scale floors, ensemble sizes, predictive trajectory counts, and prior
 conformal quantiles remain frozen. Analysis A uses the frozen flash ordinary
-pooled `q=11.04859850832729` for every band because E6B spans the continuous
-ordinary action domain. The E6B selection mechanism is new, so Analysis A is a
+pooled `q=11.04859850832729` for every band because margin ladder spans the continuous
+ordinary action domain. The margin ladder selection mechanism is new, so Analysis A is a
 prospective reliability characterization rather than an automatic formal
 split-conformal guarantee. CSTR uses frozen `q+=5.464557586938352`.
 
 {hash_lines}
 
-Repository baseline before E6B: git commit `756c6a2d4cb17fc31c1d7c081feaab3e69b9ca6e`.
+Repository baseline before margin ladder: git commit `756c6a2d4cb17fc31c1d7c081feaab3e69b9ca6e`.
 
 ## Seed Audit
 
@@ -159,7 +159,7 @@ New mutually disjoint roots:
 - CSTR margin test: `{CSTR_TEST_START}-{CSTR_TEST_START + CSTR_TEST_COUNT - 1}` (300 reserved per band).
 
 The complete episode and purpose-stream allocation is in
-`E6B_SEED_MANIFEST.csv`. Programmatic interval intersection must equal zero.
+`margin_ladder_seed_manifest.csv`. Programmatic interval intersection must equal zero.
 
 ## Frozen Margin Ladder
 
@@ -190,7 +190,7 @@ frozen pooled conformal (`alpha=0.05`) without refitting or recalibration.
 
 Use the same frozen whole-trajectory safety-direction score. Compute one
 finite-sample corrected 95% quantile independently for each B0-B4 band from the
-fresh E6B calibration population. A band requires at least 200 complete scores;
+fresh margin ladder calibration population. A band requires at least 200 complete scores;
 otherwise it is `UNSUPPORTED` and every test action in that band is NOT
 CERTIFIED. Bins may not be merged after truth.
 
@@ -212,22 +212,22 @@ fixed 1 K engineering scale; this preserves the old threshold and the existing
 
 ## Verdict Rule
 
-- `E6B RELIABILITY OPERATING ENVELOPE ESTABLISHED` if M3 has nonzero useful
+- `margin ladder RELIABILITY OPERATING ENVELOPE ESTABLISHED` if M3 has nonzero useful
   certification in at least three populated bands, false-safe risk remains
   materially below M0, and availability recovers approximately monotonically.
-- `E6B OPERATING ENVELOPE ESTABLISHED WITH LIMITATIONS` if a nontrivial recovery
+- `margin ladder OPERATING ENVELOPE ESTABLISHED WITH LIMITATIONS` if a nontrivial recovery
   region exists but monotonicity, coverage, domain exits, or residual risk needs
   qualification.
-- `E6B METHOD REMAINS OVERLY CONSERVATIVE` if useful M3 certification does not
+- `margin ladder METHOD REMAINS OVERLY CONSERVATIVE` if useful M3 certification does not
   recover away from B0.
-- `E6B RELIABILITY TRANSFER NOT SUPPORTED` if false-safe behavior is not
+- `margin ladder RELIABILITY TRANSFER NOT SUPPORTED` if false-safe behavior is not
   materially improved over M0 or cross-process behavior is inconsistent.
 """
-    prereg = assert_e6b_output(EXPERIMENT_ROOT / "E6B_PREDECLARATION.md")
+    prereg = assert_margin_ladder_output(EXPERIMENT_ROOT / "margin_ladder_preregistration.md")
     prereg.write_text(text, encoding="utf-8")
     digest = _sha256(prereg)
-    assert_e6b_output(EXPERIMENT_ROOT / "E6B_PREDECLARATION.sha256").write_text(
-        f"{digest}  E6B_PREDECLARATION.md\n", encoding="ascii"
+    assert_margin_ladder_output(EXPERIMENT_ROOT / "margin_ladder_preregistration.sha256").write_text(
+        f"{digest}  margin_ladder_preregistration.md\n", encoding="ascii"
     )
 
 

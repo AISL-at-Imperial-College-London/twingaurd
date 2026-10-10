@@ -1,0 +1,50 @@
+{
+  "schema_version": "BOUNDARY_CHALLENGE_DESIGN_1.0",
+  "frozen_before_boundary_truth": true,
+  "flash": {
+    "population": "final_boundary",
+    "episode_count": 1200,
+    "seed_start": 27000000,
+    "seed_end": 27001199,
+    "fault_assignment": "balanced cyclic F1/F2/F3",
+    "candidate_pool": "population design frozen 128-point centered LHS plus 25 targeted points",
+    "selection_input": "nominal digital twin only",
+    "boundary_delta_normalized": 0.15,
+    "top_boundary_ranks": 8,
+    "fallback": "single closest valid nominal-DT action; no regeneration",
+    "calibration_population": "calibration_boundary",
+    "calibration_episode_count": 463,
+    "confidence_levels": [0.9, 0.925, 0.95, 0.975, 0.99],
+    "quantiles": [
+      9.0228762395739,
+      10.068982705941224,
+      11.349920831470156,
+      12.496388687845336,
+      14.164732647450517
+    ],
+    "ensemble_size": 10,
+    "predictive_trajectories": 2000
+  },
+  "cstr": {
+    "population": "CSTR_BOUNDARY_CHALLENGE",
+    "episode_count": 300,
+    "seed_start": 9300000,
+    "seed_end": 9300299,
+    "candidate_pool": "129-point deterministic grid over 0.012 to 0.045 L/s",
+    "selection_input": "nominal digital twin only",
+    "boundary_delta_k": 0.25,
+    "top_boundary_ranks": 8,
+    "fallback": "single closest nominal-DT action; no regeneration",
+    "frozen_confidence": 0.95,
+    "frozen_q_plus": 5.464557586938352,
+    "ensemble_size": 10,
+    "predictive_trajectories": 2000
+  },
+  "frozen_source_hashes": {
+    "flash_primary_hash_manifest_sha256": "36645312f7357730922b5b88f6d96c33036e60e69e2c310462702e46f42186db",
+    "cstr_one_sided_quantiles_sha256": "35ebe6c02d0651819d6378aa6bc34104e596becd8a495ce3d7c18fcf1832d9b5",
+    "cstr_safety_calibration_scores_sha256": "20887c9ca5b30b92dcb5235f351c4b5798f88517b1160731b6886124cb3a14f7",
+    "cstr_bootstrap_models_sha256": "247376d2cfdcb33696f922ef2895a008a9dbd00f03673c7f8728f0b5c70095ad"
+  },
+  "denominator_policy": "Flash and CSTR boundary populations remain separate from each other and from all frozen primary certification/mixed-degradation evaluation/primary evaluation denominators. Domain exits are retained and never replaced."
+}

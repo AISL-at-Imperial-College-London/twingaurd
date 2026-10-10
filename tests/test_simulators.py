@@ -7,7 +7,7 @@ from dataclasses import fields
 import numpy as np
 import pytest
 
-from twinguard.digital_twins.flash_drum import FlashDigitalTwin
+from twinguard.flash.digital_twin import FlashDigitalTwin
 from twinguard.plants.cstr import FaultConfig
 from twinguard.plants.flash_drum import FlashParameters, FlashPlant
 from twinguard.plants.flash_drum_valve_lag import VaporValveLagPlant, sample_vapor_valve_lag

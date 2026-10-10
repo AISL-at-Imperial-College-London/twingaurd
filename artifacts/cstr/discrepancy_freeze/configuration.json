@@ -1,8 +1,8 @@
 {
   "config": {
-    "source_dir": "results/milestone_b5",
-    "b9_dir": "results/milestone_b9",
-    "output_dir": "results/milestone_b10",
+    "source_dir": "artifacts/cstr/episode_design",
+    "fit_dir": "artifacts/cstr/discrepancy_fit",
+    "output_dir": "artifacts/cstr/discrepancy_freeze",
     "posterior_samples": 2000,
     "bootstrap_samples": 2000,
     "workers": 5,

@@ -13,7 +13,6 @@ ARTIFACTS = REPOSITORY_ROOT / "artifacts"
 FLASH = ARTIFACTS / "flash_study"
 LADDER = ARTIFACTS / "flash_margin_ladder"
 CSTR = ARTIFACTS / "cstr"
-PROVENANCE = REPOSITORY_ROOT / "reproducibility" / "provenance"
 
 
 @dataclass

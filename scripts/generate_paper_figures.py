@@ -1,28 +1,27 @@
 """Verify or regenerate the paper figures in results/figures/.
 
     python scripts/generate_paper_figures.py
-        Verify that every figure in results/figures/ is byte-identical to the figure produced by
-        the frozen experiment run (SHA-256 recorded in reproducibility/provenance/file_map.csv).
+        Verify that every figure in results/figures/ matches the SHA-256 recorded in
+        reproducibility/artifact_manifest.csv.
 
     python scripts/generate_paper_figures.py --regenerate --workspace runs/figures
-        Re-draw the figures with the original plotting functions in a fresh workspace:
-          * flash simulator figures (parity, step responses): rerun of the simulator validation
-          * flash primary figures (representative rollout, nominal/conformal margin geometry):
-            rebuilt from the archived per-episode artifacts
-          * CSTR vs flash boundary figure: rebuilt from the archived boundary artifacts
-        Regeneration of the archived-artifact figures needs the frozen archive. Byte identity is not
-        expected across matplotlib versions, so the regenerated files are listed next to their frozen
-        counterparts for visual comparison.
+        Re-draw the flash simulator figures (healthy-plant / twin parity and manipulated-action step
+        responses) by rerunning the simulator validation in a fresh workspace. Byte identity is not
+        expected across matplotlib versions, so the regenerated files are listed next to the released
+        ones for visual comparison.
 
-Margin-ladder and structural-mismatch figures are drawn by their stage modules
-(experiments/evaluate_flash_margin_ladder.py --stage finalize, and the final audit).
+The other figures are drawn by the stage that produces their data:
+
+    flash primary evaluation figures      experiments/evaluate_flash_primary.py
+    CSTR vs flash boundary figure          experiments/evaluate_boundary_challenge.py
+    structural-mismatch diagnostics        experiments/evaluate_structural_mismatch_and_mixed_regime_audits.py
+    margin-ladder figures                  experiments/evaluate_flash_margin_ladder.py --stage finalize
 """
 
 from __future__ import annotations
 
 import argparse
 import csv
-import gzip
 import hashlib
 import os
 import subprocess
@@ -30,64 +29,48 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "experiments"))
+sys.path.insert(0, str(ROOT))
 
-from _runner import FROZEN_FLASH_ROOT, prepare_workspace  # noqa: E402
+from experiments._runner import FLASH_ROOT, prepare_workspace  # noqa: E402
 
-FIGURE_SOURCES = {}
-with gzip.open(ROOT / "reproducibility/provenance/file_map.csv.gz", "rt", newline="", encoding="utf-8") as handle:
-    for row in csv.DictReader(handle):
-        if row["release_path"].startswith("results/figures/"):
-            FIGURE_SOURCES[row["release_path"]] = row
+SIMULATOR_FIGURES = {  # figure written by the simulator validation -> released paper figure
+    "figures/healthy_plant_dt_parity.png": "results/figures/appendix/flash_healthy_plant_twin_parity.png",
+    "figures/action_step_responses.png": "results/figures/appendix/flash_manipulated_action_step_responses.png",
+}
 
-REGENERATE = r"""
-import csv
-from twinguard.utils.paths import FLASH_STUDY_ROOT as root
 
-def ledger(path):
-    with open(path, newline="", encoding="utf-8") as handle:
-        return list(csv.DictReader(handle))
-
-if "{stage}" == "primary":
-    from twinguard.flash import evaluate_primary as e5
-    rows = e5.evaluate_artifacts(ledger(root / "e5_artifact_audit.csv"))
-    e5.create_figures(rows, e5.aggregate(rows, "pooled", "all_final_ordinary") + e5.subgroup_rows(rows))
-else:
-    from twinguard.evaluation import boundary_challenge as e6
-    flash = e6.evaluate_flash_boundary(ledger(root / "e6_artifacts/FLASH_RESS_STRESS_ARTIFACT_AUDIT.csv"))
-    cstr = e6.evaluate_cstr_boundary(ledger(root / "e6_artifacts/CSTR_RESS_STRESS_ARTIFACT_AUDIT.csv"))
-    e6.create_figures(flash, cstr, e6.risk_rows(flash, cstr))
-"""
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def verify() -> int:
+    with (ROOT / "reproducibility/artifact_manifest.csv").open(newline="", encoding="utf-8") as handle:
+        recorded = {row["path"]: row["sha256"] for row in csv.DictReader(handle) if row["path"].startswith("results/figures/")}
     failures = 0
-    for release_path, row in sorted(FIGURE_SOURCES.items()):
-        digest = hashlib.sha256((ROOT / release_path).read_bytes()).hexdigest()
-        status = "OK " if digest == row["sha256"] else "MISMATCH"
-        failures += status != "OK "
-        print(f"{status} {release_path}  <-  frozen {row['original_path']}")
+    for path in sorted(recorded):
+        ok = (ROOT / path).is_file() and _sha256(ROOT / path) == recorded[path]
+        failures += not ok
+        print(f"{'OK      ' if ok else 'MISMATCH'} {path}")
+    on_disk = {p.relative_to(ROOT).as_posix() for p in (ROOT / "results/figures").rglob("*") if p.is_file()}
+    for path in sorted(on_disk - set(recorded)):
+        failures += 1
+        print(f"UNLISTED {path}")
     return 1 if failures else 0
 
 
 def regenerate(workspace: Path) -> int:
-    env = dict(os.environ, MPLBACKEND="Agg", TWINGUARD_ROOT=str(ROOT), TWINGUARD_FLASH_STUDY_ROOT=str(workspace.resolve()),
-               PYTHONPATH=os.pathsep.join([str(ROOT / "src"), os.environ.get("PYTHONPATH", "")]))
-    archive = (ROOT / "artifacts/flash_study/e5_artifacts/predictions").is_dir()
-    prepare_workspace(FROZEN_FLASH_ROOT, workspace, ["figures", "e1_validation", "FLASH_E1_VALIDATION.md", "e5_figures", "e6_figures"],
-                      include_archive=False)
+    workspace = prepare_workspace(FLASH_ROOT, workspace, ["figures", "simulator_validation", "simulator_validation_report.md"])
+    env = dict(os.environ, MPLBACKEND="Agg", TWINGUARD_ROOT=str(ROOT), TWINGUARD_FLASH_STUDY_ROOT=str(workspace),
+               PYTHONPATH=os.pathsep.join(filter(None, [str(ROOT / "src"), os.environ.get("PYTHONPATH", "")])))
     status = subprocess.call([sys.executable, "-m", "twinguard.flash.validate_simulator"], cwd=ROOT, env=env)
-    if archive:
-        for stage in ("primary", "boundary"):
-            status |= subprocess.call([sys.executable, "-c", REGENERATE.format(stage=stage)], cwd=ROOT, env=env)
-    else:
-        print("frozen archive not extracted: skipping figures that are drawn from per-episode artifacts")
-    for release_path, row in sorted(FIGURE_SOURCES.items()):
-        relative = row["original_path"].split("/", 1)[1]
-        regenerated = workspace / relative
-        if row["original_path"].startswith("E_FLASH_RESS/") and regenerated.is_file():
-            same = hashlib.sha256(regenerated.read_bytes()).hexdigest() == row["sha256"]
-            print(f"{'identical' if same else 'redrawn  '} {regenerated}  vs  {release_path}")
+    for produced, released in SIMULATOR_FIGURES.items():
+        regenerated = workspace / produced
+        if not regenerated.is_file():
+            print(f"missing    {regenerated}")
+            status |= 1
+            continue
+        same = _sha256(regenerated) == _sha256(ROOT / released)
+        print(f"{'identical' if same else 'redrawn  '}  {regenerated}  vs  {released}")
     return status
 
 

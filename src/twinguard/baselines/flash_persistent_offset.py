@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Persistent-offset + fixed-scale conformal baseline for frozen flash E4/E5.
+"""Persistent-offset conformal baseline for the flash process.
 
-Reuses verified E4 calibration reconstruction helper, original fixed scales,
-and exact frozen E5 prediction/truth files. Does NOT regenerate E5 futures.
+Uses the saved calibration design and fixed engineering scales with the
+frozen test predictions and truths. Does not regenerate test futures.
 Uses twinguard.baselines.flash_conformal_controls.
 """
 from __future__ import annotations
@@ -36,7 +36,7 @@ def calibration(root,truths,window,mode):
         result.append({'episode_id':eid,'score':float(score),'max_direction':direction,
                        'max_horizon':horizon,'offset_pressure':bias[0],
                        'offset_level':bias[1],'offset_temperature':bias[2]})
-    if len(result)!=447: raise RuntimeError(f'Expected 447 E4 complete calibration episodes, got {len(result)}')
+    if len(result)!=447: raise RuntimeError(f'Expected 447 calibration complete calibration episodes, got {len(result)}')
     return result
 
 
@@ -63,7 +63,7 @@ def evaluate(root,q,window,mode):
     return rows
 
 
-TRUTH_CACHE='e4_calibration_truths_verified.npz'
+TRUTH_CACHE='calibration_truths_verified.npz'
 
 
 def load_or_regenerate_truths(root,out,workers):
@@ -71,17 +71,17 @@ def load_or_regenerate_truths(root,out,workers):
     cache=out/TRUTH_CACHE
     if cache.exists():
         with np.load(cache,allow_pickle=False) as saved:
-            if [str(x) for x in saved['episode_id']]==frozen_ids and bool(saved['all_inputs_matched_frozen_e4']):
-                print(f'Reading cached, verified E4 calibration futures from {cache}',flush=True)
+            if [str(x) for x in saved['episode_id']]==frozen_ids and bool(saved['all_inputs_matched_frozen_calibration_stage']):
+                print(f'Reading cached, verified calibration futures from {cache}',flush=True)
                 return {eid:np.asarray(f,float) for eid,f in zip(frozen_ids,saved['actual_future'])}
-        print(f'{cache} does not match the frozen E4 inputs; regenerating',flush=True)
-    print(f'Regenerating {len(frozen_ids)} E4 ordinary calibration futures with {workers} workers ...',flush=True)
+        print(f'{cache} does not match the frozen calibration inputs; regenerating',flush=True)
+    print(f'Regenerating {len(frozen_ids)} calibration ordinary calibration futures with {workers} workers ...',flush=True)
     checks,truths=base.regenerate_calibration_truth(root,workers)
-    if any(int(c['frozen_input_match'])!=1 for c in checks): raise RuntimeError('Frozen E4 check failed')
-    base.write_csv(out/'e4_regeneration_checks.csv',checks)
+    if any(int(c['frozen_input_match'])!=1 for c in checks): raise RuntimeError('Frozen calibration check failed')
+    base.write_csv(out/'calibration_regeneration_checks.csv',checks)
     np.savez_compressed(cache,episode_id=np.asarray(frozen_ids),
                         actual_future=np.asarray([truths[e] for e in frozen_ids]),
-                        all_inputs_matched_frozen_e4=np.asarray(True))
+                        all_inputs_matched_frozen_calibration_stage=np.asarray(True))
     return truths
 
 
@@ -96,26 +96,26 @@ def main():
     a=p.parse_args()
     if not 0<a.alpha<1 or a.window<=0: raise ValueError('Invalid alpha/window')
     root=Path(a.experiment_dir);out=Path(a.output_dir);out.mkdir(parents=True,exist_ok=True)
-    # Verify frozen layout and ensure E5 provides historical residuals before any E4 work.
-    required=[root/'e4_data'/'calibration_ordinary_operational_inputs.npz',
-              root/'e5_artifacts'/'predictions', root/'e5_artifacts'/'truths']
+    # Verify frozen layout and ensure primary evaluation provides historical residuals before any calibration work.
+    required=[root/'calibration_data'/'calibration_ordinary_operational_inputs.npz',
+              root/'primary_evaluation_episodes'/'predictions', root/'primary_evaluation_episodes'/'truths']
     missing=[str(x) for x in required if not x.exists()]
     if missing: raise FileNotFoundError('Missing flash artifacts: '+', '.join(missing))
-    e5files=sorted((root/'e5_artifacts'/'predictions').glob('*.npz'))
-    if len(e5files)!=1200: raise RuntimeError(f'Expected 1200 E5 predictions, found {len(e5files)}')
+    e5files=sorted((root/'primary_evaluation_episodes'/'predictions').glob('*.npz'))
+    if len(e5files)!=1200: raise RuntimeError(f'Expected 1200 primary evaluation predictions, found {len(e5files)}')
     seen_complete=False
     for sample in e5files:
         with np.load(sample,allow_pickle=False) as rec:
             if base.scalar_str(rec['prediction_status'])=='COMPLETE':
                 seen_complete=True
                 if 'observed_residual' not in rec.files:
-                    raise KeyError(f'{sample}: E5 pre-decision residuals absent')
+                    raise KeyError(f'{sample}: primary evaluation pre-decision residuals absent')
                 if np.asarray(rec['observed_residual']).ndim!=2:
                     raise ValueError(f'{sample}: invalid observed residual shape')
                 break
-    if not seen_complete: raise RuntimeError('No complete E5 prediction exists')
-    # E4 stored calibration inputs and scores but not calibration futures. Regenerate them once
-    # (verified against the frozen E4 inputs) and cache them; later runs read the cache.
+    if not seen_complete: raise RuntimeError('No complete primary evaluation prediction exists')
+    # calibration stored calibration inputs and scores but not calibration futures. Regenerate them once
+    # (verified against the frozen calibration inputs) and cache them; later runs read the cache.
     truths=load_or_regenerate_truths(root,out,a.workers)
     cal=calibration(root,truths,a.window,a.mode)
     q,_=base.corrected_quantile(np.array([r['score'] for r in cal]),a.alpha)

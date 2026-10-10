@@ -1,4 +1,4 @@
-"""Milestone B.9: shared latent discrepancy state-space model."""
+"""Fit a latent state-space model to CSTR nominal-twin residuals."""
 
 from __future__ import annotations
 
@@ -19,9 +19,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import chi2
 
-from twinguard.cstr import episode_design as b5
-from twinguard.cstr import recursive_rollout_diagnostics as b6
-from twinguard.cstr import stable_arx_order_study as b7b
+from twinguard.cstr import episode_design as episode_design
+from twinguard.cstr import recursive_rollout_diagnostics as recursive_diagnostics
+from twinguard.cstr import stable_arx_order_study as arx_order_study
 from twinguard.discrepancy.cstr_state_space import (
     StateSpaceParameters,
     fit_state_space_em,
@@ -39,10 +39,10 @@ FORBIDDEN_FEATURE_TOKENS=("fault","ua","fouling","magnitude","faulty_state","pla
 
 
 @dataclass(frozen=True)
-class MilestoneB9Config:
+class DiscrepancyFitConfig:
     source_dir:str="artifacts/cstr/episode_design"
-    b7b_dir:str="artifacts/cstr/stable_arx_order_study"
-    b8_dir:str="artifacts/cstr/observable_conditioning_study"
+    arx_dir:str="artifacts/cstr/stable_arx_order_study"
+    observable_dir:str="artifacts/cstr/observable_conditioning_study"
     output_dir:str="artifacts/cstr/discrepancy_fit"
     training_episodes:int=600
     training_steps:int=120
@@ -53,9 +53,9 @@ class MilestoneB9Config:
     limit_evaluation_episodes:int|None=None
 
     def validate(self)->None:
-        if any(token in name.lower() for name in FEATURE_NAMES for token in FORBIDDEN_FEATURE_TOKENS):raise ValueError("hidden feature entered B.9 design")
-        if self.training_episodes<=0 or self.training_steps<100 or self.workers<=0:raise ValueError("invalid B.9 population configuration")
-        if self.limit_evaluation_episodes is None and self.posterior_samples!=2000:raise ValueError("full B.9 freezes M=2000")
+        if any(token in name.lower() for name in FEATURE_NAMES for token in FORBIDDEN_FEATURE_TOKENS):raise ValueError("hidden feature entered discrepancy fit design")
+        if self.training_episodes<=0 or self.training_steps<100 or self.workers<=0:raise ValueError("invalid discrepancy fit population configuration")
+        if self.limit_evaluation_episodes is None and self.posterior_samples!=2000:raise ValueError("full discrepancy fit freezes M=2000")
 
 
 _TRAIN_TEMPLATE=None
@@ -70,20 +70,20 @@ def _training_episode_task(task:tuple[int,int,int])->dict[str,object]:
     index,seed,steps=task
     if _TRAIN_TEMPLATE is None or _TRAIN_CONFIG is None:raise RuntimeError("training worker not initialized")
     cfg=_TRAIN_CONFIG;rng=np.random.default_rng(seed);measurement_rng=np.random.default_rng(seed+1_000_000)
-    onset=float(rng.uniform(cfg.fault_onset_min_s,cfg.fault_onset_max_s));magnitude=float(rng.uniform(cfg.fault_magnitude_min,cfg.fault_magnitude_max));nominal,plant,metadata=b5._configure_episode_models(_TRAIN_TEMPLATE,cfg,rng,onset,magnitude)
+    onset=float(rng.uniform(cfg.fault_onset_min_s,cfg.fault_onset_max_s));magnitude=float(rng.uniform(cfg.fault_magnitude_min,cfg.fault_magnitude_max));nominal,plant,metadata=episode_design._configure_episode_models(_TRAIN_TEMPLATE,cfg,rng,onset,magnitude)
     previous_action=2/60
-    for _ in range(cfg.pre_fault_lead_steps):b5._paired_observation(nominal,plant,previous_action,measurement_rng,cfg.measurement_noise_k)
+    for _ in range(cfg.pre_fault_lead_steps):episode_design._paired_observation(nominal,plant,previous_action,measurement_rng,cfg.measurement_noise_k)
     residual=np.empty(steps);z=np.empty((steps,4));actions=np.empty(steps);block_remaining=0;action=previous_action;changes=0
     for t in range(steps):
         if block_remaining<=0:
             block_remaining=int(rng.integers(5,16));action=float(rng.uniform(.012,.045) if rng.random()<.25 else rng.uniform(.019,.036));changes+=int(t>0)
-        row=b5._paired_observation(nominal,plant,action,measurement_rng,cfg.measurement_noise_k);residual[t]=row["temperature_residual_k"];actions[t]=action;z[t]=[action,action-previous_action,row["nominal_twin_temperature_k"],t+1];previous_action=action;block_remaining-=1
+        row=episode_design._paired_observation(nominal,plant,action,measurement_rng,cfg.measurement_noise_k);residual[t]=row["temperature_residual_k"];actions[t]=action;z[t]=[action,action-previous_action,row["nominal_twin_temperature_k"],t+1];previous_action=action;block_remaining-=1
     return {"episode_index":index,"random_seed":seed,"hidden_fault_onset_s_evaluator_only":onset,"hidden_fault_magnitude_evaluator_only":magnitude,"initial_volume_perturbation_l_evaluator_only":metadata["initial_volume_perturbation_l"],"initial_concentration_scale_evaluator_only":metadata["initial_concentration_scale"],"initial_temperature_perturbation_k_evaluator_only":metadata["initial_temperature_perturbation_k"],"steps":steps,"action_min_lps":float(np.min(actions)),"action_max_lps":float(np.max(actions)),"action_changes":changes,"residual":residual,"z":z}
 
 
-def generate_training_population(config:MilestoneB9Config,template,output:Path)->tuple[list[tuple[np.ndarray,np.ndarray]],list[dict[str,object]]]:
+def generate_training_population(config:DiscrepancyFitConfig,template,output:Path)->tuple[list[tuple[np.ndarray,np.ndarray]],list[dict[str,object]]]:
     tasks=[(index,900_000+index,config.training_steps) for index in range(config.training_episodes)]
-    with ProcessPoolExecutor(max_workers=min(config.workers,len(tasks)),initializer=_init_training_worker,initargs=(template,b5.MilestoneB5Config(),)) as pool:results=list(pool.map(_training_episode_task,tasks,chunksize=1))
+    with ProcessPoolExecutor(max_workers=min(config.workers,len(tasks)),initializer=_init_training_worker,initargs=(template,episode_design.EpisodeDesignConfig(),)) as pool:results=list(pool.map(_training_episode_task,tasks,chunksize=1))
     episodes=[(np.asarray(r["residual"]),np.asarray(r["z"])) for r in results]
     manifest=[{k:v for k,v in r.items() if k not in ("residual","z")} for r in results]
     np.savez_compressed(output/"training_population.npz",residual=np.stack([e[0] for e in episodes]),z=np.stack([e[1] for e in episodes]))
@@ -94,7 +94,7 @@ def _fit_task(task:tuple[int,int,list[tuple[np.ndarray,np.ndarray]],int])->State
     k,seed,episodes,iterations=task;return fit_state_space_em(episodes,k,seed,max_iterations=iterations)
 
 
-def fit_candidates(config:MilestoneB9Config,episodes:list[tuple[np.ndarray,np.ndarray]])->tuple[dict[int,StateSpaceParameters],list[StateSpaceParameters]]:
+def fit_candidates(config:DiscrepancyFitConfig,episodes:list[tuple[np.ndarray,np.ndarray]])->tuple[dict[int,StateSpaceParameters],list[StateSpaceParameters]]:
     tasks=[(k,seed,episodes,config.em_iterations) for k in LATENT_DIMENSIONS for seed in config.initialization_seeds]
     with ProcessPoolExecutor(max_workers=min(config.workers,len(tasks))) as pool:candidates=list(pool.map(_fit_task,tasks,chunksize=1))
     selected={k:max((p for p in candidates if p.latent_dimension==k),key=lambda p:p.log_likelihood) for k in LATENT_DIMENSIONS}
@@ -110,7 +110,7 @@ _EVAL_SAMPLES=2000
 
 def _init_eval_worker(template,config,source,models,samples)->None:
     global _EVAL_TEMPLATE,_EVAL_CONFIG,_EVAL_SOURCE,_EVAL_MODELS,_EVAL_SAMPLES
-    _EVAL_TEMPLATE=template;_EVAL_CONFIG=config;_EVAL_SOURCE=Path(source);_EVAL_MODELS=models;_EVAL_SAMPLES=samples;b7b._init_worker(template,config,source,samples)
+    _EVAL_TEMPLATE=template;_EVAL_CONFIG=config;_EVAL_SOURCE=Path(source);_EVAL_MODELS=models;_EVAL_SAMPLES=samples;arx_order_study._init_worker(template,config,source,samples)
 
 
 def _selection_roles(rows:list[dict[str,str]])->list[dict[str,str]]:
@@ -122,7 +122,7 @@ def _selection_roles(rows:list[dict[str,str]])->list[dict[str,str]]:
 
 def _online_and_future(source_row:dict[str,str])->tuple[np.ndarray,np.ndarray,np.ndarray,np.ndarray,np.ndarray,float]:
     if _EVAL_SOURCE is None:raise RuntimeError("evaluation worker not initialized")
-    pre,learning,proposed=b7b._reconstruct_observations(source_row);previous=float(pre[-1]["action_lps"]);z_online=[]
+    pre,learning,proposed=arx_order_study._reconstruct_observations(source_row);previous=float(pre[-1]["action_lps"]);z_online=[]
     for index,row in enumerate(learning):
         action=float(row["action_lps"]);z_online.append([action,action-previous,float(row["nominal_twin_temperature_k"]),index+1]);previous=action
     residual_online=np.asarray([r["temperature_residual_k"] for r in learning]);episode_id=source_row["episode_id"]
@@ -190,12 +190,12 @@ def select_dimension(rows:Sequence[dict[str,object]])->tuple[int,dict[int,float]
 
 def _efficiency_episode_task(source_row:dict[str,str])->list[dict[str,object]]:
     if _EVAL_TEMPLATE is None or _EVAL_CONFIG is None:raise RuntimeError("efficiency worker not initialized")
-    cfg=_EVAL_CONFIG;seed=int(float(source_row["random_seed"]));rng=np.random.default_rng(seed);measurement_rng=np.random.default_rng(seed+1_000_000);action_rng=np.random.default_rng(seed+2_000_000);onset=float(rng.uniform(cfg.fault_onset_min_s,cfg.fault_onset_max_s));magnitude=float(rng.uniform(cfg.fault_magnitude_min,cfg.fault_magnitude_max));nominal,plant,_=b5._configure_episode_models(_EVAL_TEMPLATE,cfg,rng,onset,magnitude)
+    cfg=_EVAL_CONFIG;seed=int(float(source_row["random_seed"]));rng=np.random.default_rng(seed);measurement_rng=np.random.default_rng(seed+1_000_000);action_rng=np.random.default_rng(seed+2_000_000);onset=float(rng.uniform(cfg.fault_onset_min_s,cfg.fault_onset_max_s));magnitude=float(rng.uniform(cfg.fault_magnitude_min,cfg.fault_magnitude_max));nominal,plant,_=episode_design._configure_episode_models(_EVAL_TEMPLATE,cfg,rng,onset,magnitude)
     prior=2/60
-    for _ in range(cfg.pre_fault_lead_steps):b5._paired_observation(nominal,plant,prior,measurement_rng,cfg.measurement_noise_k)
-    proposed=b5._select_action_after_fit(source_row["action_category"],action_rng);observations=[];snapshots={}
+    for _ in range(cfg.pre_fault_lead_steps):episode_design._paired_observation(nominal,plant,prior,measurement_rng,cfg.measurement_noise_k)
+    proposed=episode_design._select_action_after_fit(source_row["action_category"],action_rng);observations=[];snapshots={}
     for index in range(100):
-        action=b5.TRAINING_ACTIONS_LPS[(index//cfg.training_action_block_steps)%len(b5.TRAINING_ACTIONS_LPS)];row=b5._paired_observation(nominal,plant,action,measurement_rng,cfg.measurement_noise_k);observations.append(row)
+        action=episode_design.TRAINING_ACTIONS_LPS[(index//cfg.training_action_block_steps)%len(episode_design.TRAINING_ACTIONS_LPS)];row=episode_design._paired_observation(nominal,plant,action,measurement_rng,cfg.measurement_noise_k);observations.append(row)
         if index+1 in ONLINE_COUNTS:snapshots[index+1]=(copy.deepcopy(nominal),copy.deepcopy(plant))
     parameter=next(iter(_EVAL_MODELS.values()));output=[]
     for n in ONLINE_COUNTS:
@@ -233,32 +233,32 @@ def _read_csv(path:Path)->list[dict[str,str]]:
     with path.open(newline="",encoding="utf-8") as handle:return list(csv.DictReader(handle))
 
 
-def build_horizon_summary(final:Sequence[dict[str,object]],selected_k:int,b7b_dir:Path,b8_dir:Path)->list[dict[str,object]]:
+def build_horizon_summary(final:Sequence[dict[str,object]],selected_k:int,arx_dir:Path,observable_dir:Path)->list[dict[str,object]]:
     output=[]
     for category in ("interpolation","boundary","extrapolation","pooled"):
         rows=list(final) if category=="pooled" else [r for r in final if r["action_category"]==category];errors=np.vstack([r["recursive_error"] for r in rows])
         for h in range(240):output.append({"model":f"latent_k{selected_k}","action_category":category,"horizon_step":h+1,"number_of_episodes":len(rows),"RMSE_k":float(np.sqrt(np.mean(errors[:,h]**2))),"bias_prediction_minus_truth_k":float(np.mean(errors[:,h]))})
-    for row in _read_csv(b8_dir/"horizon_summary.csv"):
-        if row["feature_set"]=="F1" and row["split_role"]=="final_assessment" and row["prediction_method"]=="recursive_posterior_mean":output.append({"model":"B8_F1","action_category":row["action_category"],"horizon_step":int(row["horizon_step"]),"number_of_episodes":int(row["number_of_episodes"]),"RMSE_k":float(row["RMSE_k"]),"bias_prediction_minus_truth_k":float(row["bias_prediction_minus_truth_k"])})
-    for row in _read_csv(b7b_dir/"horizon_error_summary.csv"):
-        if row["order"]=="1" and row["split_role"]=="final_assessment" and row["prediction_method"]=="posterior_mean":output.append({"model":"B7B_ARX1","action_category":row["action_category"],"horizon_step":int(row["horizon_step"]),"number_of_episodes":int(row["number_of_episodes"]),"RMSE_k":float(row["RMSE_k"]),"bias_prediction_minus_truth_k":float(row["bias_prediction_minus_truth_k"])})
+    for row in _read_csv(observable_dir/"horizon_summary.csv"):
+        if row["feature_set"]=="F1" and row["split_role"]=="final_assessment" and row["prediction_method"]=="recursive_posterior_mean":output.append({"model":"observable_F1","action_category":row["action_category"],"horizon_step":int(row["horizon_step"]),"number_of_episodes":int(row["number_of_episodes"]),"RMSE_k":float(row["RMSE_k"]),"bias_prediction_minus_truth_k":float(row["bias_prediction_minus_truth_k"])})
+    for row in _read_csv(arx_dir/"horizon_error_summary.csv"):
+        if row["order"]=="1" and row["split_role"]=="final_assessment" and row["prediction_method"]=="posterior_mean":output.append({"model":"stable_ARX1","action_category":row["action_category"],"horizon_step":int(row["horizon_step"]),"number_of_episodes":int(row["number_of_episodes"]),"RMSE_k":float(row["RMSE_k"]),"bias_prediction_minus_truth_k":float(row["bias_prediction_minus_truth_k"])})
     return output
 
 
-def build_baseline_comparison(final_summary:Sequence[dict[str,object]],b7b_dir:Path,b8_dir:Path)->list[dict[str,object]]:
-    b8rows=_read_csv(b8_dir/"feature_set_comparison.csv");b7rows=_read_csv(b7b_dir/"arx_order_comparison.csv");output=[]
+def build_baseline_comparison(final_summary:Sequence[dict[str,object]],arx_dir:Path,observable_dir:Path)->list[dict[str,object]]:
+    b8rows=_read_csv(observable_dir/"feature_set_comparison.csv");b7rows=_read_csv(arx_dir/"arx_order_comparison.csv");output=[]
     for category in ("interpolation","boundary","extrapolation","pooled"):
         latent=next(r for r in final_summary if r["action_category"]==category);f1=next(r for r in b8rows if r["feature_set"]=="F1" and r["split_role"]=="final_assessment" and r["action_category"]==category);arx=next(r for r in b7rows if r["order"]=="1" and r["split_role"]=="final_assessment" and r["action_category"]==category)
         output.extend([
             {"model":f"latent_k{latent['latent_dimension']}","action_category":category,"median_recursive_RMSE_k":latent["median_recursive_RMSE_k"],"innovation_bias_k":latent["innovation_mean_k"],"maximum_absolute_ACF_lags_1_10":latent["maximum_absolute_ACF_lags_1_10"],"horizon_240_RMSE_k":latent["horizon_240_RMSE_k"],"innovation_definition":"online Kalman innovations over N=50"},
-            {"model":"B8_F1","action_category":category,"median_recursive_RMSE_k":float(f1["recursive_RMSE"]),"innovation_bias_k":float(f1["innovation_bias"]),"maximum_absolute_ACF_lags_1_10":float(f1["max_innovation_ACF"]),"horizon_240_RMSE_k":float(f1["horizon_240_RMSE"]),"innovation_definition":"held-out teacher-forced innovations over H=240"},
-            {"model":"B7B_ARX1","action_category":category,"median_recursive_RMSE_k":float(arx["median_posterior_mean_trajectory_RMSE_k"]),"innovation_bias_k":float(arx["pooled_innovation_mean_k"]),"maximum_absolute_ACF_lags_1_10":float(arx["maximum_absolute_innovation_ACF_lags_1_10"]),"horizon_240_RMSE_k":"","innovation_definition":"held-out teacher-forced innovations over H=240"},
+            {"model":"observable_F1","action_category":category,"median_recursive_RMSE_k":float(f1["recursive_RMSE"]),"innovation_bias_k":float(f1["innovation_bias"]),"maximum_absolute_ACF_lags_1_10":float(f1["max_innovation_ACF"]),"horizon_240_RMSE_k":float(f1["horizon_240_RMSE"]),"innovation_definition":"held-out teacher-forced innovations over H=240"},
+            {"model":"stable_ARX1","action_category":category,"median_recursive_RMSE_k":float(arx["median_posterior_mean_trajectory_RMSE_k"]),"innovation_bias_k":float(arx["pooled_innovation_mean_k"]),"maximum_absolute_ACF_lags_1_10":float(arx["maximum_absolute_innovation_ACF_lags_1_10"]),"horizon_240_RMSE_k":"","innovation_definition":"held-out teacher-forced innovations over H=240"},
         ])
     return output
 
 
 def decision_rule(final_summary:Sequence[dict[str,object]],baseline:Sequence[dict[str,object]])->tuple[str,dict[str,float|bool]]:
-    latent=next(r for r in final_summary if r["action_category"]=="pooled");f1=next(r for r in baseline if r["model"]=="B8_F1" and r["action_category"]=="pooled");metrics={"median_recursive_RMSE_reduction":1-float(latent["median_recursive_RMSE_k"])/float(f1["median_recursive_RMSE_k"]),"absolute_innovation_bias_reduction":1-abs(float(latent["innovation_mean_k"]))/abs(float(f1["innovation_bias_k"])),"maximum_innovation_ACF_reduction":1-float(latent["maximum_absolute_ACF_lags_1_10"])/float(f1["maximum_absolute_ACF_lags_1_10"]),"final_maximum_innovation_ACF":float(latent["maximum_absolute_ACF_lags_1_10"]),"stable":bool(float(latent["spectral_radius"])<1)}
+    latent=next(r for r in final_summary if r["action_category"]=="pooled");f1=next(r for r in baseline if r["model"]=="observable_F1" and r["action_category"]=="pooled");metrics={"median_recursive_RMSE_reduction":1-float(latent["median_recursive_RMSE_k"])/float(f1["median_recursive_RMSE_k"]),"absolute_innovation_bias_reduction":1-abs(float(latent["innovation_mean_k"]))/abs(float(f1["innovation_bias_k"])),"maximum_innovation_ACF_reduction":1-float(latent["maximum_absolute_ACF_lags_1_10"])/float(f1["maximum_absolute_ACF_lags_1_10"]),"final_maximum_innovation_ACF":float(latent["maximum_absolute_ACF_lags_1_10"]),"stable":bool(float(latent["spectral_radius"])<1)}
     sufficient=metrics["median_recursive_RMSE_reduction"]>=.20 and metrics["absolute_innovation_bias_reduction"]>=.30 and metrics["maximum_innovation_ACF_reduction"]>=.50 and metrics["final_maximum_innovation_ACF"]<=.30 and metrics["stable"]
     if sufficient:return "LATENT STATE SUFFICIENT",metrics
     meaningful=metrics["median_recursive_RMSE_reduction"]>=.10 or metrics["absolute_innovation_bias_reduction"]>=.20 or metrics["maximum_innovation_ACF_reduction"]>=.20
@@ -283,34 +283,34 @@ def _save(fig:plt.Figure,path:Path)->None:
     fig.tight_layout();fig.savefig(path.with_suffix(".png"),dpi=300);fig.savefig(path.with_suffix(".pdf"));plt.close(fig)
 
 
-def create_figures(selection_rows,innovation_rows,final,horizon,efficiency,selected_k:int,b8_dir:Path,output:Path)->None:
+def create_figures(selection_rows,innovation_rows,final,horizon,efficiency,selected_k:int,observable_dir:Path,output:Path)->None:
     output.mkdir(parents=True,exist_ok=True);plt.rcParams.update({"figure.dpi":150,"font.size":9});pooled=[r for r in selection_rows if r["action_category"]=="pooled"];x=np.asarray(LATENT_DIMENSIONS)
-    fig,ax=plt.subplots(figsize=(6.5,4));ax.plot(x,[next(r for r in pooled if r["latent_dimension"]==k)["median_recursive_RMSE_k"] for k in x],"o-");ax.axvline(selected_k,color="black",ls="--",label=f"selected k={selected_k}");ax.set(xlabel="Latent dimension k",ylabel="Selection median recursive RMSE (K)");ax.legend();ax.grid(alpha=.25);_save(fig,output/"figure_B9_1_recursive_RMSE_vs_k")
-    fig,ax=plt.subplots(figsize=(6.5,4));ax.plot(x,[next(r for r in pooled if r["latent_dimension"]==k)["maximum_absolute_ACF_lags_1_10"] for k in x],"o-");ax.axvline(selected_k,color="black",ls="--");ax.set(xlabel="Latent dimension k",ylabel="Maximum |Kalman innovation ACF|");ax.grid(alpha=.25);_save(fig,output/"figure_B9_2_maximum_innovation_ACF_vs_k")
-    b8innov=_read_csv(b8_dir/"innovation_summary.csv");f1=next(r for r in b8innov if r["feature_set"]=="F1" and r["split_role"]=="final_assessment" and r["action_category"]=="pooled");latent=next(r for r in innovation_rows if r["latent_dimension"]==selected_k and r["split_role"]=="final_assessment" and r["action_category"]=="pooled");fig,ax=plt.subplots(figsize=(6.5,4));ax.plot(range(1,11),[float(f1[f"ACF_lag_{lag}"]) for lag in range(1,11)],"o-",label="B.8 F1");ax.plot(range(1,11),[latent[f"ACF_lag_{lag}"] for lag in range(1,11)],"o-",label=f"latent k={selected_k}");ax.axhline(0,color="black",lw=.7);ax.set(xlabel="Lag",ylabel="Innovation ACF");ax.legend();ax.grid(alpha=.25);_save(fig,output/"figure_B9_3_innovation_ACF")
+    fig,ax=plt.subplots(figsize=(6.5,4));ax.plot(x,[next(r for r in pooled if r["latent_dimension"]==k)["median_recursive_RMSE_k"] for k in x],"o-");ax.axvline(selected_k,color="black",ls="--",label=f"selected k={selected_k}");ax.set(xlabel="Latent dimension k",ylabel="Selection median recursive RMSE (K)");ax.legend();ax.grid(alpha=.25);_save(fig,output/"figure_DISCREPANCY_FIT_1_recursive_RMSE_vs_k")
+    fig,ax=plt.subplots(figsize=(6.5,4));ax.plot(x,[next(r for r in pooled if r["latent_dimension"]==k)["maximum_absolute_ACF_lags_1_10"] for k in x],"o-");ax.axvline(selected_k,color="black",ls="--");ax.set(xlabel="Latent dimension k",ylabel="Maximum |Kalman innovation ACF|");ax.grid(alpha=.25);_save(fig,output/"figure_DISCREPANCY_FIT_2_maximum_innovation_ACF_vs_k")
+    b8innov=_read_csv(observable_dir/"innovation_summary.csv");f1=next(r for r in b8innov if r["feature_set"]=="F1" and r["split_role"]=="final_assessment" and r["action_category"]=="pooled");latent=next(r for r in innovation_rows if r["latent_dimension"]==selected_k and r["split_role"]=="final_assessment" and r["action_category"]=="pooled");fig,ax=plt.subplots(figsize=(6.5,4));ax.plot(range(1,11),[float(f1[f"ACF_lag_{lag}"]) for lag in range(1,11)],"o-",label="observable conditioning F1");ax.plot(range(1,11),[latent[f"ACF_lag_{lag}"] for lag in range(1,11)],"o-",label=f"latent k={selected_k}");ax.axhline(0,color="black",lw=.7);ax.set(xlabel="Lag",ylabel="Innovation ACF");ax.legend();ax.grid(alpha=.25);_save(fig,output/"figure_DISCREPANCY_FIT_3_innovation_ACF")
     for figure,metric,ylabel,name in ((4,"RMSE_k","RMSE (K)","horizon_RMSE"),(5,"bias_prediction_minus_truth_k","Prediction bias (K)","horizon_bias")):
         fig,axes=plt.subplots(1,3,figsize=(11,3.6),sharey=True)
         for ax,category in zip(axes,("interpolation","boundary","extrapolation")):
-            for model in ("B7B_ARX1","B8_F1",f"latent_k{selected_k}"):
+            for model in ("stable_ARX1","observable_F1",f"latent_k{selected_k}"):
                 rows=[r for r in horizon if r["model"]==model and r["action_category"]==category];ax.plot([r["horizon_step"] for r in rows],[r[metric] for r in rows],label=model)
             if figure==5:ax.axhline(0,color="black",lw=.7)
             ax.set_title(category);ax.set_xlabel("Horizon step");ax.grid(alpha=.25)
-        axes[0].set_ylabel(ylabel);axes[-1].legend();_save(fig,output/f"figure_B9_{figure}_{name}")
+        axes[0].set_ylabel(ylabel);axes[-1].legend();_save(fig,output/f"figure_DISCREPANCY_FIT_{figure}_{name}")
     representatives=[]
     for number,category in enumerate(("interpolation","boundary","extrapolation"),start=6):
-        candidates=[r for r in final if r["action_category"]==category];med=np.median([r["recursive_RMSE_k"] for r in candidates]);chosen=min(candidates,key=lambda r:abs(r["recursive_RMSE_k"]-med));representatives.append(chosen);fig,ax=plt.subplots(figsize=(7,4));h=np.arange(1,241);ax.plot(h,chosen["actual_temperature"],color="black",label="revealed plant");ax.plot(h,chosen["nominal_temperature"],ls="--",label="nominal DT");ax.plot(h,chosen["posterior_mean_temperature"],label=f"latent k={selected_k} mean");ax.set(xlabel="Horizon step",ylabel="Temperature (K)",title=f"{category}: {chosen['episode_id']}");ax.legend();ax.grid(alpha=.25);_save(fig,output/f"figure_B9_{number}_{category}_rollout")
-    chosen=representatives[0];fig,ax=plt.subplots(figsize=(6.5,4));ax.plot(range(1,51),chosen["filtered_uncertainty_trace"]);ax.set(xlabel="Post-fault observation",ylabel="Trace of filtered latent covariance",title=f"Abstract latent uncertainty, k={selected_k}");ax.grid(alpha=.25);_save(fig,output/"figure_B9_9_filtered_latent_uncertainty")
-    pooled_eff=[r for r in efficiency if r["action_category"]=="pooled"];fig,ax=plt.subplots(figsize=(6.5,4));ax.plot(ONLINE_COUNTS,[next(r for r in pooled_eff if r["N_postfault"]==n)["median_recursive_RMSE_k"] for n in ONLINE_COUNTS],"o-",label="recursive RMSE");ax.set(xlabel="Observed post-fault samples N",ylabel="Median recursive RMSE (K)");other=ax.twinx();other.plot(ONLINE_COUNTS,[next(r for r in pooled_eff if r["N_postfault"]==n)["median_decision_state_covariance_trace"] for n in ONLINE_COUNTS],"s--",color="tab:orange",label="state uncertainty");other.set_ylabel("Median covariance trace");lines=ax.lines+other.lines;ax.legend(lines,[line.get_label() for line in lines]);ax.grid(alpha=.25);_save(fig,output/"figure_B9_10_performance_vs_N")
+        candidates=[r for r in final if r["action_category"]==category];med=np.median([r["recursive_RMSE_k"] for r in candidates]);chosen=min(candidates,key=lambda r:abs(r["recursive_RMSE_k"]-med));representatives.append(chosen);fig,ax=plt.subplots(figsize=(7,4));h=np.arange(1,241);ax.plot(h,chosen["actual_temperature"],color="black",label="revealed plant");ax.plot(h,chosen["nominal_temperature"],ls="--",label="nominal DT");ax.plot(h,chosen["posterior_mean_temperature"],label=f"latent k={selected_k} mean");ax.set(xlabel="Horizon step",ylabel="Temperature (K)",title=f"{category}: {chosen['episode_id']}");ax.legend();ax.grid(alpha=.25);_save(fig,output/f"figure_DISCREPANCY_FIT_{number}_{category}_rollout")
+    chosen=representatives[0];fig,ax=plt.subplots(figsize=(6.5,4));ax.plot(range(1,51),chosen["filtered_uncertainty_trace"]);ax.set(xlabel="Post-fault observation",ylabel="Trace of filtered latent covariance",title=f"Abstract latent uncertainty, k={selected_k}");ax.grid(alpha=.25);_save(fig,output/"figure_DISCREPANCY_FIT_9_filtered_latent_uncertainty")
+    pooled_eff=[r for r in efficiency if r["action_category"]=="pooled"];fig,ax=plt.subplots(figsize=(6.5,4));ax.plot(ONLINE_COUNTS,[next(r for r in pooled_eff if r["N_postfault"]==n)["median_recursive_RMSE_k"] for n in ONLINE_COUNTS],"o-",label="recursive RMSE");ax.set(xlabel="Observed post-fault samples N",ylabel="Median recursive RMSE (K)");other=ax.twinx();other.plot(ONLINE_COUNTS,[next(r for r in pooled_eff if r["N_postfault"]==n)["median_decision_state_covariance_trace"] for n in ONLINE_COUNTS],"s--",color="tab:orange",label="state uncertainty");other.set_ylabel("Median covariance trace");lines=ax.lines+other.lines;ax.legend(lines,[line.get_label() for line in lines]);ax.grid(alpha=.25);_save(fig,output/"figure_DISCREPANCY_FIT_10_performance_vs_N")
 
 
-def create_reports(output:Path,selected_k:int,scores:dict[int,float],final_summary,baseline,innovation_summary,efficiency,parameters:StateSpaceParameters,decision:str,metrics:dict[str,float|bool],config:MilestoneB9Config)->None:
-    latent=next(r for r in final_summary if r["action_category"]=="pooled");f1=next(r for r in baseline if r["model"]=="B8_F1" and r["action_category"]=="pooled");arx=next(r for r in baseline if r["model"]=="B7B_ARX1" and r["action_category"]=="pooled");innov=next(r for r in innovation_summary if r["split_role"]=="final_assessment" and r["action_category"]=="pooled");score_text=", ".join(f"k={k}: {scores[k]:.3f} K" for k in LATENT_DIMENSIONS);eff_text=", ".join(f"N={n}: {float(next(r for r in efficiency if r['N_postfault']==n and r['action_category']=='pooled')['median_recursive_RMSE_k']):.3f} K" for n in ONLINE_COUNTS)
-    readiness="The linear latent mean model meets every predeclared sufficiency gate and can proceed to a separate uncertainty-modelling milestone." if decision=="LATENT STATE SUFFICIENT" else "The linear latent mean model should not yet be treated as sufficient for uncertainty modelling; retain the diagnosis and refine the mean/state representation without changing variance in this milestone."
-    readme=f"""# Milestone B.9 — Latent discrepancy state-space model
+def create_reports(output:Path,selected_k:int,scores:dict[int,float],final_summary,baseline,innovation_summary,efficiency,parameters:StateSpaceParameters,decision:str,metrics:dict[str,float|bool],config:DiscrepancyFitConfig)->None:
+    latent=next(r for r in final_summary if r["action_category"]=="pooled");f1=next(r for r in baseline if r["model"]=="observable_F1" and r["action_category"]=="pooled");arx=next(r for r in baseline if r["model"]=="stable_ARX1" and r["action_category"]=="pooled");innov=next(r for r in innovation_summary if r["split_role"]=="final_assessment" and r["action_category"]=="pooled");score_text=", ".join(f"k={k}: {scores[k]:.3f} K" for k in LATENT_DIMENSIONS);eff_text=", ".join(f"N={n}: {float(next(r for r in efficiency if r['N_postfault']==n and r['action_category']=='pooled')['median_recursive_RMSE_k']):.3f} K" for n in ONLINE_COUNTS)
+    readiness="The linear latent mean model meets every predeclared sufficiency gate and can proceed to a separate uncertainty-modelling stage." if decision=="LATENT STATE SUFFICIENT" else "The linear latent mean model should not yet be treated as sufficient for uncertainty modelling; retain the diagnosis and refine the mean/state representation without changing variance in this stage."
+    readme=f"""# discrepancy fit — Latent discrepancy state-space model
 
 ## Architecture and separation
 
-A separate library of **{config.training_episodes}** simulator episodes, each with {config.training_steps} post-fault observations, was generated for offline identification. Every episode resets its latent mean and covariance. Fault metadata appears only in the evaluator manifest; the estimator receives residuals and `[u, delta_u, nominal_DT_temperature, elapsed_since_detection]` only. Shared `A,B,C,D,Q,R` parameters are frozen before any B.5 evaluation episode is filtered.
+A separate library of **{config.training_episodes}** simulator episodes, each with {config.training_steps} post-fault observations, was generated for offline identification. Every episode resets its latent mean and covariance. Fault metadata appears only in the evaluator manifest; the estimator receives residuals and `[u, delta_u, nominal_DT_temperature, elapsed_since_detection]` only. Shared `A,B,C,D,Q,R` parameters are frozen before any episode design evaluation episode is filtered.
 
 Two deterministic EM initializations were evaluated for each `k in {{1,2,3,4}}`, using Kalman-filter likelihood summed across independent episodes. Dynamics use the stable parameterization `a_i=0.995*tanh(theta_i)` throughout optimization. No eigenvalue was clipped. The diagonal-mode convention improves numerical identifiability, but latent coordinates remain abstract and must not be interpreted physically or compared across k.
 
@@ -326,7 +326,7 @@ The selected latent model has median recursive RMSE **{float(latent['median_recu
 
 Optimization limitation: the selected initialization reached the {config.em_iterations}-iteration cap with `converged={parameters.converged}` under the `1e-4` likelihood criterion, and its slow mode lies near the stable parameterization ceiling. The threshold-based final classification below is therefore valid for this frozen fitted candidate, but a training-only sensitivity run with a higher iteration cap is warranted before treating the parameter estimates as numerically definitive. This does not authorize refitting against final-assessment performance.
 
-B.8 F1 has median recursive RMSE **{float(f1['median_recursive_RMSE_k']):.3f} K**, bias **{float(f1['innovation_bias_k']):+.3f} K**, and maximum ACF **{float(f1['maximum_absolute_ACF_lags_1_10']):.3f}**. B.7B ARX(1) has median recursive RMSE **{float(arx['median_recursive_RMSE_k']):.3f} K**. The innovation comparison is descriptive because the latent value is an online Kalman innovation over N=50 whereas the frozen ARX/F1 values are held-out teacher-forced innovations over H=240.
+observable conditioning F1 has median recursive RMSE **{float(f1['median_recursive_RMSE_k']):.3f} K**, bias **{float(f1['innovation_bias_k']):+.3f} K**, and maximum ACF **{float(f1['maximum_absolute_ACF_lags_1_10']):.3f}**. ARX order study ARX(1) has median recursive RMSE **{float(arx['median_recursive_RMSE_k']):.3f} K**. The innovation comparison is descriptive because the latent value is an online Kalman innovation over N=50 whereas the frozen ARX/F1 values are held-out teacher-forced innovations over H=240.
 
 The Ljung–Box diagnostic for selected pooled final innovations is Q={float(innov['Ljung_Box_Q_lags_10']):.2f}, p={float(innov['Ljung_Box_p_value_lags_10']):.3g}; standardized innovation variance is {float(innov['standardized_innovation_variance']):.3f}. The maximum ACF is substantially reduced but the large-sample Ljung–Box result still rejects literal whiteness. This is a dependence diagnostic, not a final calibration test.
 
@@ -339,7 +339,7 @@ Fixed-model performance was {eff_text}. Each N branch acts from its own post-fau
 1. Open-loop improvement: median RMSE reduction versus F1 is {float(metrics['median_recursive_RMSE_reduction']):.1%}.
 2. Smallest useful latent dimension: **k={selected_k}** under the frozen selection rule.
 3. Innovation ACF changes from 0.994 to **{float(latent['maximum_absolute_ACF_lags_1_10']):.3f}**.
-4. Horizon drift is quantified against both frozen baselines in `horizon_error_summary.csv` and Figures B9.4–B9.5.
+4. Horizon drift is quantified against both frozen baselines in `horizon_error_summary.csv` and Figures discrepancy fit.4–discrepancy fit.5.
 5. N=10–50 inference is reported above and in `data_efficiency_summary.csv`.
 6. Online Kalman filtering is computationally lightweight at the measured runtime.
 7. The direct comparison with F1 and ARX(1) is in `baseline_comparison.csv`.
@@ -350,26 +350,26 @@ Fixed-model performance was {eff_text}. Each N branch acts from its own post-fau
 **{decision}**
 """
     (output/"README.md").write_text(readme,encoding="utf-8")
-    go=f"""# Milestone B.9 go/no-go
+    go=f"""# discrepancy fit decision
 
 ## Verdict
 
 **{decision}**
 
-Against frozen B.8 F1, recursive RMSE reduction is {float(metrics['median_recursive_RMSE_reduction']):.1%}, absolute-bias reduction is {float(metrics['absolute_innovation_bias_reduction']):.1%}, and maximum-ACF reduction is {float(metrics['maximum_innovation_ACF_reduction']):.1%}. Final maximum ACF is {float(metrics['final_maximum_innovation_ACF']):.3f}; spectral radius is {parameters.spectral_radius:.4f}.
+Against frozen observable conditioning F1, recursive RMSE reduction is {float(metrics['median_recursive_RMSE_reduction']):.1%}, absolute-bias reduction is {float(metrics['absolute_innovation_bias_reduction']):.1%}, and maximum-ACF reduction is {float(metrics['maximum_innovation_ACF_reduction']):.1%}. Final maximum ACF is {float(metrics['final_maximum_innovation_ACF']):.3f}; spectral radius is {parameters.spectral_radius:.4f}.
 
 The `LATENT STATE SUFFICIENT` threshold requires all five predeclared conditions: 20% RMSE reduction, 30% absolute-bias reduction, 50% ACF reduction, final ACF at most 0.30, and stable non-explosive dynamics. {readiness}
 
 Numerical caveat: the selected EM run reached its iteration cap without the declared likelihood tolerance, and its slow mode is near the stability ceiling. The verdict is the mandatory threshold classification for the frozen candidate, not evidence that latent coordinates have physical meaning or that the optimizer sensitivity question is closed.
 """
-    (output/"GO_NO_GO.md").write_text(go,encoding="utf-8")
+    (output/"decision_summary.md").write_text(go,encoding="utf-8")
 
 
-def run_experiment(config:MilestoneB9Config)->int:
-    config.validate();output=Path(config.output_dir);output.mkdir(parents=True,exist_ok=True);source=Path(config.source_dir);b7dir=Path(config.b7b_dir);b8dir=Path(config.b8_dir);b5config=b5.MilestoneB5Config(output_dir=config.source_dir);template=b5.build_template(b5config)
+def run_experiment(config:DiscrepancyFitConfig)->int:
+    config.validate();output=Path(config.output_dir);output.mkdir(parents=True,exist_ok=True);source=Path(config.source_dir);b7dir=Path(config.arx_dir);b8dir=Path(config.observable_dir);b5config=episode_design.EpisodeDesignConfig(output_dir=config.source_dir);template=episode_design.build_template(b5config)
     episodes,manifest=generate_training_population(config,template,output);_write_csv(output/"training_population_manifest.csv",manifest)
     models,candidates=fit_candidates(config,episodes)
-    source_rows=_selection_roles(b6.load_b5_episodes(source/"calibration_episodes.csv"))
+    source_rows=_selection_roles(recursive_diagnostics.load_episode_design_episodes(source/"calibration_episodes.csv"))
     if config.limit_evaluation_episodes is not None:
         limit=config.limit_evaluation_episodes
         source_rows=[r for category in ("interpolation","boundary","extrapolation") for split in ("model_selection","final_assessment") for r in [x for x in source_rows if x["action_category"]==category and x["split_role"]==split][:limit]]
@@ -400,11 +400,11 @@ def run_experiment(config:MilestoneB9Config)->int:
 
 
 def build_argument_parser()->argparse.ArgumentParser:
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument("--source-dir",default="artifacts/cstr/episode_design");parser.add_argument("--b7b-dir",default="artifacts/cstr/stable_arx_order_study");parser.add_argument("--b8-dir",default="artifacts/cstr/observable_conditioning_study");parser.add_argument("--output-dir",default="artifacts/cstr/discrepancy_fit");parser.add_argument("--training-episodes",type=int,default=600);parser.add_argument("--training-steps",type=int,default=120);parser.add_argument("--posterior-samples",type=int,default=2000);parser.add_argument("--em-iterations",type=int,default=15);parser.add_argument("--workers",type=int,default=min(8,os.cpu_count() or 1));parser.add_argument("--limit-evaluation-episodes",type=int);return parser
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument("--source-dir",default="artifacts/cstr/episode_design");parser.add_argument("--arx-dir",default="artifacts/cstr/stable_arx_order_study");parser.add_argument("--observable-dir",default="artifacts/cstr/observable_conditioning_study");parser.add_argument("--output-dir",default="artifacts/cstr/discrepancy_fit");parser.add_argument("--training-episodes",type=int,default=600);parser.add_argument("--training-steps",type=int,default=120);parser.add_argument("--posterior-samples",type=int,default=2000);parser.add_argument("--em-iterations",type=int,default=15);parser.add_argument("--workers",type=int,default=min(8,os.cpu_count() or 1));parser.add_argument("--limit-evaluation-episodes",type=int);return parser
 
 
 def main()->None:
-    args=vars(build_argument_parser().parse_args());config=MilestoneB9Config(**args);count=run_experiment(config);print(f"Milestone B.9 complete: {config.output_dir} ({count} final episodes)")
+    args=vars(build_argument_parser().parse_args());config=DiscrepancyFitConfig(**args);count=run_experiment(config);print(f"discrepancy fit complete: {config.output_dir} ({count} final episodes)")
 
 
 if __name__=="__main__":main()

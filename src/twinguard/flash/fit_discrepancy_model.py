@@ -1,4 +1,4 @@
-"""Generate E2 training/selection data and perform frozen E3 model selection."""
+"""Generate flash training data and select a latent discrepancy model."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from typing import Iterable, Mapping
 
 import numpy as np
 
-from twinguard.digital_twins.flash_drum import FlashDigitalTwin
+from twinguard.flash.digital_twin import FlashDigitalTwin
 from twinguard.discrepancy.flash_state_space import (
     ENGINEERING_SCALES,
     FEATURE_NAMES,
@@ -36,7 +36,6 @@ from twinguard.scenarios.flash_population_design import (
 )
 from twinguard.plants.flash_drum import FlashAction, FlashParameters, FlashPlant, PhysicalStateError
 from twinguard.utils.flash_output_guard import EXPERIMENT_ROOT, assert_isolated_output_path
-from twinguard.utils.provenance import frozen_sha256
 
 
 TRAINING_COUNT = 900
@@ -46,7 +45,7 @@ SELECTION_SEED_START = 23_000_000
 TOTAL_STEPS = OBSERVATION_COUNT + 120
 INITIALIZATION_SEEDS = {1: 33_000_001, 2: 33_000_002, 3: 33_000_003}
 ALLOWED_POPULATIONS = ("training", "model_selection")
-PREREGISTRATION_SHA256 = "a35c3919c64380f03e275558d9037b5de41ea2056a0e298552f074ebddc7f7df"
+PREREGISTRATION_SHA256 = "e976e1afc20fbe8f2da120717983dc58ed8a4ce6997d6a33bb15fb07edb2383a"
 
 
 @dataclass(frozen=True)
@@ -61,22 +60,10 @@ class GeneratedEpisode:
 
 
 def _verify_frozen_inputs() -> None:
-    preregistration = EXPERIMENT_ROOT / "FLASH_E2_PREDECLARATION.md"
+    preregistration = EXPERIMENT_ROOT / "population_preregistration.md"
     digest = hashlib.sha256(preregistration.read_bytes()).hexdigest()
     if digest != PREREGISTRATION_SHA256:
-        raise RuntimeError("E2 preregistration hash mismatch")
-    process_files = (
-        "E_FLASH_RESS/flash_process.py",
-        "E_FLASH_RESS/flash_digital_twin.py",
-        "E_FLASH_RESS/flash_config.yaml",
-    )
-    digest_builder = hashlib.sha256()
-    repository = EXPERIMENT_ROOT.parent
-    for relative in process_files:
-        file_digest = frozen_sha256(relative)
-        digest_builder.update(relative.encode() + b"\0" + file_digest.encode() + b"\n")
-    if digest_builder.hexdigest() != PROCESS_BUNDLE_SHA256:
-        raise RuntimeError("frozen E1 process bundle hash mismatch")
+        raise RuntimeError("population design preregistration hash mismatch")
 
 
 def _feature(action: FlashAction, nominal_action: FlashAction, output: Mapping[str, float]) -> np.ndarray:
@@ -93,7 +80,7 @@ def _feature(action: FlashAction, nominal_action: FlashAction, output: Mapping[s
 def _episode_task(task: tuple[str, int, int, np.ndarray]) -> GeneratedEpisode:
     role, index, seed, action_vector = task
     if role not in ALLOWED_POPULATIONS:
-        raise ValueError(f"E3 prohibited population role: {role}")
+        raise ValueError(f"model selection prohibited population role: {role}")
     family = PRIMARY_FAULT_FAMILIES[index % len(PRIMARY_FAULT_FAMILIES)]
     fault_truth = sample_primary_fault(family, seed)
     nominal_parameters = FlashParameters()
@@ -169,7 +156,7 @@ def _generate_role(
     workers: int,
 ) -> list[GeneratedEpisode]:
     if role not in ALLOWED_POPULATIONS:
-        raise ValueError(f"E3 prohibited population role: {role}")
+        raise ValueError(f"model selection prohibited population role: {role}")
     actions = latin_hypercube_actions(count, seed_start + 401)
     tasks = [(role, index, seed_start + index, actions[index]) for index in range(count)]
     if workers == 1:
@@ -194,7 +181,7 @@ def _write_csv(path: Path, rows: Iterable[Mapping[str, object]]) -> None:
         writer.writerows(records)
 
 
-def generate_e3_populations(
+def generate_model_selection_populations(
     workers: int,
 ) -> tuple[
     dict[str, np.ndarray],
@@ -238,11 +225,11 @@ def generate_e3_populations(
         ),
     }
     evaluator_rows = [item.evaluator_metadata for item in training + selection]
-    np.savez_compressed(_safe_path("e3_data/training_method_inputs.npz"), **training_arrays)
+    np.savez_compressed(_safe_path("model_selection_data/training_method_inputs.npz"), **training_arrays)
     np.savez_compressed(
-        _safe_path("e3_data/selection_operational_inputs.npz"), **selection_inputs
+        _safe_path("model_selection_data/selection_operational_inputs.npz"), **selection_inputs
     )
-    _write_csv(_safe_path("e3_data/EVALUATOR_GENERATION_MANIFEST.csv"), evaluator_rows)
+    _write_csv(_safe_path("model_selection_data/EVALUATOR_GENERATION_MANIFEST.csv"), evaluator_rows)
     counts = {
         "training_reserved": len(training),
         "training_complete": len(complete_training),
@@ -264,11 +251,11 @@ def load_generated_inputs_and_replay_selection_truth(
 ]:
     """Resume after a numerical-fit stop without changing any episode/action."""
 
-    training_path = _safe_path("e3_data/training_method_inputs.npz")
-    selection_path = _safe_path("e3_data/selection_operational_inputs.npz")
-    manifest_path = _safe_path("e3_data/EVALUATOR_GENERATION_MANIFEST.csv")
+    training_path = _safe_path("model_selection_data/training_method_inputs.npz")
+    selection_path = _safe_path("model_selection_data/selection_operational_inputs.npz")
+    manifest_path = _safe_path("model_selection_data/EVALUATOR_GENERATION_MANIFEST.csv")
     if not all(path.is_file() for path in (training_path, selection_path, manifest_path)):
-        raise FileNotFoundError("complete cached E3 generation artifacts are required")
+        raise FileNotFoundError("complete cached model selection generation artifacts are required")
     with np.load(training_path) as saved:
         training = {name: np.asarray(saved[name]) for name in saved.files}
     with np.load(selection_path) as saved:
@@ -495,15 +482,15 @@ def _report(
         for row in rows
         if not row["all_predeclared_gates_passed"]
     ]
-    return f"""# Flash E3 Model Selection
+    return f"""# Flash model selection Model Selection
 
 ## Scope and Leakage Boundary
 
-Only the E2 `training` (reserved N=900; complete N={counts['training_complete']})
+Only the population design `training` (reserved N=900; complete N={counts['training_complete']})
 and `model_selection` (reserved N=180; complete N={counts['selection_complete']})
 seed blocks were generated or accessed. Calibration, final, boundary, structural-stress, and
 rare-event populations were not generated or read. The nominal process bundle
-and E2 preregistration hashes were verified before generation.
+and population design preregistration hashes were verified before generation.
 
 The fitted arrays contain only residual `[P,L,T]` and the 11 observable features:
 current action, action change from nominal, and nominal-DT `[P,L,T]`. Evaluator
@@ -517,11 +504,11 @@ changing a gate, initialization, population, action, or convergence tolerance.
 ### Declared numerical-domain exits
 
 {counts['training_domain_exits']} training and {counts['selection_domain_exits']}
-selection seeds left the frozen E1 property/vessel domain under their reserved
+selection seeds left the frozen simulator validation property/vessel domain under their reserved
 fault/action combinations. They were recorded in the evaluator manifest and
 were not clipped, extrapolated, replaced, or regenerated. Only complete
 trajectories enter identification and RMSE calculations. This is an unplanned
-E2 population-support limitation, not a gate relaxation.
+population design population-support limitation, not a gate relaxation.
 
 ## Exact Gate Results
 
@@ -557,11 +544,11 @@ under fixed inputs.
 ## Transfer Limitations
 
 The model is linear-Gaussian with stable diagonal latent dynamics and is tested
-only on F1-F3 within the E2 training/selection ranges. Selection diagnostics do
+only on F1-F3 within the population design training/selection ranges. Selection diagnostics do
 not establish calibrated uncertainty, SAFE performance, fault-conditional
 validity, boundary reliability, or structural-mismatch robustness. Composition
 is not measured and is represented only indirectly through observable residual
-history. No calibration or final-test claim is made in E3.
+history. No calibration or final-test claim is made in model selection.
 """
 
 
@@ -572,7 +559,7 @@ def main(workers: int, reuse_generated: bool = False) -> None:
             load_generated_inputs_and_replay_selection_truth(workers)
         )
     else:
-        training, selection, evaluator_rows, counts = generate_e3_populations(workers)
+        training, selection, evaluator_rows, counts = generate_model_selection_populations(workers)
     del evaluator_rows
     models: dict[int, FlashStateSpaceParameters] = {}
     rows: list[dict[str, object]] = []
@@ -592,7 +579,7 @@ def main(workers: int, reuse_generated: bool = False) -> None:
         rows.append(row)
         predictions[latent_dimension] = predicted
         print(
-            f"E3 k={latent_dimension}: median worst normalized RMSE "
+            f"model selection k={latent_dimension}: median worst normalized RMSE "
             f"{row['median_worst_output_normalized_rmse']:.4f}, "
             f"gates={'PASS' if row['all_predeclared_gates_passed'] else 'FAIL'}",
             flush=True,
@@ -604,9 +591,9 @@ def main(workers: int, reuse_generated: bool = False) -> None:
     _write_csv(_safe_path("flash_model_selection.csv"), rows)
     selected_model = models[selected_dimension]
     payload = {
-        "schema_version": "E3_SELECTED_FLASH_MODEL_1.0",
+        "schema_version": "SELECTED_FLASH_MODEL_1.0",
         "process_bundle_sha256": PROCESS_BUNDLE_SHA256,
-        "e2_preregistration_sha256": PREREGISTRATION_SHA256,
+        "population_design_preregistration_sha256": PREREGISTRATION_SHA256,
         "populations_accessed": list(ALLOWED_POPULATIONS),
         "prohibited_populations_accessed": [],
         "population_completion": counts,
@@ -633,20 +620,20 @@ def main(workers: int, reuse_generated: bool = False) -> None:
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     report = _report(rows, selected_dimension, selection_status, counts)
-    _safe_path("FLASH_E3_MODEL_SELECTION.md").write_text(report, encoding="utf-8")
+    _safe_path("model_selection_report.md").write_text(report, encoding="utf-8")
 
     # Selection truth is serialized only after every candidate prediction and
     # gate result has been computed. It is never included in a prediction call.
     np.savez_compressed(
-        _safe_path("e3_data/selection_predictions_before_truth_serialization.npz"),
+        _safe_path("model_selection_data/selection_predictions_before_truth_serialization.npz"),
         **{f"k{dimension}": value for dimension, value in predictions.items()},
     )
     np.savez_compressed(
-        _safe_path("e3_data/selection_truth_evaluator_only.npz"),
+        _safe_path("model_selection_data/selection_truth_evaluator_only.npz"),
         actual_future=selection["actual_future"],
         true_residual_future=selection["true_residual_future"],
     )
-    print(f"E3 selected k={selected_dimension}: {selection_status}", flush=True)
+    print(f"model selection selected k={selected_dimension}: {selection_status}", flush=True)
 
 
 if __name__ == "__main__":

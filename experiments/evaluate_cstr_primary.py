@@ -1,5 +1,5 @@
 """CSTR primary prospective evaluation: one-sided conformal calibration (n=500) and safety
-certification of N=1000 prospective episodes (frozen output: artifacts/cstr/primary_evaluation).
+certification of N=1000 prospective episodes (recorded output: artifacts/cstr/primary_evaluation).
 
 Use --limit-episodes and --trajectories for a quick smoke run.
 """

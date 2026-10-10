@@ -1,4 +1,4 @@
-"""Milestone C1: action-specific safety certification from frozen B.12 trajectories."""
+"""Apply one-sided conformal envelopes to certify candidate CSTR actions."""
 
 from __future__ import annotations
 
@@ -17,18 +17,18 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from twinguard.cstr import episode_design as b5
-from twinguard.cstr import freeze_discrepancy_model as b10
-from twinguard.cstr import bootstrap_ensemble as b11
-from twinguard.cstr import conformal_calibration as b12
+from twinguard.cstr import episode_design as episode_design
+from twinguard.cstr import freeze_discrepancy_model as discrepancy_freeze
+from twinguard.cstr import bootstrap_ensemble as bootstrap_ensemble
+from twinguard.cstr import conformal_calibration as trajectory_conformal
 
 
 LEVELS = (0.90, 0.95, 0.99)
-METHODS = ("S0_nominal_DT", "S1_raw_U3", "S2_symmetric_B12", "S3_one_sided")
-CATEGORIES = b10.CATEGORIES
+METHODS = ("S0_nominal_DT", "S1_raw_bootstrap", "S2_symmetric_conformal", "S3_one_sided")
+CATEGORIES = discrepancy_freeze.CATEGORIES
 T_MAX_K = 313.0  # Existing hard limit: cstr_case.SafeStateChecker.T_safe_max.
-HORIZON = b11.HORIZON
-EPSILON_SCALE_K = b12.EPSILON_SCALE_K
+HORIZON = bootstrap_ensemble.HORIZON
+EPSILON_SCALE_K = trajectory_conformal.EPSILON_SCALE_K
 FINAL_DECISIONS = (
     "SAFETY LAYER SUCCESSFUL",
     "SAFE BUT TOO CONSERVATIVE",
@@ -38,9 +38,9 @@ FINAL_DECISIONS = (
 
 
 @dataclass(frozen=True)
-class MilestoneC1Config:
-    b11_dir: str = "artifacts/cstr/bootstrap_ensemble"
-    b12_dir: str = "artifacts/cstr/conformal_calibration"
+class CertificationConfig:
+    bootstrap_dir: str = "artifacts/cstr/bootstrap_ensemble"
+    conformal_dir: str = "artifacts/cstr/conformal_calibration"
     output_dir: str = "artifacts/cstr/primary_evaluation"
     calibration_count: int = 500
     final_count: int = 1000
@@ -56,7 +56,7 @@ class MilestoneC1Config:
             self.trajectories,
             self.ensemble_size,
         ) != (500, 1000, 2000, 10):
-            raise ValueError("full C1 freezes n_cal=500, n_test=1000, M=2000, J=10")
+            raise ValueError("full primary certification freezes n_cal=500, n_test=1000, M=2000, J=10")
         if self.limit_episodes is not None and self.limit_episodes < 3:
             raise ValueError("smoke mode needs at least three episodes")
 
@@ -66,7 +66,7 @@ def _sha256(path: Path) -> str:
 
 
 def _write_csv(path: Path, rows: Sequence[dict[str, object]]) -> None:
-    b10._write_csv(path, rows)
+    discrepancy_freeze._write_csv(path, rows)
 
 
 def one_sided_scores(
@@ -94,24 +94,24 @@ def safety_decision(
 def wilson(successes: int, trials: int) -> tuple[float, float]:
     if trials == 0:
         return float("nan"), float("nan")
-    return b5.wilson_interval(successes, trials)
+    return episode_design.wilson_interval(successes, trials)
 
 
 def reveal_physical_temperature(
-    item: b10.EpisodeInputs, prediction_path: Path
+    item: discrepancy_freeze.EpisodeInputs, prediction_path: Path
 ) -> np.ndarray:
-    """Reveal plant output, then recover physical T_true from the frozen noise stream.
+    """Reveal plant output and recover physical temperature after the decision.
 
-    B.11/B.12 predict the measured temperature and their reveal file therefore stores
-    ``T_true + measurement noise``.  C1's safety constraint is physical, so evaluator-
-    side labels and conformal safety scores use T_true.  The predictor never receives
-    either future series.
+    The predictor uses measured temperature, but safety scoring uses physical
+    temperature recovered from the saved measurement noise. Neither future series
+    is available to the predictor before the decision is recorded.
+    Recovery runs after the decision and does not alter prediction inputs.
     """
-    measured = b12.reveal_after_prediction(item, prediction_path)
+    measured = trajectory_conformal.reveal_after_prediction(item, prediction_path)
     if item.hidden_measurement_seed is None:
-        raise RuntimeError("C1 physical truth recovery requires the saved measurement seed")
+        raise RuntimeError("primary certification physical truth recovery requires the saved measurement seed")
     noise = np.random.default_rng(item.hidden_measurement_seed).normal(
-        0.0, b5.MilestoneB5Config().measurement_noise_k, measured.size
+        0.0, episode_design.EpisodeDesignConfig().measurement_noise_k, measured.size
     )
     physical = measured - noise
     with np.load(item.truth_path) as saved:
@@ -125,11 +125,11 @@ def reveal_physical_temperature(
 def _load_models(path: Path, count: int):
     payload = json.loads((path / "bootstrap_models.json").read_text(encoding="utf-8"))
     if len(payload) < count:
-        raise RuntimeError(f"B.11 has only {len(payload)} bootstrap models; {count} required")
-    return [b10._parameter_from_payload(item) for item in payload[:count]]
+        raise RuntimeError(f"bootstrap ensemble has only {len(payload)} bootstrap models; {count} required")
+    return [discrepancy_freeze._parameter_from_payload(item) for item in payload[:count]]
 
 
-def _load_b12_quantiles(path: Path) -> dict[float, float]:
+def _load_trajectory_conformal_quantiles(path: Path) -> dict[float, float]:
     with (path / "conformal_quantiles.csv").open(newline="", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
     result = {
@@ -139,11 +139,11 @@ def _load_b12_quantiles(path: Path) -> dict[float, float]:
     }
     missing = set(LEVELS) - set(result)
     if missing:
-        raise RuntimeError(f"frozen B.12 quantiles missing levels: {sorted(missing)}")
+        raise RuntimeError(f"frozen trajectory calibration quantiles missing levels: {sorted(missing)}")
     return result
 
 
-def predict_frozen_u3(item: b10.EpisodeInputs, models, trajectories: int, path: Path):
+def predict_frozen_u3(item: discrepancy_freeze.EpisodeInputs, models, trajectories: int, path: Path):
     start = time.perf_counter()
     counts = np.full(len(models), trajectories // len(models), int)
     counts[: trajectories % len(models)] += 1
@@ -151,7 +151,7 @@ def predict_frozen_u3(item: b10.EpisodeInputs, models, trajectories: int, path: 
     filtering_seconds = 0.0
     rollout_seconds = 0.0
     for index, (model, count) in enumerate(zip(models, counts)):
-        samples, _, _, filtering, rollout = b11._paths_for_model(
+        samples, _, _, filtering, rollout = bootstrap_ensemble._paths_for_model(
             model,
             item,
             int(count),
@@ -163,7 +163,7 @@ def predict_frozen_u3(item: b10.EpisodeInputs, models, trajectories: int, path: 
     samples = np.vstack(paths)
     center = np.median(samples, axis=0)
     scale = np.std(samples, axis=0, ddof=1)
-    raw = b5.construct_simultaneous_bands(samples, LEVELS)
+    raw = episode_design.construct_simultaneous_bands(samples, LEVELS)
     payload = {
         "nominal_temperature_k": item.nominal_future,
         "predictive_center_k": center,
@@ -216,7 +216,7 @@ def calibrate_one_sided(episodes, models, trajectories: int, output: Path):
     for direction, field in (("upper", "upper_score"), ("lower", "lower_score")):
         scores = np.asarray([row[field] for row in rows], float)
         for level in LEVELS:
-            q, rank = b12.corrected_quantile(scores, level)
+            q, rank = trajectory_conformal.corrected_quantile(scores, level)
             quantiles[(direction, level)] = q
             quantile_rows.append(
                 {
@@ -237,9 +237,9 @@ def method_envelope(method: str, level: float, prediction, one_sided_q, symmetri
     scale = np.maximum(np.asarray(prediction["scale"]), EPSILON_SCALE_K)
     if method == "S0_nominal_DT":
         lower = upper = np.asarray(prediction["nominal"])
-    elif method == "S1_raw_U3":
+    elif method == "S1_raw_bootstrap":
         lower, upper = prediction["raw"].lower[level], prediction["raw"].upper[level]
-    elif method == "S2_symmetric_B12":
+    elif method == "S2_symmetric_conformal":
         half = symmetric_q[level] * scale
         lower, upper = center - half, center + half
     elif method == "S3_one_sided":
@@ -411,20 +411,20 @@ def _summary_row(summary, method: str, level: float, category: str = "pooled"):
     )
 
 
-def _reconstruct_decision_state(seed: int, config: b5.MilestoneB5Config, template):
+def _reconstruct_decision_state(seed: int, config: episode_design.EpisodeDesignConfig, template):
     rng = np.random.default_rng(seed)
     measurement_rng = np.random.default_rng(seed + 1_000_000)
     onset = float(rng.uniform(config.fault_onset_min_s, config.fault_onset_max_s))
     magnitude = float(rng.uniform(config.fault_magnitude_min, config.fault_magnitude_max))
-    nominal, plant, _ = b5._configure_episode_models(template, config, rng, onset, magnitude)
+    nominal, plant, _ = episode_design._configure_episode_models(template, config, rng, onset, magnitude)
     pre = [
-        b5._paired_observation(nominal, plant, 2 / 60, measurement_rng, config.measurement_noise_k)
+        episode_design._paired_observation(nominal, plant, 2 / 60, measurement_rng, config.measurement_noise_k)
         for _ in range(config.pre_fault_lead_steps)
     ]
     learning = []
     for index in range(config.n_postfault):
-        action = b5.TRAINING_ACTIONS_LPS[(index // config.training_action_block_steps) % len(b5.TRAINING_ACTIONS_LPS)]
-        learning.append(b5._paired_observation(nominal, plant, action, measurement_rng, config.measurement_noise_k))
+        action = episode_design.TRAINING_ACTIONS_LPS[(index // config.training_action_block_steps) % len(episode_design.TRAINING_ACTIONS_LPS)]
+        learning.append(episode_design._paired_observation(nominal, plant, action, measurement_rng, config.measurement_noise_k))
     previous = float(pre[-1]["action_lps"])
     online = []
     for index, row in enumerate(learning):
@@ -443,14 +443,14 @@ def _action_category(action: float) -> str:
 
 
 def screen_actions(config, template, models, one_sided_q, output: Path):
-    # Fixed, physically admissible range already exercised by the B.5-B.12 protocol.
+    # Fixed, physically admissible range already exercised by the episode design-trajectory calibration protocol.
     actions = np.linspace(0.012, 0.045, 20)
     rows = []
     timings = []
     state_count = config.limit_episodes or config.screening_states
     for state_index in range(state_count):
         seed = 1_830_000 + state_index
-        nominal, plant, residual, online, previous, magnitude = _reconstruct_decision_state(seed, b5.MilestoneB5Config(), template)
+        nominal, plant, residual, online, previous, magnitude = _reconstruct_decision_state(seed, episode_design.EpisodeDesignConfig(), template)
         state_rows = []
         for action_index, action in enumerate(actions):
             nominal_branch = __import__("copy").deepcopy(nominal)
@@ -464,8 +464,8 @@ def screen_actions(config, template, models, one_sided_q, output: Path):
                 nominal_future.append(temp)
                 future.append([float(action), float(action) - prior, temp, 51 + horizon])
                 prior = float(action)
-            item = b10.EpisodeInputs(
-                f"c1_screen_{state_index:04d}_{action_index:02d}",
+            item = discrepancy_freeze.EpisodeInputs(
+                f"cstr_screening_{state_index:04d}_{action_index:02d}",
                 _action_category(float(action)),
                 seed + action_index * 10_000,
                 residual,
@@ -473,7 +473,7 @@ def screen_actions(config, template, models, one_sided_q, output: Path):
                 np.asarray(future),
                 np.asarray(nominal_future),
                 float(action),
-                output / "revealed_screening_truth" / f"c1_screen_{state_index:04d}_{action_index:02d}.npz",
+                output / "revealed_screening_truth" / f"cstr_screening_{state_index:04d}_{action_index:02d}.npz",
                 plant_branch,
                 seed + 4_000_000 + action_index,
             )
@@ -485,7 +485,7 @@ def screen_actions(config, template, models, one_sided_q, output: Path):
             conformal_time = time.perf_counter() - begin
             actual = reveal_physical_temperature(item, pred["path"])
             row = {
-                "decision_state_id": f"c1_screen_state_{state_index:04d}",
+                "decision_state_id": f"cstr_screening_state_{state_index:04d}",
                 "random_seed": seed,
                 "candidate_index": action_index,
                 "action_lps": float(action),
@@ -502,7 +502,7 @@ def screen_actions(config, template, models, one_sided_q, output: Path):
         for k in (1, 5, 10, 20):
             timings.append(
                 {
-                    "decision_state_id": f"c1_screen_state_{state_index:04d}",
+                    "decision_state_id": f"cstr_screening_state_{state_index:04d}",
                     "candidate_count_K": k,
                     "measured_sequential_latency_seconds": sum(row["total_latency_seconds"] for row in state_rows[:k]),
                     "ideal_parallel_latency_lower_bound_seconds": max(row["total_latency_seconds"] for row in state_rows[:k]),
@@ -532,7 +532,7 @@ def screen_actions(config, template, models, one_sided_q, output: Path):
 def decide(summary) -> str:
     primary = _summary_row(summary, "S3_one_sided", .95)
     nominal = _summary_row(summary, "S0_nominal_DT", .95)
-    raw = _summary_row(summary, "S1_raw_U3", .95)
+    raw = _summary_row(summary, "S1_raw_bootstrap", .95)
     useful = primary["SAFE_certification_rate"] >= 0.10
     controlled = primary["joint_false_safe_probability"] <= 0.05
     reduced = primary["joint_false_safe_probability"] <= 0.5 * min(
@@ -565,7 +565,7 @@ def create_figures(output: Path, rows, summary, screening_rows, screening_summar
     xs = np.linspace(.08, .92, len(labels))
     for x, label in zip(xs, labels): ax.text(x,.5,label,ha="center",va="center",bbox=dict(boxstyle="round",fc="#e8f1fa",ec="#356a9a"),transform=ax.transAxes)
     for left,right in zip(xs[:-1],xs[1:]): ax.annotate("",xy=(right-.08,.5),xytext=(left+.08,.5),xycoords=ax.transAxes,arrowprops=dict(arrowstyle="->"))
-    _save_figure(fig, output, "figure_C1_1_safety_layer_schematic")
+    _save_figure(fig, output, "figure_CERTIFICATION_1_safety_layer_schematic")
 
     primary = [r for r in rows if r["method"] == "S3_one_sided" and np.isclose(r["nominal_level"], .95)]
     for number, decision in zip((2,3,4),("SAFE","UNSAFE","UNRESOLVED")):
@@ -576,7 +576,7 @@ def create_figures(output: Path, rows, summary, screening_rows, screening_summar
         with np.load(output/"predictions"/f"{eid}.npz") as pred, np.load(output/"revealed_final_truth"/f"{eid}.npz") as truth:
             h=np.arange(1,HORIZON+1);lo=pred["s3_95_lower_k"];hi=pred["s3_95_upper_k"]
             fig,ax=plt.subplots(figsize=(7.2,4.2));ax.fill_between(h,lo,hi,alpha=.25,label="S3 one-sided 95% envelope");ax.plot(h,pred["nominal_temperature_k"],"--",label="nominal DT");ax.plot(h,pred["predictive_center_k"],label="frozen U3 median");ax.plot(h,truth["actual_physical_temperature_k"],color="black",label="revealed physical plant");ax.axhline(T_MAX_K,color="#b22222",ls=":",label=r"$T_{max}=313$ K");ax.set(xlabel="Future horizon (s)",ylabel="Reactor temperature (K)",title=f"{decision}: {eid}");ax.legend(fontsize=8)
-            _save_figure(fig,output,f"figure_C1_{number}_representative_{decision.lower()}")
+            _save_figure(fig,output,f"figure_CERTIFICATION_{number}_representative_{decision.lower()}")
 
     fig,ax=plt.subplots(figsize=(6.4,4.2))
     trade=[_summary_row(summary,"S3_one_sided",level) for level in LEVELS]
@@ -587,55 +587,55 @@ def create_figures(output: Path, rows, summary, screening_rows, screening_summar
         for level,row in zip(LEVELS,trade):ax.scatter(row["SAFE_certification_rate"],row["conditional_false_safe_rate"],s=70,label=f"{int(level*100)}% (joint FS={row['joint_false_safe_probability']:.3f})")
         ax.legend(fontsize=8)
     ax.set(xlabel="SAFE certification rate",ylabel="Conditional false-safe rate",title="Safety-usefulness trade-off")
-    _save_figure(fig,output,"figure_C1_5_false_safe_vs_certification")
+    _save_figure(fig,output,"figure_CERTIFICATION_5_false_safe_vs_certification")
 
     matrix=np.zeros((3,2),int);dmap={"SAFE":0,"UNSAFE":1,"UNRESOLVED":2}
     for r in primary:matrix[dmap[r["decision"]],0 if r["actual_safe"] else 1]+=1
     fig,ax=plt.subplots(figsize=(5.4,4));im=ax.imshow(matrix,cmap="Blues");ax.set_xticks([0,1],["Actually safe","Actually unsafe"]);ax.set_yticks(range(3),["SAFE","UNSAFE","UNRESOLVED"]);ax.set(xlabel="Revealed outcome",ylabel="Pre-reveal decision")
     for i in range(3):
         for j in range(2):ax.text(j,i,str(matrix[i,j]),ha="center",va="center")
-    fig.colorbar(im,ax=ax,label="Episodes");_save_figure(fig,output,"figure_C1_6_decision_outcome_matrix")
+    fig.colorbar(im,ax=ax,label="Episodes");_save_figure(fig,output,"figure_CERTIFICATION_6_decision_outcome_matrix")
 
     colors={"SAFE":"#2e8b57","UNSAFE":"#b22222","UNRESOLVED":"#d68a00"}
     fig,ax=plt.subplots(figsize=(7,4));rng=np.random.default_rng(10)
     for idx,d in enumerate(("SAFE","UNRESOLVED","UNSAFE")):
         x=[r["actual_safety_margin"] for r in primary if r["decision"]==d];ax.scatter(np.full(len(x),idx)+rng.normal(0,.05,len(x)),x,s=9,alpha=.45,color=colors[d])
     ax.axhline(0,color="black",ls="--");ax.set_xticks(range(3),("SAFE","UNRESOLVED","UNSAFE"));ax.set(ylabel="True safety margin (K)",xlabel="Decision")
-    _save_figure(fig,output,"figure_C1_7_decision_vs_true_margin")
+    _save_figure(fig,output,"figure_CERTIFICATION_7_decision_vs_true_margin")
 
     fig,ax=plt.subplots(figsize=(6,5))
     for d in colors:
         selected=[r for r in primary if r["decision"]==d];ax.scatter([r["actual_safety_margin"] for r in selected],[r["conformal_safety_margin"] for r in selected],s=10,alpha=.55,label=d,color=colors[d])
     ax.axhline(0,color="black",ls="--");ax.axvline(0,color="black",ls=":");ax.set(xlabel="True safety margin (K)",ylabel="Upper-envelope safety margin (K)");ax.legend()
-    _save_figure(fig,output,"figure_C1_8_conformal_vs_true_margin")
+    _save_figure(fig,output,"figure_CERTIFICATION_8_conformal_vs_true_margin")
 
     fig,axes=plt.subplots(1,3,figsize=(12,3.7));metrics=("SAFE_certification_rate","joint_false_safe_probability","unresolved_rate");titles=("SAFE certification","Joint false-safe","UNRESOLVED")
     for ax,metric,title in zip(axes,metrics,titles):
         vals=[_summary_row(summary,"S3_one_sided",.95,c)[metric] for c in CATEGORIES];ax.bar(CATEGORIES,vals,color="#527da5");ax.set_title(title);ax.tick_params(axis="x",rotation=20)
-    _save_figure(fig,output,"figure_C1_9_metrics_by_regime")
+    _save_figure(fig,output,"figure_CERTIFICATION_9_metrics_by_regime")
 
     fig,axes=plt.subplots(1,3,figsize=(12,3.7));x=np.arange(len(METHODS));labels=[m.split("_",1)[0] for m in METHODS]
     for ax,metric,title in zip(axes,metrics,titles):
         vals=[_summary_row(summary,m,.95)[metric] for m in METHODS];ax.bar(x,vals,color=["#999999","#7194b5","#7b6ba8","#2e8b57"]);ax.set_xticks(x,labels);ax.set_title(title)
-    _save_figure(fig,output,"figure_C1_10_method_comparison")
+    _save_figure(fig,output,"figure_CERTIFICATION_10_method_comparison")
 
     fig,axes=plt.subplots(1,2,figsize=(11,4.3),sharex=True)
     for d in colors:
         selected=[r for r in primary if r["decision"]==d];actions=[r["proposed_action"] for r in selected];axes[0].scatter(actions,[r["actual_safety_margin"] for r in selected],s=10,alpha=.55,label=d,color=colors[d]);axes[1].scatter(actions,[r["conformal_safety_margin"] for r in selected],s=10,alpha=.55,label=d,color=colors[d])
     for ax in axes:ax.axhline(0,color="black",ls="--");ax.set_xlabel("Candidate flow setpoint (L/s)")
     axes[0].set_ylabel("True safety margin (K)");axes[1].set_ylabel("Upper-envelope safety margin (K)");axes[0].legend()
-    _save_figure(fig,output,"figure_C1_11_action_magnitude_vs_decision")
+    _save_figure(fig,output,"figure_CERTIFICATION_11_action_magnitude_vs_decision")
 
     fig,axes=plt.subplots(1,2,figsize=(10,4));
     states=screening_summary;labels=["Screening\nsuccess","No action\ncertifiable","Only unsafe\nexist","Multiple\ncertifiable"];values=[np.mean([r["screening_success"] for r in states if r["at_least_one_actually_safe"]]) if any(r["at_least_one_actually_safe"] for r in states) else np.nan,np.mean([r["no_action_certifiable"] for r in states]),np.mean([r["only_unsafe_actions_exist"] for r in states]),np.mean([r["multiple_actions_certifiable"] for r in states])];axes[0].bar(labels,values,color="#527da5");axes[0].tick_params(axis="x",rotation=15);axes[0].set_ylabel("Decision-state fraction")
     for d in colors:
         selected=[r for r in screening_rows if r["decision"]==d];axes[1].scatter([r["action_lps"] for r in selected],[r["conformal_safety_margin_k"] for r in selected],s=8,alpha=.5,label=d,color=colors[d])
     axes[1].axhline(0,color="black",ls="--");axes[1].set(xlabel="Candidate flow setpoint (L/s)",ylabel="Conformal safety margin (K)");axes[1].legend(fontsize=8)
-    _save_figure(fig,output,"figure_C1_12_multi_action_screening")
+    _save_figure(fig,output,"figure_CERTIFICATION_12_multi_action_screening")
 
 
 def create_reports(output, config, quantile_rows, final_rows, summary, screening_summary, timing_rows, decision):
-    p=_summary_row(summary,"S3_one_sided",.95);s0=_summary_row(summary,"S0_nominal_DT",.95);s1=_summary_row(summary,"S1_raw_U3",.95);s2=_summary_row(summary,"S2_symmetric_B12",.95)
+    p=_summary_row(summary,"S3_one_sided",.95);s0=_summary_row(summary,"S0_nominal_DT",.95);s1=_summary_row(summary,"S1_raw_bootstrap",.95);s2=_summary_row(summary,"S2_symmetric_conformal",.95)
     eligible=[r for r in screening_summary if r["at_least_one_actually_safe"]];screen_success=np.mean([r["screening_success"] for r in eligible]) if eligible else float("nan")
     screening_latency=np.asarray([r["measured_sequential_latency_seconds"] for r in timing_rows if r["candidate_count_K"]==1])
     qplus=next(r["conformal_quantile"] for r in quantile_rows if r["direction"]=="upper" and np.isclose(r["nominal_level"],.95));qminus=next(r["conformal_quantile"] for r in quantile_rows if r["direction"]=="lower" and np.isclose(r["nominal_level"],.95))
@@ -644,17 +644,17 @@ def create_reports(output, config, quantile_rows, final_rows, summary, screening
     near_boundary=[r for r in primary_rows if abs(r["actual_safety_margin"])<=1.0]
     near_unresolved=np.mean([r["decision"]=="UNRESOLVED" for r in near_boundary]) if near_boundary else float("nan")
     regime_lines="\n".join(f"- {c}: SAFE rate {_summary_row(summary,'S3_one_sided',.95,c)['SAFE_certification_rate']:.3f}, joint false-safe {_summary_row(summary,'S3_one_sided',.95,c)['joint_false_safe_probability']:.3f}, unresolved {_summary_row(summary,'S3_one_sided',.95,c)['unresolved_rate']:.3f}." for c in CATEGORIES)
-    readme=f"""# Milestone C1 — action-specific safety certification
+    readme=f"""# primary certification — action-specific safety certification
 
 ## Decision
 
 **{decision}**
 
-The predictor is frozen at the B.11 U3 stack (first 10 accepted bootstrap models, M=2000, posterior median centre) and the B.12 numerical scale floor of {EPSILON_SCALE_K:g} K. The primary physical constraint is the repository's existing hard limit, **reactor temperature <= {T_MAX_K:.1f} K at every one of {HORIZON} future seconds** (`cstr_case.SafeStateChecker`). It was fixed before C1 outcome generation.
+The predictor is frozen at the bootstrap ensemble U3 stack (first 10 accepted bootstrap models, M=2000, posterior median centre) and the trajectory calibration numerical scale floor of {EPSILON_SCALE_K:g} K. The primary physical constraint is the repository's existing hard limit, **reactor temperature <= {T_MAX_K:.1f} K at every one of {HORIZON} future seconds** (`cstr_case.SafeStateChecker`). It was fixed before primary certification outcome generation.
 
-The independent safety-calibration population contains {config.limit_episodes or config.calibration_count} episodes. Its finite-sample 95% one-sided quantiles are q+={qplus:.3f} and q-={qminus:.3f}; they were frozen before generating {config.limit_episodes or config.final_count} new final episodes. Candidate actions retain the established 0.012–0.045 L/s interpolation/boundary/extrapolation protocol. B.12's untouched population had already shown this protocol spans conservative, boundary, and unsafe outcomes at 313 K, so neither the limit nor action range was tuned to C1 test performance.
+The independent safety-calibration population contains {config.limit_episodes or config.calibration_count} episodes. Its finite-sample 95% one-sided quantiles are q+={qplus:.3f} and q-={qminus:.3f}; they were frozen before generating {config.limit_episodes or config.final_count} new final episodes. Candidate actions retain the established 0.012–0.045 L/s interpolation/boundary/extrapolation protocol. trajectory calibration's untouched population had already shown this protocol spans conservative, boundary, and unsafe outcomes at 313 K, so neither the limit nor action range was tuned to primary certification test performance.
 
-B.11/B.12 predict measured temperature. For the physical C1 constraint, evaluator-side `T_true` is recovered exactly by removing the saved 0.10 K measurement draw using its frozen RNG seed after reveal. Both measured and physical trajectories are retained; no future trajectory enters prediction or calibration before its prescribed reveal.
+bootstrap ensemble/trajectory calibration predict measured temperature. For the physical primary certification constraint, evaluator-side `T_true` is recovered exactly by removing the saved 0.10 K measurement draw using its frozen RNG seed after reveal. Both measured and physical trajectories are retained; no future trajectory enters prediction or calibration before its prescribed reveal.
 
 ## Central results at 95%
 
@@ -662,7 +662,7 @@ B.11/B.12 predict measured temperature. For the physical C1 constraint, evaluato
 |---|---:|---:|---:|---:|
 | S0 nominal DT | {s0['SAFE_certification_rate']:.3f} | {s0['joint_false_safe_probability']:.3f} | {s0['conditional_false_safe_rate']:.3f} | {s0['unresolved_rate']:.3f} |
 | S1 raw U3 | {s1['SAFE_certification_rate']:.3f} | {s1['joint_false_safe_probability']:.3f} | {s1['conditional_false_safe_rate']:.3f} | {s1['unresolved_rate']:.3f} |
-| S2 symmetric B.12 | {s2['SAFE_certification_rate']:.3f} | {s2['joint_false_safe_probability']:.3f} | {s2['conditional_false_safe_rate']:.3f} | {s2['unresolved_rate']:.3f} |
+| S2 symmetric trajectory calibration | {s2['SAFE_certification_rate']:.3f} | {s2['joint_false_safe_probability']:.3f} | {s2['conditional_false_safe_rate']:.3f} | {s2['unresolved_rate']:.3f} |
 | S3 one-sided | {p['SAFE_certification_rate']:.3f} | {p['joint_false_safe_probability']:.3f} | {p['conditional_false_safe_rate']:.3f} | {p['unresolved_rate']:.3f} |
 
 The S3 joint false-safe 95% Wilson interval is [{p['joint_false_safe_CI_lower']:.3f}, {p['joint_false_safe_CI_upper']:.3f}]. Its conditional false-safe interval is [{p['false_safe_CI_lower']:.3f}, {p['false_safe_CI_upper']:.3f}] over {int(p['SAFE_count'])} SAFE decisions. This conditional rate is empirical, not conformally guaranteed.
@@ -680,22 +680,22 @@ These are pooled-calibration diagnostics; no category-conditional guarantee is c
 1. Nominal DT unsafe-as-safe behaviour is quantified by S0 joint false-safe={s0['joint_false_safe_probability']:.3f}.
 2. Frozen latent correction changes it to S1={s1['joint_false_safe_probability']:.3f}.
 3. Symmetric and one-sided conformalization change it to S2={s2['joint_false_safe_probability']:.3f} and S3={p['joint_false_safe_probability']:.3f}.
-4. One-sided calibration is sharper than symmetric B.12 and resolves more strong-UNSAFE cases, but does not certify more SAFE actions in this population.
+4. One-sided calibration is sharper than symmetric trajectory calibration and resolves more strong-UNSAFE cases, but does not certify more SAFE actions in this population.
 5. S3 certifies {p['oracle_safe_capture_rate']:.3f} of genuinely safe actions.
 6. Among {len(near_boundary)} evaluator-defined near-boundary episodes (absolute true margin <=1 K), {near_unresolved:.3f} become UNRESOLVED; the overall unresolved rate is {p['unresolved_rate']:.3f}.
 7. Empirical conditional false-safe is {p['conditional_false_safe_rate']:.3f}.
 8. Marginal joint false-safe is {p['joint_false_safe_probability']:.3f}.
 9. Tightening 90% to 99% widened S3 mean envelopes from {_summary_row(summary,'S3_one_sided',.90)['mean_envelope_width_k']:.3f} to {_summary_row(summary,'S3_one_sided',.99)['mean_envelope_width_k']:.3f} K, but the discrete decisions were unchanged at 338 SAFE and zero false-safe at all three levels; unresolved increased from {_summary_row(summary,'S3_one_sided',.90)['unresolved_rate']:.3f} to {_summary_row(summary,'S3_one_sided',.99)['unresolved_rate']:.3f}.
-10. Regime results appear above and in Figure C1.9.
+10. Regime results appear above and in Figure 9.
 11. Multi-action screening found at least one certified SAFE action in {screen_success:.3f} of states having an actually safe candidate. Final-test online latency median/p95/max was {np.median(online_latency):.3f}/{np.quantile(online_latency,.95):.3f}/{np.max(online_latency):.3f} s. Median filtering/rollout/conformal components were {np.median(filter_latency):.4f}/{np.median(rollout_latency):.4f}/{np.median(conformal_latency):.6f} s. Screening K=1 measured median was {np.median(screening_latency):.3f} s; all K-specific sequential and ideal-parallel lower-bound timings are in `screening_latency.csv`.
 
 ## Guarantee scope and limitation
 
-Under split-conformal exchangeability over the defined episode population, whole-trajectory upper-envelope miscoverage is marginally controlled. Because `SAFE and actually unsafe` is a subset of upper-envelope failure, this supports a marginal population bound on joint false-safe probability. It does **not** guarantee that every selected action has safety probability at least 1-alpha, nor does it guarantee the conditional false-safe rate. Usefulness is strongly regime-dependent: all 334 interpolation actions were UNRESOLVED despite 63.5% being physically safe. The lower-envelope coverage shortfall, selective/conditional validity, finite regime samples, and simulator-to-deployment population match are the strongest limitations. The optional LLM Action Agent experiment was not run; it is not part of the statistical guarantee or core C1 result.
+Under split-conformal exchangeability over the defined episode population, whole-trajectory upper-envelope miscoverage is marginally controlled. Because `SAFE and actually unsafe` is a subset of upper-envelope failure, this supports a marginal population bound on joint false-safe probability. It does **not** guarantee that every selected action has safety probability at least 1-alpha, nor does it guarantee the conditional false-safe rate. Usefulness is strongly regime-dependent: all 334 interpolation actions were UNRESOLVED despite 63.5% being physically safe. The lower-envelope coverage shortfall, selective/conditional validity, finite regime samples, and simulator-to-deployment population match are the strongest limitations. The optional LLM Action Agent experiment was not run; it is not part of the statistical guarantee or core primary certification result.
 """
     (output/"README.md").write_text(readme,encoding="utf-8")
-    (output/"GO_NO_GO.md").write_text(f"# Milestone C1 decision\n\n**{decision}**\n\nAt 95%, S3 joint false-safe probability is {p['joint_false_safe_probability']:.3f} (Wilson [{p['joint_false_safe_CI_lower']:.3f}, {p['joint_false_safe_CI_upper']:.3f}]), conditional false-safe is {p['conditional_false_safe_rate']:.3f} over {int(p['SAFE_count'])} SAFE decisions, SAFE certification is {p['SAFE_certification_rate']:.3f}, and UNRESOLVED is {p['unresolved_rate']:.3f}.\n",encoding="utf-8")
-    paper=f"""# Milestone C1 — paper result summary
+    (output/"decision_summary.md").write_text(f"# primary certification decision\n\n**{decision}**\n\nAt 95%, S3 joint false-safe probability is {p['joint_false_safe_probability']:.3f} (Wilson [{p['joint_false_safe_CI_lower']:.3f}, {p['joint_false_safe_CI_upper']:.3f}]), conditional false-safe is {p['conditional_false_safe_rate']:.3f} over {int(p['SAFE_count'])} SAFE decisions, SAFE certification is {p['SAFE_certification_rate']:.3f}, and UNRESOLVED is {p['unresolved_rate']:.3f}.\n",encoding="utf-8")
+    paper=f"""# primary certification — paper result summary
 
 **Central question.** Can a frozen, post-fault conformal digital twin safely certify individual counterfactual recovery actions?
 
@@ -711,22 +711,22 @@ Under split-conformal exchangeability over the defined episode population, whole
 
 **Strongest limitation.** Calibration is marginal, not conditional for a selected action or regime. All interpolation actions were unresolved, and lower-envelope coverage was only {p['lower_trajectory_empirical_coverage']:.3f}; simulator-to-plant population shift remains outside the guarantee.
 """
-    (output/"PAPER_RESULT_SUMMARY.md").write_text(paper,encoding="utf-8")
+    (output/"result_summary.md").write_text(paper,encoding="utf-8")
 
 
-def run(config: MilestoneC1Config) -> str:
+def run(config: CertificationConfig) -> str:
     config.validate()
     output=Path(config.output_dir);output.mkdir(parents=True,exist_ok=True)
-    b11dir=Path(config.b11_dir);b12dir=Path(config.b12_dir)
-    models=_load_models(b11dir,config.ensemble_size);symmetric_q=_load_b12_quantiles(b12dir)
-    b5cfg=b5.MilestoneB5Config();template=b5.build_template(b5cfg)
+    b11dir=Path(config.bootstrap_dir);b12dir=Path(config.conformal_dir)
+    models=_load_models(b11dir,config.ensemble_size);symmetric_q=_load_trajectory_conformal_quantiles(b12dir)
+    b5cfg=episode_design.EpisodeDesignConfig();template=episode_design.build_template(b5cfg)
     ncal=config.limit_episodes or config.calibration_count;ntest=config.limit_episodes or config.final_count
-    calibration,cal_manifest=b12.generate_population(b5cfg,template,output,ncal,1_630_000,"c1_calibration","revealed_calibration_truth")
+    calibration,cal_manifest=trajectory_conformal.generate_population(b5cfg,template,output,ncal,1_630_000,"cstr_calibration","revealed_calibration_truth")
     cal_rows,quantile_rows,one_sided_q=calibrate_one_sided(calibration,models,config.trajectories,output)
     for row in cal_manifest:row["population_role"]="independent_safety_calibration";row["proposed_action_lps"]=next(x.proposed_action for x in calibration if x.episode_id==row["episode_id"])
     _write_csv(output/"safety_calibration_manifest.csv",cal_manifest);_write_csv(output/"safety_calibration_scores.csv",cal_rows);_write_csv(output/"one_sided_quantiles.csv",quantile_rows)
     del calibration
-    final,final_manifest=b12.generate_population(b5cfg,template,output,ntest,1_730_000,"c1_final","revealed_final_truth")
+    final,final_manifest=trajectory_conformal.generate_population(b5cfg,template,output,ntest,1_730_000,"cstr_test","revealed_final_truth")
     for row in final_manifest:row["population_role"]="untouched_final_safety_test";row["proposed_action_lps"]=next(x.proposed_action for x in final if x.episode_id==row["episode_id"])
     _write_csv(output/"final_safety_population_manifest.csv",final_manifest)
     final_rows=evaluate_final(final,final_manifest,models,config.trajectories,output,one_sided_q,symmetric_q);summary=summarize(final_rows)
@@ -734,15 +734,15 @@ def run(config: MilestoneC1Config) -> str:
     screening_rows,screening_summary,timing_rows=screen_actions(config,template,models,one_sided_q,output)
     _write_csv(output/"multi_action_screening.csv",screening_rows);_write_csv(output/"multi_action_screening_summary.csv",screening_summary);_write_csv(output/"screening_latency.csv",timing_rows)
     decision=decide(summary)
-    metadata={"configuration":asdict(config),"physical_constraint":{"variable":"physical reactor temperature T_true","T_max_k":T_MAX_K,"source":"cstr_case.SafeStateChecker default and explicit project instantiations","horizon_steps":HORIZON,"dt_s":b5cfg.dt_s,"evaluator_note":"B.11 measured-output reveal is deterministically de-noised with its saved RNG seed for physical C1 labels; both measured and physical trajectories are retained"},"frozen_predictor":"B.11 U3: first 10 accepted bootstrap models, M=2000, posterior median; no refit","scale_floor_k":EPSILON_SCALE_K,"one_sided_score_upper":"max_h (T_true_h-m_h)/max(s_h,epsilon)","one_sided_score_lower":"max_h (m_h-T_true_h)/max(s_h,epsilon)","quantile_convention":"k=ceil((n_cal+1)*(1-alpha)); kth ordered episode score","calibration_seeds":{"base":1_630_000,"count":ncal},"final_test_seeds":{"base":1_730_000,"count":ntest},"screening_seeds":{"base":1_830_000,"count":config.limit_episodes or config.screening_states},"source_hashes":{"bootstrap_models_sha256":_sha256(b11dir/"bootstrap_models.json"),"b12_quantiles_sha256":_sha256(b12dir/"conformal_quantiles.csv")},"predeclared_decision_rule":{"successful":"95% pooled joint false-safe <=.05, <=half both S0 and S1, SAFE rate >=.10, and no regime joint false-safe >.10","too_conservative":"joint false-safe <=.05 but SAFE rate <.10","regime_dependent":"pooled controlled but a regime joint false-safe >.10","inadequate":"otherwise"},"guarantee":"marginal joint false-safe implication only under split-conformal exchangeability; conditional false-safe is empirical","decision":decision}
+    metadata={"configuration":asdict(config),"physical_constraint":{"variable":"physical reactor temperature T_true","T_max_k":T_MAX_K,"source":"cstr_case.SafeStateChecker default and explicit project instantiations","horizon_steps":HORIZON,"dt_s":b5cfg.dt_s,"evaluator_note":"bootstrap ensemble measured-output reveal is deterministically de-noised with its saved RNG seed for physical primary certification labels; both measured and physical trajectories are retained"},"frozen_predictor":"bootstrap ensemble U3: first 10 accepted bootstrap models, M=2000, posterior median; no refit","scale_floor_k":EPSILON_SCALE_K,"one_sided_score_upper":"max_h (T_true_h-m_h)/max(s_h,epsilon)","one_sided_score_lower":"max_h (m_h-T_true_h)/max(s_h,epsilon)","quantile_convention":"k=ceil((n_cal+1)*(1-alpha)); kth ordered episode score","calibration_seeds":{"base":1_630_000,"count":ncal},"final_test_seeds":{"base":1_730_000,"count":ntest},"screening_seeds":{"base":1_830_000,"count":config.limit_episodes or config.screening_states},"source_hashes":{"bootstrap_models_sha256":_sha256(b11dir/"bootstrap_models.json"),"trajectory_conformal_quantiles_sha256":_sha256(b12dir/"conformal_quantiles.csv")},"predeclared_decision_rule":{"successful":"95% pooled joint false-safe <=.05, <=half both S0 and S1, SAFE rate >=.10, and no regime joint false-safe >.10","too_conservative":"joint false-safe <=.05 but SAFE rate <.10","regime_dependent":"pooled controlled but a regime joint false-safe >.10","inadequate":"otherwise"},"guarantee":"marginal joint false-safe implication only under split-conformal exchangeability; conditional false-safe is empirical","decision":decision}
     (output/"configuration.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
     create_figures(output,final_rows,summary,screening_rows,screening_summary);create_reports(output,config,quantile_rows,final_rows,summary,screening_summary,timing_rows,decision)
     return decision
 
 
 def parser() -> argparse.ArgumentParser:
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument("--b11-dir",default="artifacts/cstr/bootstrap_ensemble");p.add_argument("--b12-dir",default="artifacts/cstr/conformal_calibration");p.add_argument("--output-dir",default="artifacts/cstr/primary_evaluation");p.add_argument("--limit-episodes",type=int);p.add_argument("--trajectories",type=int,default=2000);return p
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument("--bootstrap-dir",default="artifacts/cstr/bootstrap_ensemble");p.add_argument("--conformal-dir",default="artifacts/cstr/conformal_calibration");p.add_argument("--output-dir",default="artifacts/cstr/primary_evaluation");p.add_argument("--limit-episodes",type=int);p.add_argument("--trajectories",type=int,default=2000);return p
 
 
 if __name__ == "__main__":
-    result=run(MilestoneC1Config(**vars(parser().parse_args())));print(f"Milestone C1 complete: {result}")
+    result=run(CertificationConfig(**vars(parser().parse_args())));print(f"primary certification complete: {result}")

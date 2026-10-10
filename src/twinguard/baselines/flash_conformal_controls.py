@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 """
-Exact reviewer-facing conformal control baselines for the FINAL flash E5 population.
+Retrospective conformal controls for the flash calibration and test populations.
 
-This script uses the frozen E4 calibration design and the exact frozen E5
-1200-episode final-test artifacts.
+This script uses the frozen calibration design and saved test records.
+The test population contains 1200 episodes.
 
 It does NOT:
 - refit the flash discrepancy model,
 - refit bootstrap models,
-- regenerate E5 final-test predictions or truth,
-- modify E4/E5 artifacts,
-- tune anything using E5 outcomes.
+- regenerate test predictions or truth,
+- modify frozen calibration or test artifacts,
+- tune anything using test outcomes.
 
 Why calibration truth is regenerated:
-E4 saved the exact operational calibration inputs and adaptive conformal scores,
-but did not save each complete calibration future truth/mean-corrected trajectory.
-For the two new constant-width reviewer controls, this script deterministically
-reconstructs ONLY the E4 ordinary calibration plant trajectories from the
-predeclared seeds and frozen candidate actions. It verifies that every
-regenerated observation/future nominal input matches the frozen E4 operational
+The calibration bundle includes operational inputs and adaptive conformal scores,
+but not complete calibration truth and mean-corrected trajectories.
+To evaluate fixed-width controls, the script deterministically rebuilds
+ordinary calibration plant trajectories from the declared seeds and
+frozen candidate actions. It verifies that every
+regenerated observation/future nominal input matches the saved calibration
 input arrays before using the regenerated physical future.
 
-Reviewer controls:
+Fixed-scale controls:
     M0  nominal DT point prediction
     C0  nominal DT + fixed-engineering-scale conformal back-off
     M1  discrepancy mean point prediction
@@ -36,12 +36,12 @@ but replace the state/action-dependent bootstrap scale with fixed declared
 engineering scales [0.10 bar, 0.10 level fraction, 5 K]. Thus the width is
 constant across episodes/actions/horizon in normalized engineering units.
 
-Outputs are written to a new directory. Frozen E4/E5 files are never overwritten.
+Outputs go to a separate directory. Frozen calibration and test files are not overwritten.
 
 Run from repository root:
     python experiments/evaluate_flash_conformal_controls.py
 
-The frozen flash-study artifacts, with the per-episode archive extracted, must already exist.
+The flash-study artifacts, including the per-episode files of the primary evaluation, must exist.
 """
 
 from __future__ import annotations
@@ -68,7 +68,7 @@ try:
 except Exception:
     plt = None
 
-from twinguard.flash import bootstrap_and_calibrate as e4
+from twinguard.flash import bootstrap_and_calibrate as calibration_stage
 from twinguard.uncertainty.flash_bootstrap import PREDICTIVE_SCALE_FLOORS
 from twinguard.conformal.flash_conformal import (
     safety_decision,
@@ -217,7 +217,7 @@ def load_selected_mean_model(experiment_root: Path):
 
 
 def load_frozen_ordinary_inputs(experiment_root: Path) -> dict[str, np.ndarray]:
-    path = experiment_root / "e4_data" / "calibration_ordinary_operational_inputs.npz"
+    path = experiment_root / "calibration_data" / "calibration_ordinary_operational_inputs.npz"
     if not path.exists():
         raise FileNotFoundError(path)
     return load_npz(path)
@@ -228,10 +228,10 @@ def regenerate_calibration_truth(
     workers: int,
 ) -> tuple[list[dict[str, object]], dict[str, np.ndarray]]:
     """
-    Deterministically regenerate physical calibration futures only.
+    Regenerate physical calibration futures from the frozen action design.
 
-    Before any score is used, verify regenerated online/future nominal inputs
-    against E4's frozen operational-input bundle.
+    Before using any score, compare regenerated online and future nominal inputs
+    with the saved calibration-input bundle.
     """
     frozen = load_frozen_ordinary_inputs(experiment_root)
     episode_ids = [str(x) for x in np.asarray(frozen["episode_id"]).tolist()]
@@ -242,17 +242,17 @@ def regenerate_calibration_truth(
         try:
             original_index = int(episode_id.rsplit("_", 1)[1])
         except Exception as exc:
-            raise RuntimeError(f"cannot parse E4 episode index from {episode_id}") from exc
+            raise RuntimeError(f"cannot parse calibration episode index from {episode_id}") from exc
         seed = ORDINARY_SEED_START + original_index
         tasks.append(
             ("calibration_ordinary", original_index, seed, candidate_actions[row_index])
         )
 
     if workers <= 1:
-        episodes = [e4._calibration_task(task) for task in tasks]
+        episodes = [calibration_stage._calibration_task(task) for task in tasks]
     else:
         with ProcessPoolExecutor(max_workers=workers) as pool:
-            episodes = list(pool.map(e4._calibration_task, tasks, chunksize=1))
+            episodes = list(pool.map(calibration_stage._calibration_task, tasks, chunksize=1))
 
     if len(episodes) != len(episode_ids):
         raise RuntimeError("calibration regeneration count mismatch")
@@ -300,7 +300,7 @@ def regenerate_calibration_truth(
             max_diffs[name] = diff
             if not np.allclose(regen, saved, rtol=1e-10, atol=1e-10):
                 raise RuntimeError(
-                    f"{episode_id}: regenerated {name} does not match frozen E4 input; "
+                    f"{episode_id}: regenerated {name} does not match frozen calibration input; "
                     f"max abs diff={diff:.3e}"
                 )
 
@@ -389,18 +389,18 @@ def frozen_q95(experiment_root: Path) -> float:
 
 
 def final_episode_paths(experiment_root: Path) -> list[tuple[str, Path, Path]]:
-    pred_dir = experiment_root / "e5_artifacts" / "predictions"
-    truth_dir = experiment_root / "e5_artifacts" / "truths"
+    pred_dir = experiment_root / "primary_evaluation_episodes" / "predictions"
+    truth_dir = experiment_root / "primary_evaluation_episodes" / "truths"
     predictions = {p.stem: p for p in pred_dir.glob("*.npz")}
     truths = {p.stem: p for p in truth_dir.glob("*.npz")}
     if set(predictions) != set(truths):
         raise RuntimeError(
-            f"E5 prediction/truth mismatch: pred-only={len(set(predictions)-set(truths))}, "
+            f"primary evaluation prediction/truth mismatch: pred-only={len(set(predictions)-set(truths))}, "
             f"truth-only={len(set(truths)-set(predictions))}"
         )
     if len(predictions) != EXPECTED_FINAL:
         raise RuntimeError(
-            f"expected {EXPECTED_FINAL} frozen E5 final episodes, got {len(predictions)}"
+            f"expected {EXPECTED_FINAL} frozen primary evaluation final episodes, got {len(predictions)}"
         )
     return [(eid, predictions[eid], truths[eid]) for eid in sorted(predictions)]
 
@@ -485,7 +485,7 @@ def summarize_final(
 
         if prediction_complete and truth_complete:
             if scale is None:
-                # Match E5's zero-width directional coverage convention.
+                # Match primary evaluation's zero-width directional coverage convention.
                 zero_scale = np.zeros_like(center)
                 coverage = directional_coverage(actual, center, zero_scale, 0.0)
             else:
@@ -523,7 +523,7 @@ def summarize_final(
     }
 
 
-def verify_existing_e5(
+def verify_existing_primary(
     experiment_root: Path,
     m3_q95: float,
 ) -> dict[str, dict[str, object]]:
@@ -559,7 +559,7 @@ def verify_existing_e5(
             f"{reconstructed['M3_pooled_conformal']['whole_trajectory_safety_direction_coverage']}"
         )
     if failures:
-        raise RuntimeError("FINAL E5 RECONSTRUCTION FAILED:\n- " + "\n- ".join(failures))
+        raise RuntimeError("FINAL primary evaluation RECONSTRUCTION FAILED:\n- " + "\n- ".join(failures))
     return reconstructed
 
 
@@ -588,7 +588,7 @@ def make_plot(rows: list[dict[str, object]], output: Path) -> None:
     ax.set_xlim(left=-0.02)
     ax.set_ylim(bottom=-0.005)
     fig.tight_layout()
-    fig.savefig(output / "flash_final_control_baselines.png", dpi=220)
+    fig.savefig(output / "flash_control_comparison.png", dpi=220)
     plt.close(fig)
 
 
@@ -598,12 +598,12 @@ def main(args: argparse.Namespace) -> None:
     output.mkdir(parents=True, exist_ok=True)
 
     required = [
-        experiment_root / "e4_data" / "calibration_ordinary_operational_inputs.npz",
+        experiment_root / "calibration_data" / "calibration_ordinary_operational_inputs.npz",
         experiment_root / "flash_calibration_scores.csv",
         experiment_root / "flash_conformal_config.json",
         experiment_root / "selected_flash_model.json",
-        experiment_root / "e5_artifacts" / "predictions",
-        experiment_root / "e5_artifacts" / "truths",
+        experiment_root / "primary_evaluation_episodes" / "predictions",
+        experiment_root / "primary_evaluation_episodes" / "truths",
     ]
     missing = [str(path) for path in required if not path.exists()]
     if missing:
@@ -611,12 +611,12 @@ def main(args: argparse.Namespace) -> None:
             "missing required frozen flash artifacts:\n- " + "\n- ".join(missing)
         )
 
-    print("Regenerating ONLY the frozen E4 ordinary calibration physical futures...")
-    print("This does not touch E5 and does not refit any model.")
+    print("Regenerating ONLY the frozen calibration ordinary calibration physical futures...")
+    print("This does not touch primary evaluation and does not refit any model.")
     verification_rows, calibration_truths = regenerate_calibration_truth(
         experiment_root, args.workers
     )
-    write_csv(output / "flash_e4_calibration_regeneration_checks.csv", verification_rows)
+    write_csv(output / "flash_calibration_regeneration_checks.csv", verification_rows)
 
     fixed_scores, fixed_score_rows = build_constant_width_calibration_scores(
         experiment_root, calibration_truths
@@ -662,8 +662,8 @@ def main(args: argparse.Namespace) -> None:
             f"recomputed={recomputed_m3_q:.12g}"
         )
 
-    print("Reconstructing frozen E5 headline results...")
-    original = verify_existing_e5(experiment_root, frozen_q)
+    print("Reconstructing frozen primary evaluation headline results...")
+    original = verify_existing_primary(experiment_root, frozen_q)
 
     c0 = summarize_final(
         experiment_root,
@@ -696,19 +696,19 @@ def main(args: argparse.Namespace) -> None:
             row.update({"alpha": alpha, "target_coverage": 1.0 - alpha})
             alpha_rows.append(row)
 
-    write_csv(output / "flash_final_conformal_quantiles.csv", quantile_rows)
-    write_csv(output / "flash_final_baseline_comparison_alpha_0p05.csv", comparison)
-    write_csv(output / "flash_final_alpha_sensitivity.csv", alpha_rows)
+    write_csv(output / "flash_control_conformal_quantiles.csv", quantile_rows)
+    write_csv(output / "flash_control_comparison_alpha_0p05.csv", comparison)
+    write_csv(output / "flash_alpha_sensitivity.csv", alpha_rows)
     make_plot(comparison, output)
 
     report = [
-        "# Final flash reviewer-control analysis",
+        "# Final flash comparison-control analysis",
         "",
-        "The final-test calculations use the exact frozen E5 1200-episode artifacts.",
+        "The final-test calculations use the exact frozen primary evaluation 1200-episode artifacts.",
         "The new C0/C1 calibration scores use deterministic reconstruction of the",
-        "frozen E4 ordinary calibration futures; every regenerated operational input",
-        "is checked against the frozen E4 operational-input bundle before use.",
-        "No model is refit and no E5 trajectory is regenerated.",
+        "frozen calibration ordinary calibration futures; every regenerated operational input",
+        "is checked against the frozen calibration operational-input bundle before use.",
+        "No model is refit and no primary evaluation trajectory is regenerated.",
         "",
         "## Frozen-result reconstruction",
         f"- Frozen/recomputed adaptive q95: {frozen_q:.12g}",
@@ -726,7 +726,7 @@ def main(args: argparse.Namespace) -> None:
             f"coverage={row['whole_trajectory_safety_direction_coverage']:.6f}"
         )
 
-    report += ["", "## Reviewer-facing 95% controls"]
+    report += ["", "## Comparison 95% controls"]
     for row in comparison:
         report.append(
             f"- {row['method']}: availability={row['certification_availability']:.4f}, "
@@ -744,11 +744,11 @@ def main(args: argparse.Namespace) -> None:
         "- The guarantee remains population-marginal; alpha is not a SIL PFD.",
     ]
 
-    (output / "FLASH_FINAL_REVIEWER_CONTROLS.md").write_text(
+    (output / "flash_conformal_controls_report.md").write_text(
         "\n".join(report) + "\n", encoding="utf-8"
     )
 
-    print("FINAL E5 RECONSTRUCTION: PASS")
+    print("FINAL primary evaluation RECONSTRUCTION: PASS")
     for row in comparison:
         print(
             f"{row['method']}: "
@@ -764,18 +764,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--experiment-dir",
         default="artifacts/flash_study",
-        help="Path to the frozen E_FLASH_RESS experiment directory.",
+        help="Path to the frozen artifacts/flash_study experiment directory.",
     )
     parser.add_argument(
         "--output-dir",
         default="runs/flash_conformal_controls",
-        help="New output directory; frozen E4/E5 files are never modified.",
+        help="New output directory; frozen calibration/primary evaluation files are never modified.",
     )
     parser.add_argument(
         "--workers",
         type=int,
         default=4,
-        help="Workers used only to regenerate E4 ordinary calibration plant futures.",
+        help="Workers used only to regenerate calibration ordinary calibration plant futures.",
     )
     parser.add_argument(
         "--alphas",

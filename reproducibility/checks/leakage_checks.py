@@ -33,9 +33,9 @@ def _json_keys(value, prefix=""):
 def check_method_inputs() -> list[CheckResult]:
     """Arrays handed to discrepancy fitting / calibration contain no evaluator-only fields."""
     results = []
-    for path in (FLASH / "e3_data/training_method_inputs.npz", FLASH / "e3_data/selection_operational_inputs.npz",
-                 FLASH / "e4_data/calibration_ordinary_operational_inputs.npz", FLASH / "e4_data/calibration_boundary_operational_inputs.npz",
-                 FLASH / "e3_data/selection_predictions_before_truth_serialization.npz",
+    for path in (FLASH / "model_selection_data/training_method_inputs.npz", FLASH / "model_selection_data/selection_operational_inputs.npz",
+                 FLASH / "calibration_data/calibration_ordinary_operational_inputs.npz", FLASH / "calibration_data/calibration_boundary_operational_inputs.npz",
+                 FLASH / "model_selection_data/selection_predictions_before_truth_serialization.npz",
                  CSTR / "discrepancy_fit/training_population.npz", CSTR / "mixed_degradation/training_population.npz"):
         with np.load(path, allow_pickle=False) as saved:
             keys = list(saved.files)
@@ -49,7 +49,7 @@ def check_frozen_models() -> list[CheckResult]:
     """Frozen discrepancy models, bootstrap ensembles and conformal configurations hold no fault identity."""
     results = []
     for path in (FLASH / "selected_flash_model.json", FLASH / "flash_bootstrap_models.json", FLASH / "flash_conformal_config.json",
-                 LADDER / "FLASH_E6B_CONFORMAL_CONFIG.json", CSTR / "discrepancy_fit/model_parameters.json",
+                 LADDER / "flash_band_conformal_config.json", CSTR / "discrepancy_fit/model_parameters.json",
                  CSTR / "discrepancy_freeze/frozen_latent_model.json", CSTR / "bootstrap_ensemble/bootstrap_models.json",
                  CSTR / "mixed_degradation/frozen_model.json", CSTR / "mixed_degradation/bootstrap_models.json"):
         keys = sorted(set(_json_keys(json.loads(path.read_text(encoding="utf-8")))))
@@ -70,10 +70,10 @@ def check_frozen_models() -> list[CheckResult]:
 def check_evaluator_column_labelling() -> list[CheckResult]:
     """In per-episode tables, every fault/severity column is explicitly labelled evaluator-only."""
     results = []
-    tables = [FLASH / name for name in ("FLASH_FINAL_RESULTS.csv", "FLASH_BOUNDARY_RESULTS.csv", "FLASH_STRUCTURAL_RESULTS.csv",
-                                        "FLASH_RELIABILITY_RESULTS.csv", "CSTR_RELIABILITY_RESULTS.csv")]
-    tables += [CSTR / "primary_evaluation/final_safety_episodes.csv", CSTR / "mixed_degradation/MULTIFAULT_FINAL_EPISODES.csv",
-               LADDER / "FLASH_E6B_MARGIN_RESULTS.csv", LADDER / "CSTR_E6B_MARGIN_RESULTS.csv"]
+    tables = [FLASH / name for name in ("flash_primary_episode_results.csv", "flash_boundary_episode_results.csv", "flash_structural_episode_results.csv",
+                                        "flash_reliability_episode_results.csv", "cstr_reliability_episode_results.csv")]
+    tables += [CSTR / "primary_evaluation/final_safety_episodes.csv", CSTR / "mixed_degradation/mixed_degradation_test_episodes.csv",
+               LADDER / "flash_margin_results.csv", LADDER / "cstr_margin_results.csv"]
     for path in tables:
         columns = list(read_csv(path)[0])
         unlabelled = [c for c in columns if any(t in c.lower() for t in ("fault", "severity_label", "magnitude", "changed_parameter"))

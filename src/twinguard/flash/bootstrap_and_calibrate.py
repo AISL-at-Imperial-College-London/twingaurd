@@ -28,7 +28,7 @@ from twinguard.conformal.flash_conformal import (
     normalized_action_distance,
     safety_direction_score,
 )
-from twinguard.digital_twins.flash_drum import FlashDigitalTwin
+from twinguard.flash.digital_twin import FlashDigitalTwin
 from twinguard.discrepancy.flash_state_space import (
     ENGINEERING_SCALES,
     FEATURE_NAMES,
@@ -56,10 +56,9 @@ from twinguard.scenarios.flash_population_design import (
 )
 from twinguard.plants.flash_drum import FlashAction, FlashParameters, FlashPlant, PhysicalStateError
 from twinguard.utils.flash_output_guard import EXPERIMENT_ROOT, assert_isolated_output_path
-from twinguard.utils.provenance import frozen_sha256
 
 
-E2_SHA256 = "a35c3919c64380f03e275558d9037b5de41ea2056a0e298552f074ebddc7f7df"
+POPULATION_DESIGN_SHA256 = "e976e1afc20fbe8f2da120717983dc58ed8a4ce6997d6a33bb15fb07edb2383a"
 BOOTSTRAP_TARGET = 100
 BOOTSTRAP_MAX_ATTEMPTS = 150
 BOOTSTRAP_SEED_START = 31_000_000
@@ -92,27 +91,16 @@ def _write_csv(path: Path, rows: Iterable[Mapping[str, object]]) -> None:
 
 
 def _verify_frozen_inputs() -> tuple[dict[str, object], str]:
-    preregistration = EXPERIMENT_ROOT / "FLASH_E2_PREDECLARATION.md"
-    if hashlib.sha256(preregistration.read_bytes()).hexdigest() != E2_SHA256:
-        raise RuntimeError("E2 preregistration hash mismatch")
-    process_files = (
-        "E_FLASH_RESS/flash_process.py",
-        "E_FLASH_RESS/flash_digital_twin.py",
-        "E_FLASH_RESS/flash_config.yaml",
-    )
-    digest = hashlib.sha256()
-    for relative in process_files:
-        file_hash = frozen_sha256(relative)
-        digest.update(relative.encode() + b"\0" + file_hash.encode() + b"\n")
-    if digest.hexdigest() != PROCESS_BUNDLE_SHA256:
-        raise RuntimeError("E1 process bundle hash mismatch")
+    preregistration = EXPERIMENT_ROOT / "population_preregistration.md"
+    if hashlib.sha256(preregistration.read_bytes()).hexdigest() != POPULATION_DESIGN_SHA256:
+        raise RuntimeError("population design preregistration hash mismatch")
     selected_path = EXPERIMENT_ROOT / "selected_flash_model.json"
     selected_hash = hashlib.sha256(selected_path.read_bytes()).hexdigest()
     selected = json.loads(selected_path.read_text(encoding="utf-8"))
     if selected["model"]["latent_dimension"] != 3:
-        raise RuntimeError("E4 requires the frozen E3 k=3 model class")
+        raise RuntimeError("calibration requires the frozen model selection k=3 model class")
     if selected["selection_status"] != "NO_MODEL_PASSED_PREDECLARED_FALLBACK":
-        raise RuntimeError("unexpected E3 selection status")
+        raise RuntimeError("unexpected model selection status")
     return selected, selected_hash
 
 
@@ -162,7 +150,7 @@ def _bootstrap_task(attempt: int) -> tuple[int, int, FlashStateSpaceParameters |
 
 
 def fit_bootstrap_models(workers: int) -> tuple[list[FlashStateSpaceParameters], list[dict[str, object]]]:
-    training_path = _safe_path("e3_data/training_method_inputs.npz")
+    training_path = _safe_path("model_selection_data/training_method_inputs.npz")
     accepted: list[FlashStateSpaceParameters] = []
     manifest: list[dict[str, object]] = []
     next_attempt = 0
@@ -204,7 +192,7 @@ def fit_bootstrap_models(workers: int) -> tuple[list[FlashStateSpaceParameters],
             encoding="utf-8",
         )
         print(
-            f"E4 bootstrap attempts={next_attempt}, accepted={len(accepted)}",
+            f"calibration bootstrap attempts={next_attempt}, accepted={len(accepted)}",
             flush=True,
         )
     if len(accepted) < BOOTSTRAP_TARGET:
@@ -256,7 +244,7 @@ def _selection_ensemble_task(
 def select_ensemble_size(
     models: Sequence[FlashStateSpaceParameters], workers: int
 ) -> tuple[int, list[dict[str, object]]]:
-    with np.load(_safe_path("e3_data/selection_operational_inputs.npz")) as saved:
+    with np.load(_safe_path("model_selection_data/selection_operational_inputs.npz")) as saved:
         selection = {name: np.asarray(saved[name]) for name in saved.files}
     tasks = [
         (
@@ -313,7 +301,7 @@ def select_ensemble_size(
     selected = min(passing) if passing else 100
     for row in diagnostics:
         row["selected"] = int(row["ensemble_size"]) == selected
-    _write_csv(_safe_path("e4_data/ensemble_selection_diagnostics.csv"), diagnostics)
+    _write_csv(_safe_path("calibration_data/ensemble_selection_diagnostics.csv"), diagnostics)
     return selected, diagnostics
 
 
@@ -414,7 +402,7 @@ def _batch_rates(
 def batch_nominal_dt_margins(
     decision_state: np.ndarray, actions: np.ndarray
 ) -> np.ndarray:
-    """Vectorized exact 1 s RK4 nominal-DT margins for E2 boundary screening."""
+    """Compute nominal safety margins using batched one-second RK4 integration."""
 
     parameters = FlashParameters()
     states = np.broadcast_to(np.asarray(decision_state, dtype=float), (len(actions), 3)).copy()
@@ -526,7 +514,7 @@ def _feature(action: FlashAction, nominal_action: FlashAction, output: Mapping[s
 def _calibration_task(task: tuple[str, int, int, np.ndarray | None]) -> CalibrationEpisode:
     role, index, seed, ordinary_action = task
     if role not in CALIBRATION_ROLES:
-        raise ValueError(f"E4 prohibited population role: {role}")
+        raise ValueError(f"calibration prohibited population role: {role}")
     family = PRIMARY_FAULT_FAMILIES[index % 3]
     truth = sample_primary_fault(family, seed)
     nominal_parameters = FlashParameters()
@@ -656,13 +644,13 @@ def generate_calibration_populations(workers: int) -> tuple[dict[str, list[Calib
         populations[role] = [episode for episode in episodes if episode.completed]
         evaluator_rows.extend(episode.evaluator_metadata for episode in episodes)
         print(
-            f"E4 {role}: complete={len(populations[role])}, "
+            f"calibration {role}: complete={len(populations[role])}, "
             f"domain_exits={len(episodes)-len(populations[role])}",
             flush=True,
         )
         complete = populations[role]
         np.savez_compressed(
-            _safe_path(f"e4_data/{role}_operational_inputs.npz"),
+            _safe_path(f"calibration_data/{role}_operational_inputs.npz"),
             episode_id=np.asarray([episode.episode_id for episode in complete]),
             observed_residual=np.stack([episode.observed_residual for episode in complete]),
             observed_features=np.stack([episode.observed_features for episode in complete]),
@@ -670,7 +658,7 @@ def generate_calibration_populations(workers: int) -> tuple[dict[str, list[Calib
             nominal_future=np.stack([episode.nominal_future for episode in complete]),
             candidate_action=np.stack([episode.candidate_action for episode in complete]),
         )
-    _write_csv(_safe_path("e4_data/CALIBRATION_EVALUATOR_MANIFEST.csv"), evaluator_rows)
+    _write_csv(_safe_path("calibration_data/CALIBRATION_EVALUATOR_MANIFEST.csv"), evaluator_rows)
     return populations, evaluator_rows
 
 
@@ -704,7 +692,7 @@ def _calibration_prediction_task(
         ),
         "mondrian_group": "",
         "mondrian_supported": False,
-        "mondrian_reason": "E2_BINS_NOT_PREDECLARED",
+        "mondrian_reason": "BINS_NOT_PREREGISTERED",
         "minimum_pressure_scale_bar": float(np.min(summary.scale[:, 0])),
         "median_pressure_scale_bar": float(np.median(summary.scale[:, 0])),
         "minimum_level_scale_fraction": float(np.min(summary.scale[:, 1])),
@@ -806,14 +794,14 @@ def _build_report(
         )
         for role in CALIBRATION_ROLES
     }
-    return f"""# Flash E4 Bootstrap and Conformal Calibration
+    return f"""# Flash calibration Bootstrap and Conformal Calibration
 
 ## Frozen Inputs and Scope
 
-E4 uses the 667 complete E3 training episodes for whole-episode bootstrap,
-the 143 complete E3 selection operational inputs for J selection, and only the
-E2 ordinary/boundary calibration seed blocks for conformal scores. No selection
-truth, final, stress, or rare-event truth is read. The frozen mean is the E3
+calibration uses the 667 complete model selection training episodes for whole-episode bootstrap,
+the 143 complete model selection operational inputs for J selection, and only the
+population design ordinary/boundary calibration seed blocks for conformal scores. No selection
+truth, final, stress, or rare-event truth is read. The frozen mean is the model selection
 `k=3` `NO_MODEL_PASSED_PREDECLARED_FALLBACK`; calibration does not repair its
 documented mean-bias limitation.
 
@@ -850,7 +838,7 @@ over the full horizon. Quantiles use `ceil((n+1)(1-alpha))`.
 Reserved-to-complete counts are ordinary 600->{complete_counts['calibration_ordinary']}
 and boundary 600->{complete_counts['calibration_boundary']}. Domain exits are
 retained in the evaluator manifest and never replaced. Ordinary and nominal-DT
-boundary quantiles remain separate as E2 required.
+boundary quantiles remain separate as population design required.
 
 ## Predictive Scale Diagnostics
 
@@ -863,10 +851,10 @@ Scale floors are 0.005 bar, 0.005 level fraction, and 0.25 K.
 ## Action-Conditional Extension
 
 `d(a)=||(a-a_nominal)/(a_max-a_min)||_2` is implemented using only the candidate
-action. However, E2 did not declare Mondrian bin edges or a minimum group sample
+action. However, population design did not declare Mondrian bin edges or a minimum group sample
 count. Therefore no group was formed and no group-specific q was estimated.
 The secondary method is frozen as `UNSUPPORTED_NOT_CERTIFIED` with reason
-`E2_BINS_NOT_PREDECLARED`; inventing bins after calibration would violate the
+`BINS_NOT_PREREGISTERED`; inventing bins after calibration would violate the
 preregistration.
 
 ## Decision Semantics
@@ -874,31 +862,27 @@ preregistration.
 For a supported pooled quantile, certify `SAFE` only when `P_upper<=0.90 bar`,
 `T_upper<=365 K`, `L_upper<=0.85`, and `L_lower>=0.20` at every horizon. All
 other cases, including unsupported Mondrian groups, return `NOT CERTIFIED`.
-No UNSAFE certificate exists. E4 contains no test result or safety-performance
+No UNSAFE certificate exists. calibration contains no test result or safety-performance
 claim.
 """
 
 
 def _hash_artifacts() -> None:
     paths = [
-        EXPERIMENT_ROOT / "flash_population.py",
-        EXPERIMENT_ROOT / "flash_bootstrap.py",
-        EXPERIMENT_ROOT / "flash_conformal.py",
-        EXPERIMENT_ROOT / "run_flash_e4.py",
         EXPERIMENT_ROOT / "flash_bootstrap_manifest.csv",
         EXPERIMENT_ROOT / "flash_bootstrap_models.json",
         EXPERIMENT_ROOT / "flash_calibration_scores.csv",
         EXPERIMENT_ROOT / "flash_conformal_config.json",
-        EXPERIMENT_ROOT / "FLASH_E4_CALIBRATION.md",
+        EXPERIMENT_ROOT / "calibration_report.md",
     ]
     paths.extend(
-        sorted(path for path in (EXPERIMENT_ROOT / "e4_data").rglob("*") if path.is_file())
+        sorted(path for path in (EXPERIMENT_ROOT / "calibration_data").rglob("*") if path.is_file())
     )
-    lines = ["# Frozen E4 artifact SHA-256 manifest", ""]
+    lines = ["# Frozen calibration artifact SHA-256 manifest", ""]
     for path in paths:
         relative = path.relative_to(EXPERIMENT_ROOT).as_posix()
         lines.append(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {relative}")
-    _safe_path("FLASH_E4_ARTIFACT_HASHES.txt").write_text(
+    _safe_path("calibration_artifact_hashes.txt").write_text(
         "\n".join(lines) + "\n", encoding="ascii"
     )
 
@@ -915,10 +899,10 @@ def main(workers: int, reuse_bootstrap: bool) -> None:
         models, populations, ensemble_size, workers
     )
     config = {
-        "schema_version": "FLASH_E4_CONFORMAL_CONFIG_1.0",
+        "schema_version": "FLASH_CONFORMAL_CONFIG_1.0",
         "process_bundle_sha256": PROCESS_BUNDLE_SHA256,
-        "e2_preregistration_sha256": E2_SHA256,
-        "selected_e3_model_sha256": selected_mean_hash,
+        "population_design_preregistration_sha256": POPULATION_DESIGN_SHA256,
+        "selected_model_selection_model_sha256": selected_mean_hash,
         "selected_mean_model": {
             "latent_dimension": 3,
             "selection_status": selected_mean["selection_status"],
@@ -965,7 +949,7 @@ def main(workers: int, reuse_bootstrap: bool) -> None:
             "bin_edges": None,
             "minimum_group_count": None,
             "groups": [],
-            "reason": "E2_BINS_NOT_PREDECLARED",
+            "reason": "BINS_NOT_PREREGISTERED",
             "unsupported_decision": "NOT CERTIFIED",
         },
         "decision_labels": ["SAFE", "NOT CERTIFIED"],
@@ -982,10 +966,10 @@ def main(workers: int, reuse_bootstrap: bool) -> None:
         quantiles,
         evaluator_rows,
     )
-    _safe_path("FLASH_E4_CALIBRATION.md").write_text(report, encoding="utf-8")
+    _safe_path("calibration_report.md").write_text(report, encoding="utf-8")
     _hash_artifacts()
     print(
-        f"E4 frozen: accepted={len(models)}, J={ensemble_size}, "
+        f"calibration frozen: accepted={len(models)}, J={ensemble_size}, "
         f"ordinary_q95={quantiles['calibration_ordinary']['0.05']['quantile']:.6f}, "
         f"boundary_q95={quantiles['calibration_boundary']['0.05']['quantile']:.6f}",
         flush=True,

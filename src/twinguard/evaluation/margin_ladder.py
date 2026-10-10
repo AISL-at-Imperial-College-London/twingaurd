@@ -1,4 +1,4 @@
-"""Prospective E6B margin ladder using frozen flash and CSTR predictors."""
+"""Evaluate safety certification across bands of nominal-prediction margin."""
 
 from __future__ import annotations
 
@@ -20,12 +20,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
 
-from twinguard.cstr import episode_design as b5
-from twinguard.cstr import freeze_discrepancy_model as b10
-from twinguard.cstr import safety_certification as c1
+from twinguard.cstr import episode_design as episode_design
+from twinguard.cstr import freeze_discrepancy_model as discrepancy_freeze
+from twinguard.cstr import safety_certification as certification
 
-from twinguard.flash import evaluate_primary as e5
-from twinguard.evaluation import boundary_challenge as e6
+from twinguard.flash import evaluate_primary as primary
+from twinguard.evaluation import boundary_challenge as boundary
 from twinguard.uncertainty.flash_bootstrap import PREDICTIVE_SCALE_FLOORS
 from twinguard.conformal.flash_conformal import (
     conformal_envelope,
@@ -44,8 +44,7 @@ from twinguard.scenarios.flash_population_design import (
 from twinguard.plants.flash_drum import FlashAction
 from twinguard.flash.bootstrap_and_calibrate import batch_nominal_dt_margins
 
-from twinguard.utils.margin_ladder_output_guard import EXPERIMENT_ROOT, REPOSITORY_ROOT, assert_e6b_output
-from twinguard.utils.provenance import frozen_sha256
+from twinguard.utils.margin_ladder_output_guard import EXPERIMENT_ROOT, REPOSITORY_ROOT, assert_margin_ladder_output
 from twinguard.evaluation.margin_ladder_preregistration import (
     BANDS,
     CSTR_TEST_COUNT,
@@ -63,7 +62,7 @@ POOL_TOP_RANKS = 8
 POOL_TARGETS = {"B0": 0.075, "B1": 0.225, "B2": 0.45, "B3": 0.80, "B4": 1.30}
 FROZEN_FLASH_Q = 11.04859850832729
 FROZEN_CSTR_Q = 5.464557586938352
-RAW_Q = e5.RAW_ONE_SIDED_95
+RAW_Q = primary.RAW_ONE_SIDED_95
 CSTR_ACTIONS = np.linspace(0.012, 0.045, 129)
 CSTR_SCALE_K = 1.0
 METHODS = (
@@ -102,7 +101,7 @@ def _sha256(path: Path) -> str:
 
 
 def _safe(relative: str) -> Path:
-    path = assert_e6b_output(EXPERIMENT_ROOT / relative)
+    path = assert_margin_ladder_output(EXPERIMENT_ROOT / relative)
     path.parent.mkdir(parents=True, exist_ok=True)
     return path
 
@@ -110,7 +109,7 @@ def _safe(relative: str) -> Path:
 def _write_csv(path: Path, rows: Sequence[Mapping[str, object]]) -> None:
     if not rows:
         raise ValueError(f"cannot write empty CSV: {path}")
-    path = assert_e6b_output(path)
+    path = assert_margin_ladder_output(path)
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
         writer.writeheader()
@@ -186,21 +185,21 @@ def _flash_init(output: str, band_q: Mapping[str, float | None] | None) -> None:
     global _OUTPUT, _BAND_Q
     _OUTPUT = Path(output)
     _BAND_Q = dict(band_q) if band_q is not None else None
-    frozen = e5.verify_frozen_inputs()
+    frozen = primary.verify_frozen_inputs()
     if abs(float(frozen["pooled_q"]) - FROZEN_FLASH_Q) > 1e-12:
         raise RuntimeError("frozen flash pooled q changed")
-    e5._init_worker(output, frozen)
+    primary._init_worker(output, frozen)
 
 
 def _flash_task(task: tuple[str, int, int]) -> dict[str, object]:
     if _OUTPUT is None:
-        raise RuntimeError("E6B flash worker not initialized")
+        raise RuntimeError("margin ladder flash worker not initialized")
     role, index, seed = task
     calibration = role == "calibration"
     assigned_band = BANDS[index % len(BANDS)][0]
-    episode_id = f"flash_e6b_{role}_{index:05d}_{assigned_band}"
+    episode_id = f"flash_margin_{role}_{index:05d}_{assigned_band}"
     paths = _artifact_paths(_OUTPUT, episode_id, calibration)
-    observation = e5._simulate_observation(index, seed)
+    observation = primary._simulate_observation(index, seed)
     candidate = None
     margin = float("nan")
     eligible_count = 0
@@ -211,7 +210,7 @@ def _flash_task(task: tuple[str, int, int]) -> dict[str, object]:
         )
     status = "ELIGIBLE" if candidate is not None else "NO_ELIGIBLE_ACTION"
     candidate_payload = {
-        "schema_version": "FLASH_E6B_CANDIDATE_1.0",
+        "schema_version": "FLASH_MARGIN_CANDIDATE_1.0",
         "episode_id": episode_id,
         "role": role,
         "assigned_margin_band": assigned_band,
@@ -224,7 +223,7 @@ def _flash_task(task: tuple[str, int, int]) -> dict[str, object]:
     }
     _validate_pretruth_keys(candidate_payload)
     if not paths["candidate"].exists():
-        e5._exclusive_write(paths["candidate"], e5._json_bytes(candidate_payload))
+        primary._exclusive_write(paths["candidate"], primary._json_bytes(candidate_payload))
     if candidate is None:
         return {
             "episode_id": episode_id,
@@ -242,12 +241,12 @@ def _flash_task(task: tuple[str, int, int]) -> dict[str, object]:
         }
 
     if not paths["prediction"].exists():
-        prediction, _, _ = e5._build_prediction(observation, candidate, episode_id, seed)
-        prediction["schema_version"] = np.asarray("FLASH_E6B_PREDICTION_1.0")
+        prediction, _, _ = primary._build_prediction(observation, candidate, episode_id, seed)
+        prediction["schema_version"] = np.asarray("FLASH_MARGIN_PREDICTION_1.0")
         _validate_pretruth_keys(prediction)
         _wait_after(paths["candidate"])
-        e5._exclusive_write(paths["prediction"], e5._npz_bytes(prediction))
-    prediction = e5._load_npz(paths["prediction"])
+        primary._exclusive_write(paths["prediction"], primary._npz_bytes(prediction))
+    prediction = primary._load_npz(paths["prediction"])
 
     if not calibration and not paths["decision"].exists():
         complete = str(prediction["prediction_status"]) == "COMPLETE"
@@ -259,24 +258,24 @@ def _flash_task(task: tuple[str, int, int]) -> dict[str, object]:
         band_q = _BAND_Q.get(assigned_band) if _BAND_Q is not None else None
         if complete:
             decisions = {
-                "M0_nominal_DT": "CERTIFIED SAFE" if e6._flash_point_margin(nominal) >= 0 else "NOT CERTIFIED",
-                "M1_discrepancy_mean": "CERTIFIED SAFE" if e6._flash_point_margin(mean) >= 0 else "NOT CERTIFIED",
+                "M0_nominal_DT": "CERTIFIED SAFE" if boundary._flash_point_margin(nominal) >= 0 else "NOT CERTIFIED",
+                "M1_discrepancy_mean": "CERTIFIED SAFE" if boundary._flash_point_margin(mean) >= 0 else "NOT CERTIFIED",
                 "M2_raw_bootstrap": safety_decision(center, scale, RAW_Q).replace("SAFE", "CERTIFIED SAFE"),
                 "M3_frozen_pooled": safety_decision(center, scale, FROZEN_FLASH_Q).replace("SAFE", "CERTIFIED SAFE"),
                 "M5_margin_conditioned": safety_decision(center, scale, band_q, supported=supported).replace("SAFE", "CERTIFIED SAFE"),
             }
             margins = {
-                "M0_nominal_DT": e6._flash_point_margin(nominal),
-                "M1_discrepancy_mean": e6._flash_point_margin(mean),
-                "M2_raw_bootstrap": e6._flash_envelope_margin(center, scale, RAW_Q),
-                "M3_frozen_pooled": e6._flash_envelope_margin(center, scale, FROZEN_FLASH_Q),
-                "M5_margin_conditioned": e6._flash_envelope_margin(center, scale, float(band_q)) if supported else float("-inf"),
+                "M0_nominal_DT": boundary._flash_point_margin(nominal),
+                "M1_discrepancy_mean": boundary._flash_point_margin(mean),
+                "M2_raw_bootstrap": boundary._flash_envelope_margin(center, scale, RAW_Q),
+                "M3_frozen_pooled": boundary._flash_envelope_margin(center, scale, FROZEN_FLASH_Q),
+                "M5_margin_conditioned": boundary._flash_envelope_margin(center, scale, float(band_q)) if supported else float("-inf"),
             }
         else:
             decisions = {method: "NOT CERTIFIED" for method in METHODS}
             margins = {method: float("-inf") for method in METHODS}
         decision_payload = {
-            "schema_version": "FLASH_E6B_DECISION_1.0",
+            "schema_version": "FLASH_MARGIN_DECISION_1.0",
             "episode_id": episode_id,
             "prediction_sha256": _sha256(paths["prediction"]),
             "assigned_margin_band": assigned_band,
@@ -288,13 +287,13 @@ def _flash_task(task: tuple[str, int, int]) -> dict[str, object]:
         }
         _validate_pretruth_keys(decision_payload)
         _wait_after(paths["prediction"])
-        e5._exclusive_write(paths["decision"], e5._json_bytes(decision_payload))
+        primary._exclusive_write(paths["decision"], primary._json_bytes(decision_payload))
 
     if not paths["truth"].exists():
-        actual, domain_exit = e5._truth_rollout(observation, candidate)
+        actual, domain_exit = primary._truth_rollout(observation, candidate)
         hidden = observation["hidden"]
         truth_payload = {
-            "schema_version": np.asarray("FLASH_E6B_TRUTH_1.0"),
+            "schema_version": np.asarray("FLASH_MARGIN_TRUTH_1.0"),
             "episode_id": np.asarray(episode_id),
             "episode_seed_evaluator_only": np.asarray(seed),
             "fault_family_evaluator_only": np.asarray(hidden.family.value),
@@ -308,7 +307,7 @@ def _flash_task(task: tuple[str, int, int]) -> dict[str, object]:
         }
         predecessor = paths["prediction"] if calibration else paths["decision"]
         _wait_after(predecessor)
-        e5._exclusive_write(paths["truth"], e5._npz_bytes(truth_payload))
+        primary._exclusive_write(paths["truth"], primary._npz_bytes(truth_payload))
 
     ordered = [paths["candidate"], paths["prediction"]]
     if not calibration:
@@ -340,7 +339,7 @@ def run_flash_population(role: str, count: int, seed_start: int, workers: int) -
     root.mkdir(parents=True, exist_ok=True)
     band_q = None
     if role == "test":
-        config = json.loads(_safe("FLASH_E6B_CONFORMAL_CONFIG.json").read_text())
+        config = json.loads(_safe("flash_band_conformal_config.json").read_text())
         band_q = {
             band: payload["quantile"] if payload["supported"] else None
             for band, payload in config["bands"].items()
@@ -355,7 +354,7 @@ def run_flash_population(role: str, count: int, seed_start: int, workers: int) -
         for completed, row in enumerate(pool.map(_flash_task, tasks, chunksize=1), 1):
             rows.append(row)
             if completed % 100 == 0:
-                print(f"E6B flash {role}={completed}/{count}", flush=True)
+                print(f"margin ladder flash {role}={completed}/{count}", flush=True)
     rows.sort(key=lambda row: str(row["episode_id"]))
     _write_csv(_safe(f"artifacts/FLASH_{role.upper()}_ARTIFACT_AUDIT.csv"), rows)
     return rows
@@ -363,13 +362,13 @@ def run_flash_population(role: str, count: int, seed_start: int, workers: int) -
 
 def calibrate_margin_bands(audit: Sequence[Mapping[str, object]]) -> dict[str, object]:
     if any(_safe("artifacts/flash_test/truths").glob("*.npz")):
-        raise RuntimeError("cannot calibrate after E6B test truth exists")
+        raise RuntimeError("cannot calibrate after margin ladder test truth exists")
     score_rows: list[dict[str, object]] = []
     for item in audit:
         if item["selection_status"] != "ELIGIBLE":
             continue
-        prediction = e5._load_npz(Path(str(item["prediction_path"])))
-        truth = e5._load_npz(Path(str(item["truth_path"])))
+        prediction = primary._load_npz(Path(str(item["prediction_path"])))
+        truth = primary._load_npz(Path(str(item["truth_path"])))
         actual = np.asarray(truth["actual_horizon_outputs"])
         center = np.asarray(prediction["ensemble_center_horizon_outputs"])
         scale = np.asarray(prediction["ensemble_scale_horizon_outputs"])
@@ -397,7 +396,7 @@ def calibrate_margin_bands(audit: Sequence[Mapping[str, object]]) -> dict[str, o
                 "truth_sha256": item["truth_sha256"],
             }
         )
-    _write_csv(_safe("FLASH_E6B_CALIBRATION_SCORES.csv"), score_rows)
+    _write_csv(_safe("flash_band_calibration_scores.csv"), score_rows)
     bands: dict[str, object] = {}
     for band, _, _ in BANDS:
         scores = [
@@ -416,20 +415,20 @@ def calibrate_margin_bands(audit: Sequence[Mapping[str, object]]) -> dict[str, o
             "quantile": quantile,
         }
     config = {
-        "schema_version": "FLASH_E6B_CONFORMAL_CONFIG_1.0",
+        "schema_version": "FLASH_BAND_CONFORMAL_CONFIG_1.0",
         "score": "max over horizon and high-P/high-T/high-L/low-L standardized directions",
         "finite_sample_rank": "ceil((n_cal+1)*(1-alpha))",
         "scale_floors": PREDICTIVE_SCALE_FLOORS.tolist(),
         "frozen_pooled_analysis_a_quantile": FROZEN_FLASH_Q,
         "bands": bands,
-        "calibration_scores_sha256": _sha256(_safe("FLASH_E6B_CALIBRATION_SCORES.csv")),
-        "preregistration_sha256": _safe("E6B_PREDECLARATION.sha256").read_text().split()[0],
+        "calibration_scores_sha256": _sha256(_safe("flash_band_calibration_scores.csv")),
+        "preregistration_sha256": _safe("margin_ladder_preregistration.sha256").read_text().split()[0],
         "frozen_before_test_truth": True,
     }
-    path = _safe("FLASH_E6B_CONFORMAL_CONFIG.json")
+    path = _safe("flash_band_conformal_config.json")
     path.write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    _safe("FLASH_E6B_CONFORMAL_CONFIG.sha256").write_text(
-        f"{_sha256(path)}  FLASH_E6B_CONFORMAL_CONFIG.json\n", encoding="ascii"
+    _safe("flash_band_conformal_config.sha256").write_text(
+        f"{_sha256(path)}  flash_band_conformal_config.json\n", encoding="ascii"
     )
     return config
 
@@ -479,7 +478,7 @@ def _truth_classification(actual: np.ndarray) -> dict[str, object]:
 def evaluate_flash_test(audit: Sequence[Mapping[str, object]]) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
     episode_rows: list[dict[str, object]] = []
     result_rows: list[dict[str, object]] = []
-    config = json.loads(_safe("FLASH_E6B_CONFORMAL_CONFIG.json").read_text())
+    config = json.loads(_safe("flash_band_conformal_config.json").read_text())
     for item in audit:
         base = {
             "episode_id": item["episode_id"],
@@ -503,9 +502,9 @@ def evaluate_flash_test(audit: Sequence[Mapping[str, object]]) -> tuple[list[dic
             )
             continue
         candidate = json.loads(Path(str(item["candidate_path"])).read_text())
-        prediction = e5._load_npz(Path(str(item["prediction_path"])))
+        prediction = primary._load_npz(Path(str(item["prediction_path"])))
         decision = json.loads(Path(str(item["decision_path"])).read_text())
-        truth = e5._load_npz(Path(str(item["truth_path"])))
+        truth = primary._load_npz(Path(str(item["truth_path"])))
         actual = np.asarray(truth["actual_horizon_outputs"])
         physical = _truth_classification(actual)
         episode_rows.append(
@@ -599,16 +598,16 @@ def _cstr_screen(nominal, seed: int, assigned_band: str) -> tuple[float | None, 
     if (
         nominal.current_phase.name != "NORMAL"
         or not nominal._startup_done
-        or nominal.t + c1.HORIZON * nominal.dt >= nominal.T_startup + nominal.T_normal
+        or nominal.t + certification.HORIZON * nominal.dt >= nominal.T_startup + nominal.T_normal
         or nominal.fault_cfg.enable
         or nominal.conc_noise_pct != 0.0
         or nominal.flow_meas_noise_pct != 0.0
         or nominal.sensor_T_noise_std != 0.0
     ):
-        raise RuntimeError("E6B CSTR screen requires the frozen deterministic nominal twin")
+        raise RuntimeError("margin ladder CSTR screen requires the frozen deterministic nominal twin")
     count = len(CSTR_ACTIONS)
     state = np.repeat(np.asarray(nominal.x, dtype=float)[None, :], count, axis=0)
-    trajectories = np.empty((count, c1.HORIZON), dtype=float)
+    trajectories = np.empty((count, certification.HORIZON), dtype=float)
     inlet_opening = np.full(count, nominal.valve_in.opening, dtype=float)
     coolant_opening = np.full(count, nominal.cool_valve_in.opening, dtype=float)
     pump_speed = np.full(count, nominal.pump_out.speed, dtype=float)
@@ -631,7 +630,7 @@ def _cstr_screen(nominal, seed: int, assigned_band: str) -> tuple[float | None, 
         return command, integral + integrate * pid.Ki * error * nominal.dt, error
 
     current_time = float(nominal.t)
-    for horizon in range(c1.HORIZON):
+    for horizon in range(certification.HORIZON):
         volume = state[:, 0]
         temperature = state[:, 5]
         inlet_before = nominal.valve_in.Cv_max * inlet_opening
@@ -713,11 +712,11 @@ def _cstr_screen(nominal, seed: int, assigned_band: str) -> tuple[float | None, 
             max_step=0.05,
         )
         if not solution.success:
-            raise RuntimeError(f"E6B CSTR screen failed: {solution.message}")
+            raise RuntimeError(f"margin ladder CSTR screen failed: {solution.message}")
         state = solution.y[:, -1].reshape(count, 6)
         trajectories[:, horizon] = state[:, 5]
         current_time += nominal.dt
-    normalized = (c1.T_MAX_K - np.max(trajectories, axis=1)) / CSTR_SCALE_K
+    normalized = (certification.T_MAX_K - np.max(trajectories, axis=1)) / CSTR_SCALE_K
     eligible = np.asarray(
         [index for index, margin in enumerate(normalized) if _band_for_margin(float(margin)) == assigned_band],
         dtype=int,
@@ -733,16 +732,16 @@ def _cstr_screen(nominal, seed: int, assigned_band: str) -> tuple[float | None, 
 def _cstr_init(output: str) -> None:
     global _OUTPUT, _CSTR_MODELS, _CSTR_TEMPLATE
     _OUTPUT = Path(output)
-    _CSTR_MODELS = c1._load_models(REPOSITORY_ROOT / "artifacts/cstr/bootstrap_ensemble", 10)
-    _CSTR_TEMPLATE = b5.build_template(b5.MilestoneB5Config())
+    _CSTR_MODELS = certification._load_models(REPOSITORY_ROOT / "artifacts/cstr/bootstrap_ensemble", 10)
+    _CSTR_TEMPLATE = episode_design.build_template(episode_design.EpisodeDesignConfig())
 
 
 def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
     if _OUTPUT is None or _CSTR_MODELS is None or _CSTR_TEMPLATE is None:
-        raise RuntimeError("E6B CSTR worker not initialized")
+        raise RuntimeError("margin ladder CSTR worker not initialized")
     index, seed = task
     band = BANDS[index % len(BANDS)][0]
-    episode_id = f"cstr_e6b_test_{index:05d}_{band}"
+    episode_id = f"cstr_margin_test_{index:05d}_{band}"
     paths = _artifact_paths(_OUTPUT, episode_id, False)
     if paths["candidate"].exists():
         existing_candidate = json.loads(paths["candidate"].read_text())
@@ -767,7 +766,7 @@ def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
         if all(paths[key].exists() for key in ("prediction", "decision", "truth")):
             try:
                 with np.load(paths["truth"], allow_pickle=False) as saved:
-                    finalized = "schema_version" in saved.files and str(saved["schema_version"]) == "CSTR_E6B_TRUTH_1.0"
+                    finalized = "schema_version" in saved.files and str(saved["schema_version"]) == "CSTR_MARGIN_TRUTH_1.0"
             except (PermissionError, OSError):
                 finalized = False
             if finalized:
@@ -789,13 +788,13 @@ def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
                     "truth_sha256": _sha256(paths["truth"]),
                     "chronology_verified": all(left < right for left, right in zip(times, times[1:])),
                 }
-    nominal, plant, residual, online, previous, magnitude = c1._reconstruct_decision_state(
-        seed, b5.MilestoneB5Config(), _CSTR_TEMPLATE
+    nominal, plant, residual, online, previous, magnitude = certification._reconstruct_decision_state(
+        seed, episode_design.EpisodeDesignConfig(), _CSTR_TEMPLATE
     )
     action, margin, eligible_count, nominal_future = _cstr_screen(nominal, seed, band)
     status = "ELIGIBLE" if action is not None else "NO_ELIGIBLE_ACTION"
     candidate_payload = {
-        "schema_version": "CSTR_E6B_CANDIDATE_1.0",
+        "schema_version": "CSTR_MARGIN_CANDIDATE_1.0",
         "episode_id": episode_id,
         "assigned_margin_band": band,
         "selection_status": status,
@@ -808,7 +807,7 @@ def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
     }
     _validate_pretruth_keys(candidate_payload)
     if not paths["candidate"].exists():
-        e5._exclusive_write(paths["candidate"], e5._json_bytes(candidate_payload))
+        primary._exclusive_write(paths["candidate"], primary._json_bytes(candidate_payload))
     if action is None:
         return {
             "episode_id": episode_id,
@@ -826,46 +825,46 @@ def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
             "truth_sha256": "",
             "chronology_verified": True,
         }
-    future = np.empty((c1.HORIZON, 4))
+    future = np.empty((certification.HORIZON, 4))
     prior = previous
-    for horizon in range(c1.HORIZON):
+    for horizon in range(certification.HORIZON):
         future[horizon] = [action, action - prior, nominal_future[horizon], 51 + horizon]
         prior = action
-    item = b10.EpisodeInputs(
+    item = discrepancy_freeze.EpisodeInputs(
         episode_id, band, seed, residual, online, future, nominal_future, action, paths["truth"], plant, seed + 4_000_000
     )
     if not paths["prediction"].exists():
         _wait_after(paths["candidate"])
-        c1.predict_frozen_u3(item, _CSTR_MODELS, 2000, paths["prediction"])
+        certification.predict_frozen_u3(item, _CSTR_MODELS, 2000, paths["prediction"])
     with np.load(paths["prediction"], allow_pickle=False) as saved:
         center = np.asarray(saved["predictive_center_k"])
-        scale = np.maximum(np.asarray(saved["predictive_scale_k"]), c1.EPSILON_SCALE_K)
+        scale = np.maximum(np.asarray(saved["predictive_scale_k"]), certification.EPSILON_SCALE_K)
     if not paths["decision"].exists():
         upper = center + FROZEN_CSTR_Q * scale
         decision_payload = {
-            "schema_version": "CSTR_E6B_DECISION_1.0",
+            "schema_version": "CSTR_MARGIN_DECISION_1.0",
             "episode_id": episode_id,
             "prediction_sha256": _sha256(paths["prediction"]),
             "assigned_margin_band": band,
             "decisions": {
                 "nominal_DT": "CERTIFIED SAFE",
-                "frozen_CSTR_conformal": "CERTIFIED SAFE" if float(np.max(upper)) <= c1.T_MAX_K else "NOT CERTIFIED",
+                "frozen_CSTR_conformal": "CERTIFIED SAFE" if float(np.max(upper)) <= certification.T_MAX_K else "NOT CERTIFIED",
             },
             "normalized_margins": {
                 "nominal_DT": margin,
-                "frozen_CSTR_conformal": (c1.T_MAX_K - float(np.max(upper))) / CSTR_SCALE_K,
+                "frozen_CSTR_conformal": (certification.T_MAX_K - float(np.max(upper))) / CSTR_SCALE_K,
             },
             "q_plus": FROZEN_CSTR_Q,
-            "temperature_limit_k": c1.T_MAX_K,
+            "temperature_limit_k": certification.T_MAX_K,
         }
         _validate_pretruth_keys(decision_payload)
         _wait_after(paths["prediction"])
-        e5._exclusive_write(paths["decision"], e5._json_bytes(decision_payload))
+        primary._exclusive_write(paths["decision"], primary._json_bytes(decision_payload))
     truth_finalized = False
     if paths["truth"].exists():
         try:
             with np.load(paths["truth"], allow_pickle=False) as saved:
-                truth_finalized = "schema_version" in saved.files and str(saved["schema_version"]) == "CSTR_E6B_TRUTH_1.0"
+                truth_finalized = "schema_version" in saved.files and str(saved["schema_version"]) == "CSTR_MARGIN_TRUTH_1.0"
         except (PermissionError, OSError):
             truth_finalized = False
     if not truth_finalized:
@@ -875,12 +874,12 @@ def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
                 existing = {key: np.asarray(saved[key]) for key in saved.files}
             actual = np.asarray(existing["actual_physical_temperature_k"])
         else:
-            actual = c1.reveal_physical_temperature(item, paths["prediction"])
+            actual = certification.reveal_physical_temperature(item, paths["prediction"])
         with np.load(paths["truth"], allow_pickle=False) as saved:
             payload = {key: np.asarray(saved[key]) for key in saved.files}
         payload.update(
             {
-                "schema_version": np.asarray("CSTR_E6B_TRUTH_1.0"),
+                "schema_version": np.asarray("CSTR_MARGIN_TRUTH_1.0"),
                 "episode_seed_evaluator_only": np.asarray(seed),
                 "hidden_ua_fouling_magnitude_evaluator_only": np.asarray(magnitude),
                 "actual_physical_temperature_k": actual,
@@ -922,7 +921,7 @@ def run_cstr_population(workers: int) -> list[dict[str, object]]:
         for completed, row in enumerate(pool.map(_cstr_task, tasks, chunksize=1), 1):
             rows.append(row)
             if completed % 100 == 0:
-                print(f"E6B CSTR test={completed}/{CSTR_TEST_COUNT}", flush=True)
+                print(f"margin ladder CSTR test={completed}/{CSTR_TEST_COUNT}", flush=True)
     rows.sort(key=lambda row: str(row["episode_id"]))
     _write_csv(_safe("artifacts/CSTR_TEST_ARTIFACT_AUDIT.csv"), rows)
     return rows
@@ -955,13 +954,13 @@ def evaluate_cstr_test(audit: Sequence[Mapping[str, object]]) -> tuple[list[dict
         with np.load(Path(str(item["prediction_path"])), allow_pickle=False) as saved:
             nominal = np.asarray(saved["nominal_temperature_k"])
             center = np.asarray(saved["predictive_center_k"])
-            scale = np.maximum(np.asarray(saved["predictive_scale_k"]), c1.EPSILON_SCALE_K)
+            scale = np.maximum(np.asarray(saved["predictive_scale_k"]), certification.EPSILON_SCALE_K)
         with np.load(Path(str(item["truth_path"])), allow_pickle=False) as saved:
             actual = np.asarray(saved["actual_physical_temperature_k"])
             magnitude = float(saved["hidden_ua_fouling_magnitude_evaluator_only"])
         actual_max = float(np.max(actual))
-        actual_safe = actual_max <= c1.T_MAX_K
-        severity = np.maximum(actual - c1.T_MAX_K, 0.0) / CSTR_SCALE_K
+        actual_safe = actual_max <= certification.T_MAX_K
+        severity = np.maximum(actual - certification.T_MAX_K, 0.0) / CSTR_SCALE_K
         episodes.append(
             {
                 **base,
@@ -998,7 +997,7 @@ def evaluate_cstr_test(audit: Sequence[Mapping[str, object]]) -> tuple[list[dict
                     "certified_safe": certified,
                     "false_safe": certified and not actual_safe,
                     "certified_on_incomplete": False,
-                    "true_normalized_margin": (c1.T_MAX_K - actual_max) / CSTR_SCALE_K,
+                    "true_normalized_margin": (certification.T_MAX_K - actual_max) / CSTR_SCALE_K,
                     "predicted_normalized_margin": decision["normalized_margins"][method],
                     "whole_trajectory_directional_coverage": covered,
                     "temperature_rmse_k": float(np.sqrt(np.mean(error * error))),
@@ -1117,11 +1116,11 @@ def summarize(
 
 
 def _verify_preregistration() -> None:
-    path = _safe("E6B_PREDECLARATION.md")
-    recorded = _safe("E6B_PREDECLARATION.sha256").read_text().split()[0]
+    path = _safe("margin_ladder_preregistration.md")
+    recorded = _safe("margin_ladder_preregistration.sha256").read_text().split()[0]
     if _sha256(path) != recorded:
-        raise RuntimeError("E6B preregistration hash mismatch")
-    e5.verify_frozen_inputs()
+        raise RuntimeError("margin ladder preregistration hash mismatch")
+    primary.verify_frozen_inputs()
 
 
 def audit_all(
@@ -1144,15 +1143,15 @@ def audit_all(
             }
         )
 
-    seed_rows = _read_csv(_safe("E6B_SEED_MANIFEST.csv"))
+    seed_rows = _read_csv(_safe("margin_ladder_seed_manifest.csv"))
     roots = [int(row["episode_seed"]) for row in seed_rows]
     prior_overlap = sum(
         lower <= seed <= upper
         for seed in roots
         for _, lower, upper in PRIOR_RESERVED_INTERVALS
     )
-    record("E6B/prior-reserved root seed intersection", len(roots), prior_overlap, "Must equal zero.")
-    record("duplicate E6B root seeds", len(roots), len(roots) - len(set(roots)), "Calibration and test roots are disjoint.")
+    record("margin ladder/prior-reserved root seed intersection", len(roots), prior_overlap, "Must equal zero.")
+    record("duplicate margin ladder root seeds", len(roots), len(roots) - len(set(roots)), "Calibration and test roots are disjoint.")
     cal = {int(row["episode_seed"]) for row in seed_rows if row["population"] == "flash_margin_calibration"}
     test = {int(row["episode_seed"]) for row in seed_rows if row["population"] == "flash_margin_test"}
     record("flash calibration/test seed overlap", len(cal) + len(test), len(cal & test), "Must equal zero.")
@@ -1187,20 +1186,20 @@ def audit_all(
     for item in flash_test:
         if item["selection_status"] != "ELIGIBLE":
             continue
-        prediction = e5._load_npz(Path(str(item["prediction_path"])))
+        prediction = primary._load_npz(Path(str(item["prediction_path"])))
         decision = json.loads(Path(str(item["decision_path"])).read_text())
         center = np.asarray(prediction["ensemble_center_horizon_outputs"])
         scale = np.asarray(prediction["ensemble_scale_horizon_outputs"])
         nominal = np.asarray(prediction["nominal_horizon_outputs"])
         mean = np.asarray(prediction["mean_corrected_horizon_outputs"])
-        config = json.loads(_safe("FLASH_E6B_CONFORMAL_CONFIG.json").read_text())
+        config = json.loads(_safe("flash_band_conformal_config.json").read_text())
         band_payload = config["bands"][item["assigned_margin_band"]]
         band_q = band_payload["quantile"] if band_payload["supported"] else None
         complete = str(prediction["prediction_status"]) == "COMPLETE"
         reconstructed = (
             {
-                "M0_nominal_DT": "CERTIFIED SAFE" if e6._flash_point_margin(nominal) >= 0 else "NOT CERTIFIED",
-                "M1_discrepancy_mean": "CERTIFIED SAFE" if e6._flash_point_margin(mean) >= 0 else "NOT CERTIFIED",
+                "M0_nominal_DT": "CERTIFIED SAFE" if boundary._flash_point_margin(nominal) >= 0 else "NOT CERTIFIED",
+                "M1_discrepancy_mean": "CERTIFIED SAFE" if boundary._flash_point_margin(mean) >= 0 else "NOT CERTIFIED",
                 "M2_raw_bootstrap": safety_decision(center, scale, RAW_Q).replace("SAFE", "CERTIFIED SAFE"),
                 "M3_frozen_pooled": safety_decision(center, scale, FROZEN_FLASH_Q).replace("SAFE", "CERTIFIED SAFE"),
                 "M5_margin_conditioned": safety_decision(center, scale, band_q, supported=band_payload["supported"]).replace("SAFE", "CERTIFIED SAFE"),
@@ -1210,11 +1209,11 @@ def audit_all(
         )
         decision_failures += sum(decision["decisions"][key] != value for key, value in reconstructed.items())
         margins = {
-            "M0_nominal_DT": e6._flash_point_margin(nominal),
-            "M1_discrepancy_mean": e6._flash_point_margin(mean),
-            "M2_raw_bootstrap": e6._flash_envelope_margin(center, scale, RAW_Q),
-            "M3_frozen_pooled": e6._flash_envelope_margin(center, scale, FROZEN_FLASH_Q),
-            "M5_margin_conditioned": e6._flash_envelope_margin(center, scale, float(band_q)) if band_q is not None else float("-inf"),
+            "M0_nominal_DT": boundary._flash_point_margin(nominal),
+            "M1_discrepancy_mean": boundary._flash_point_margin(mean),
+            "M2_raw_bootstrap": boundary._flash_envelope_margin(center, scale, RAW_Q),
+            "M3_frozen_pooled": boundary._flash_envelope_margin(center, scale, FROZEN_FLASH_Q),
+            "M5_margin_conditioned": boundary._flash_envelope_margin(center, scale, float(band_q)) if band_q is not None else float("-inf"),
         }
         if not complete:
             margins = {method: float("-inf") for method in METHODS}
@@ -1235,8 +1234,8 @@ def audit_all(
         decision = json.loads(Path(str(item["decision_path"])).read_text())
         with np.load(Path(str(item["prediction_path"])), allow_pickle=False) as saved:
             center = np.asarray(saved["predictive_center_k"])
-            scale = np.maximum(np.asarray(saved["predictive_scale_k"]), c1.EPSILON_SCALE_K)
-        conformal_margin = (c1.T_MAX_K - float(np.max(center + FROZEN_CSTR_Q * scale))) / CSTR_SCALE_K
+            scale = np.maximum(np.asarray(saved["predictive_scale_k"]), certification.EPSILON_SCALE_K)
+        conformal_margin = (certification.T_MAX_K - float(np.max(center + FROZEN_CSTR_Q * scale))) / CSTR_SCALE_K
         reconstructed = {
             "nominal_DT": "CERTIFIED SAFE",
             "frozen_CSTR_conformal": "CERTIFIED SAFE" if conformal_margin >= 0 else "NOT CERTIFIED",
@@ -1259,7 +1258,7 @@ def audit_all(
     record("CSTR envelope/margin reconstruction", len(cstr_test) * 2, cstr_margin_failures, "Frozen q+ and 313 K threshold.")
     record("CSTR prediction hash binding", len(cstr_test), cstr_hash_failures, "Decision binds prediction SHA-256.")
 
-    config_time = _safe("FLASH_E6B_CONFORMAL_CONFIG.json").stat().st_mtime_ns
+    config_time = _safe("flash_band_conformal_config.json").stat().st_mtime_ns
     test_candidate_times = [
         Path(str(row["candidate_path"])).stat().st_mtime_ns
         for row in flash_test
@@ -1269,7 +1268,7 @@ def audit_all(
         "margin-conditioned config frozen before test candidates/truth",
         len(test_candidate_times),
         int(bool(test_candidate_times) and config_time >= min(test_candidate_times)),
-        "Calibration config precedes the E6B test population.",
+        "Calibration config precedes the margin ladder test population.",
     )
 
     flash_actions = []
@@ -1310,7 +1309,7 @@ def audit_all(
     for item in flash_test:
         if item["selection_status"] != "ELIGIBLE":
             continue
-        truth = e5._load_npz(Path(str(item["truth_path"])))
+        truth = primary._load_npz(Path(str(item["truth_path"])))
         reconstructed = _truth_classification(np.asarray(truth["actual_horizon_outputs"]))
         episode = next(row for row in flash_episodes if row["episode_id"] == item["episode_id"])
         flash_safety_failures += episode["physical_classification"] != reconstructed["physical_classification"]
@@ -1320,21 +1319,22 @@ def audit_all(
         if item["selection_status"] != "ELIGIBLE":
             continue
         with np.load(Path(str(item["truth_path"])), allow_pickle=False) as saved:
-            actual_safe = float(np.max(saved["actual_physical_temperature_k"])) <= c1.T_MAX_K
+            actual_safe = float(np.max(saved["actual_physical_temperature_k"])) <= certification.T_MAX_K
         episode = next(row for row in cstr_episodes if row["episode_id"] == item["episode_id"])
         cstr_safety_failures += (str(episode["actual_safe"]).lower() == "true") != actual_safe
     record("CSTR physical-safety reconstruction", len(cstr_test), cstr_safety_failures, "Complete 313 K trajectory event.")
-    prereg_ok = _sha256(_safe("E6B_PREDECLARATION.md")) == _safe("E6B_PREDECLARATION.sha256").read_text().split()[0]
-    record("preregistration hash", 1, int(not prereg_ok), "Frozen before E6B truth.")
+    prereg_ok = _sha256(_safe("margin_ladder_preregistration.md")) == _safe("margin_ladder_preregistration.sha256").read_text().split()[0]
+    record("preregistration hash", 1, int(not prereg_ok), "Frozen before margin ladder truth.")
     frozen_hash_failures = 0
-    for line in _safe("E6B_PREDECLARATION.md").read_text(encoding="utf-8").splitlines():
+    for line in _safe("margin_ladder_preregistration.md").read_text(encoding="utf-8").splitlines():
         if not line.startswith("- `") or "`: `" not in line or not line.endswith("`"):
             continue
         relative, expected = line[3:-1].split("`: `", 1)
-        if len(expected) == 64:
-            frozen_hash_failures += frozen_sha256(relative) != expected
-    record("frozen source hashes", 9, frozen_hash_failures, "Critical E1-E7/model/calibration inputs from preregistration.")
-    _write_csv(_safe("E6B_ARTIFACT_AUDIT.csv"), audit)
+        path = REPOSITORY_ROOT / relative
+        if path.is_file() and len(expected) == 64:
+            frozen_hash_failures += _sha256(path) != expected
+    record("frozen source hashes", 7, frozen_hash_failures, "Critical simulator validation-reliability evaluation/model/calibration inputs from preregistration.")
+    _write_csv(_safe("margin_ladder_audit_checks.csv"), audit)
     return audit
 
 
@@ -1463,7 +1463,7 @@ def _verdict(summary: Sequence[Mapping[str, object]]) -> str:
         and float(row["certification_rate_among_eligible"]) > 0.0
     ]
     if len(recovered) < 2:
-        return "E6B METHOD REMAINS OVERLY CONSERVATIVE"
+        return "margin ladder METHOD REMAINS OVERLY CONSERVATIVE"
     flash_m0 = {row["margin_band"]: row for row in summary if row["process"] == "flash" and row["method"] == "M0_nominal_DT"}
     improved = all(
         float(row["joint_false_safe_rate_among_eligible"] or 0.0)
@@ -1471,16 +1471,16 @@ def _verdict(summary: Sequence[Mapping[str, object]]) -> str:
         for row in recovered
     )
     if not improved:
-        return "E6B RELIABILITY TRANSFER NOT SUPPORTED"
+        return "margin ladder RELIABILITY TRANSFER NOT SUPPORTED"
     rates = [
         float(row["certification_rate_among_eligible"])
         for row in sorted(recovered, key=lambda row: row["margin_band"])
     ]
     approximately_monotone = sum(right + 0.05 >= left for left, right in zip(rates, rates[1:])) >= max(0, len(rates) - 2)
     return (
-        "E6B RELIABILITY OPERATING ENVELOPE ESTABLISHED"
+        "margin ladder RELIABILITY OPERATING ENVELOPE ESTABLISHED"
         if len(recovered) >= 3 and approximately_monotone
-        else "E6B OPERATING ENVELOPE ESTABLISHED WITH LIMITATIONS"
+        else "margin ladder OPERATING ENVELOPE ESTABLISHED WITH LIMITATIONS"
     )
 
 
@@ -1491,7 +1491,7 @@ def write_reports(
     verdict = _verdict(summary)
     flash = [row for row in summary if row["process"] == "flash"]
     cstr = [row for row in summary if row["process"] == "CSTR"]
-    config = json.loads(_safe("FLASH_E6B_CONFORMAL_CONFIG.json").read_text())
+    config = json.loads(_safe("flash_band_conformal_config.json").read_text())
     q_lines = "\n".join(
         f"- {band}: n={payload['complete_calibration_count']}, "
         + (f"q={payload['quantile']:.6f}" if payload["supported"] else "UNSUPPORTED")
@@ -1518,11 +1518,11 @@ def write_reports(
             f"{float(baseline['confirmed_unsafe_max_severity']):.3f} | {false_text} | "
             f"{float(pooled['false_safe_total_integrated_severity']):.3f} |"
         )
-    flash_text = f"""# Flash E6B Margin-Ladder Results
+    flash_text = f"""# Flash margin ladder Margin-Ladder Results
 
 Analysis A is a prospective reliability characterization of the frozen flash
 method with pooled `q={FROZEN_FLASH_Q}`. Analysis B changes only calibration
-conditioning and uses fresh band-matched E6B calibration seeds.
+conditioning and uses fresh band-matched margin ladder calibration seeds.
 
 ## Margin-Conditioned Calibration
 
@@ -1553,8 +1553,8 @@ so it did not improve useful availability.
 
 ### {verdict}
 """
-    _safe("FLASH_E6B_RESULTS.md").write_text(flash_text, encoding="utf-8")
-    cstr_text = f"""# CSTR E6B Margin-Ladder Results
+    _safe("flash_margin_ladder_report.md").write_text(flash_text, encoding="utf-8")
+    cstr_text = f"""# CSTR margin ladder Margin-Ladder Results
 
 The CSTR replication uses frozen `q+={FROZEN_CSTR_Q}` and the unchanged 313 K
 constraint. Margin bands use `(313 K - max_h T_DT)/1 K`; repeated flow actions
@@ -1562,23 +1562,23 @@ across distinct decision states are intentional grid selections.
 
 {_markdown_table(cstr, ('nominal_DT', 'frozen_CSTR_conformal'))}
 
-This is a separate Analysis A population and is not merged with C1, C1.6, E6,
-or E7 denominators.
+This is a separate Analysis A population and is not merged with primary certification, mixed-degradation evaluation, boundary challenge,
+or reliability evaluation denominators.
 """
-    _safe("CSTR_E6B_RESULTS.md").write_text(cstr_text, encoding="utf-8")
+    _safe("cstr_margin_ladder_report.md").write_text(cstr_text, encoding="utf-8")
     issues = [row for row in audit if row["status"] == "ISSUE"]
     issue_text = "; ".join(f"{row['audit_check']} ({row['failure_count']})" for row in issues) or "none"
     pooled_recovered = sum(int(row["certified_count"]) for row in flash_m3.values()) > 1
     conditioned_improved = sum(int(row["certified_count"]) for row in flash_m5.values()) > sum(
         int(row["certified_count"]) for row in flash_m3.values()
     )
-    claims = f"""# E6B Claims Audit
+    claims = f"""# margin ladder Claims Audit
 
 | Claim | Status | Evidence boundary |
 |---|---|---|
 | Candidate selection is prospective and truth-blind | {'SUPPORTED' if not issues else 'SUPPORTED WITH QUALIFICATION'} | Nominal-only pools and chronology/key audits. |
 | Frozen conformal certification recovers with nominal margin | {'SUPPORTED WITH QUALIFICATION' if pooled_recovered else 'NOT SUPPORTED'} | Only one B4 flash action was certified; no nontrivial recovery region was observed. |
-| Margin-conditioned calibration improves availability | {'SUPPORTED WITH QUALIFICATION' if conditioned_improved else 'NOT SUPPORTED'} | Fresh matched band calibration certified no E6B test actions. |
+| Margin-conditioned calibration improves availability | {'SUPPORTED WITH QUALIFICATION' if conditioned_improved else 'NOT SUPPORTED'} | Fresh matched band calibration certified no margin ladder test actions. |
 | Conditional safety is guaranteed within each band | NOT SUPPORTED | Band-specific split conformal remains marginal within the sampled band population. |
 | Domain exits demonstrate physical unsafety | NOT SUPPORTED | Unconfirmed exits remain validation failures. |
 | CSTR and flash have identical operating envelopes | NOT SUPPORTED | Cross-process curves are descriptive and use process-specific predictors. |
@@ -1589,14 +1589,14 @@ Audit findings: {issue_text}.
 
 ### {verdict}
 
-No E1-E7 result was altered or merged into an E6B denominator.
+No simulator validation-reliability evaluation result was altered or merged into an margin ladder denominator.
 """
-    _safe("E6B_CLAIMS_AUDIT.md").write_text(claims, encoding="utf-8")
+    _safe("margin_ladder_claims_report.md").write_text(claims, encoding="utf-8")
     return verdict
 
 
 def hash_artifacts() -> None:
-    output = _safe("E6B_FINAL_ARTIFACT_HASHES.txt")
+    output = _safe("margin_ladder_artifact_hashes.txt")
     paths = sorted(
         (
             path
@@ -1608,7 +1608,7 @@ def hash_artifacts() -> None:
         ),
         key=lambda path: path.as_posix(),
     )
-    lines = ["# SHA-256 hashes for final E6B artifacts", ""]
+    lines = ["# SHA-256 hashes for final margin ladder artifacts", ""]
     lines.extend(f"{_sha256(path)}  {path.relative_to(EXPERIMENT_ROOT).as_posix()}" for path in paths)
     output.write_text("\n".join(lines) + "\n", encoding="ascii")
 
@@ -1623,12 +1623,12 @@ def finalize() -> str:
     cstr_test = _load_audit("CSTR_TEST_ARTIFACT_AUDIT.csv")
     flash_episodes, flash_results = evaluate_flash_test(flash_test)
     cstr_episodes, cstr_results = evaluate_cstr_test(cstr_test)
-    _write_csv(_safe("FLASH_E6B_EPISODES.csv"), flash_episodes)
-    _write_csv(_safe("FLASH_E6B_MARGIN_RESULTS.csv"), flash_results)
-    _write_csv(_safe("CSTR_E6B_EPISODES.csv"), cstr_episodes)
-    _write_csv(_safe("CSTR_E6B_MARGIN_RESULTS.csv"), cstr_results)
+    _write_csv(_safe("flash_margin_episodes.csv"), flash_episodes)
+    _write_csv(_safe("flash_margin_results.csv"), flash_results)
+    _write_csv(_safe("cstr_margin_episodes.csv"), cstr_episodes)
+    _write_csv(_safe("cstr_margin_results.csv"), cstr_results)
     summary = summarize("flash", flash_episodes, flash_results) + summarize("CSTR", cstr_episodes, cstr_results)
-    _write_csv(_safe("E6B_RISK_AVAILABILITY.csv"), summary)
+    _write_csv(_safe("margin_ladder_risk_availability.csv"), summary)
     audit = audit_all(flash_cal, flash_test, cstr_test, flash_episodes, cstr_episodes)
     create_figures(summary, flash_results)
     verdict = write_reports(summary, audit)
@@ -1652,10 +1652,10 @@ def main() -> None:
         )
         calibrate_margin_bands(calibration)
     if args.stage in ("flash-test", "all"):
-        config_path = _safe("FLASH_E6B_CONFORMAL_CONFIG.json")
-        config_hash = _safe("FLASH_E6B_CONFORMAL_CONFIG.sha256").read_text().split()[0]
+        config_path = _safe("flash_band_conformal_config.json")
+        config_hash = _safe("flash_band_conformal_config.sha256").read_text().split()[0]
         if _sha256(config_path) != config_hash:
-            raise RuntimeError("E6B conformal config changed before test")
+            raise RuntimeError("margin ladder conformal config changed before test")
         run_flash_population("test", FLASH_TEST_COUNT, FLASH_TEST_START, args.workers)
     if args.stage in ("cstr-test", "all"):
         run_cstr_population(args.workers)

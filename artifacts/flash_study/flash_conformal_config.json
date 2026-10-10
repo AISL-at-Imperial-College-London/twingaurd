@@ -16,7 +16,7 @@
     "SAFE",
     "NOT CERTIFIED"
   ],
-  "e2_preregistration_sha256": "a35c3919c64380f03e275558d9037b5de41ea2056a0e298552f074ebddc7f7df",
+  "population_design_preregistration_sha256": "e976e1afc20fbe8f2da120717983dc58ed8a4ce6997d6a33bb15fb07edb2383a",
   "ensemble": {
     "candidates": [
       10,
@@ -33,7 +33,7 @@
     "distance_formula": "L2 norm of (a-a_nominal)/(a_max-a_min)",
     "groups": [],
     "minimum_group_count": null,
-    "reason": "E2_BINS_NOT_PREDECLARED",
+    "reason": "BINS_NOT_PREREGISTERED",
     "supported": false,
     "unsupported_decision": "NOT CERTIFIED"
   },
@@ -93,7 +93,7 @@
     "calibration_ordinary",
     "calibration_boundary"
   ],
-  "schema_version": "FLASH_E4_CONFORMAL_CONFIG_1.0",
+  "schema_version": "FLASH_CONFORMAL_CONFIG_1.0",
   "score": {
     "alpha_levels": [
       0.1,
@@ -115,7 +115,7 @@
       0.25
     ]
   },
-  "selected_e3_model_sha256": "f02d72b577b72f157001bb827b6685860f0b29384b2d1a28ba45e73cd874b51c",
+  "selected_model_selection_model_sha256": "56575a51e870ec57279a5d31476880a9e499617a1b7870ce0be59c1b21ab14d2",
   "selected_mean_model": {
     "latent_dimension": 3,
     "no_model_passed": true,

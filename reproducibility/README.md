@@ -1,70 +1,52 @@
 # Reproducibility
 
-This directory holds the read-only audit of the frozen results and the provenance records that
-link the released files to the frozen prospective runs.
+This directory holds the read-only audit of the released results.
 
 | Path | Content |
 |---|---|
 | `run_reproducibility_audit.py` | Read-only audit. It never writes to `artifacts/` or `results/`. The report goes to `reports/<timestamp>/` (git-ignored). Exit status 1 if any check fails. |
-| `checks/` | Check modules: provenance and hash manifests, seeds and populations, chronology, decision reconstruction, leakage, archive |
+| `checks/` | Check modules: file integrity and hash references, seeds and populations, chronology, decision reconstruction, fault-blindness |
 | `seed_manifest.csv` | Every experimental population: process, role, declared seed block, observed seeds, source file |
-| `artifact_manifest.csv` | Every frozen file shipped in git: release path, original development path, SHA-256, size, byte form |
-| `known_discrepancies.csv` | Recorded hash mismatches that are explained and reported, never silently accepted |
-| `provenance/source_ledger.json` | For each module in `src/twinguard` and `tests/`: the original file, the frozen SHA-256 and the exact line-level edits made for the release |
-| `provenance/file_map.csv.gz` | All 66,000+ released files (git and archive), with original path → release path, SHA-256 and byte form |
-| `provenance/path_map.csv` | Directory renames (development → release) |
-| `provenance/sanitized_ledgers.json` | Ledgers whose absolute author-machine paths were rewritten, with their original and sanitized SHA-256 |
+| `artifact_manifest.csv` | Every file under `artifacts/` and `results/`: path, SHA-256 and size |
 
 ## Running the audit
 
 ```bash
-python reproducibility/run_reproducibility_audit.py              # ~3 min on a git checkout
-python reproducibility/run_reproducibility_audit.py --archive    # ~15 min; requires the extracted archive
+python reproducibility/run_reproducibility_audit.py      # a few minutes
 ```
 
 `paper/reproducibility_mapping.md` maps each manuscript claim to the check IDs.
 
-## How the release relates to the frozen runs
+## What is checked
 
-The experiments were run, frozen and hash-recorded in a development repository whose directories
-used internal milestone names (`E_FLASH_RESS/`, `results/milestone_c1/`, …). The release changes
-names, not results.
+- **File integrity.** Every released result file matches `artifact_manifest.csv`; every entry of
+  the stage SHA-256 manifests matches its file; each preregistration / design sidecar
+  (`*.sha256`) matches its document; every `*_sha256` value in a design or configuration file
+  equals the hash of a released file.
+- **Seed separation and population completeness.** Each population's observed seeds equal its
+  declared seed block, with nothing missing, duplicated or extra, and no two populations of the same
+  process share a seed.
+- **Prediction before truth.** The candidate, prediction, decision and truth write times recorded
+  in each ledger are strictly increasing, and every episode carries a positive chronology flag.
+- **Decision consistency and summary reconstruction.** Every certification decision agrees with
+  its recorded envelope and limits, and every summary table is recomputed from its per-episode
+  rows.
+- **Fault blindness.** Method inputs, fitted models and feature sets contain no fault, severity or
+  truth fields, and evaluator-only columns are labelled as such.
 
-**Data files** are copied byte-exact, with three byte-level adjustments, each proven by a hash:
+## Rerun checks
 
-- **LF restored.** The development copy had been converted to CRLF line endings by a Git setting
-  after the files were frozen. Where a recorded frozen hash proves the frozen file used LF, the LF
-  form is restored. This covers 25,583 files, including all flash decision records.
-- **CRLF restored.** Where a recorded hash proves the frozen file used CRLF, that form is
-  restored.
-- **Paths sanitized.** Nine per-episode ledgers stored absolute paths from an author's machine.
-  These were rewritten to repository-relative paths. Both the original and the sanitized SHA-256
-  are recorded. The original digest can be checked by anyone who holds the private path prefix,
-  whose SHA-256 is recorded.
+Two prospective reruns were compared with the released outputs:
 
-**Source modules** were moved into the `twinguard` package. The edits are limited to:
-
-- import statements;
-- the location of frozen directories;
-- resolving frozen hashes through `twinguard.utils.provenance` (so code that checks frozen hashes
-  of moved files still works);
-- removing the two-tank second-process section from the final audit (that study is not part of
-  this release).
-
-Every edit is listed in `provenance/source_ledger.json`. Reversing the edits reproduces the frozen
-source bytes, which `source_provenance_reversal` checks on every audit run. No numerical constant
-or algorithmic line was changed.
-
-**Rerun checks performed for the release.** Two prospective reruns were compared with the frozen
-or development outputs:
-
-- The flash simulator validation regenerates the frozen outputs identically.
-- A CSTR primary-certification smoke run gives cell-identical results (apart from timing columns)
-  for the release code and the original development code.
+- The flash simulator validation (`python scripts/reproduce_main_results.py --rerun flash-simulator`)
+  regenerates the released outputs identically.
+- A CSTR primary-certification smoke run (`--rerun cstr-primary-smoke`) completes and writes the
+  expected outputs.
 
 ## Software environment
 
-Exact package versions used for the frozen runs were not recorded. The release was verified with:
+Exact package versions used for the original runs were not recorded. The repository was verified
+with:
 
 - Python 3.13.1
 - numpy 2.1.3

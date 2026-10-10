@@ -1,0 +1,59 @@
+{
+  "all_sampled_healthy_trajectories_physical": true,
+  "fixed_seed_reproducible": true,
+  "go": true,
+  "healthy_scenario_count": 12,
+  "long_horizon_convergence_ratio": 0.016996511461276783,
+  "long_horizon_duration_s": 7200.0,
+  "long_horizon_initial_state": {
+    "liquid_moles": 650.0,
+    "temperature_k": 352.0,
+    "x_benzene": 0.47
+  },
+  "long_horizon_trajectory_physical": true,
+  "max_component_balance_residual_mol_per_step": 2.842170943040401e-14,
+  "max_energy_balance_residual_j_per_step": 4.656612873077393e-10,
+  "max_material_balance_residual_mol_per_step": 5.684341886080802e-14,
+  "max_vle_partial_pressure_residual_bar": 8.326672684688674e-17,
+  "meaningful_action_count": 4,
+  "meaningful_actions": {
+    "feed_flow": true,
+    "heat_duty": true,
+    "liquid_valve": true,
+    "vapor_valve": true
+  },
+  "stage": "simulator validation",
+  "mixture": "benzene/toluene",
+  "plant_dt_max_abs_output_difference": 0.0,
+  "response_deltas": {
+    "feed_flow": {
+      "level_fraction": 0.1411126332098408,
+      "liquid_benzene_fraction": 0.012136614095187792,
+      "pressure_bar": -0.005711037757619608,
+      "temperature_k": -0.6379524061987354,
+      "vapor_benzene_fraction": 0.011019654191118167
+    },
+    "heat_duty": {
+      "level_fraction": -0.0448251652925068,
+      "liquid_benzene_fraction": -0.00929231139589054,
+      "pressure_bar": 0.11214877690841718,
+      "temperature_k": 5.575588598007869,
+      "vapor_benzene_fraction": -0.012667841119169965
+    },
+    "liquid_valve": {
+      "level_fraction": -0.11638589057474452,
+      "liquid_benzene_fraction": 1.1102230246251565e-16,
+      "pressure_bar": 1.2212453270876722e-15,
+      "temperature_k": 5.684341886080802e-14,
+      "vapor_benzene_fraction": 0.0
+    },
+    "vapor_valve": {
+      "level_fraction": -0.027890703629182556,
+      "liquid_benzene_fraction": -0.007632853498943104,
+      "pressure_bar": -0.11287140898994008,
+      "temperature_k": -6.008084101100849,
+      "vapor_benzene_fraction": -0.001531371425245398
+    }
+  },
+  "seed": 1601
+}

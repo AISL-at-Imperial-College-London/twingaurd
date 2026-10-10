@@ -80,38 +80,38 @@ def headline() -> list[dict[str, object]]:
                 "SAFE_certification_rate", "false_safe_count", "joint_false_safe_probability", "joint_false_safe_CI_lower",
                 "joint_false_safe_CI_upper", "upper_trajectory_empirical_coverage", "artifacts/cstr/primary_evaluation/safety_summary.csv",
                 f"method={row['method']}, nominal_level=0.95, action_category=pooled")
-    for row in read(CSTR / "mixed_degradation/MULTIFAULT_SUMMARY.csv"):
-        if row["population"].startswith("Multi-fault"):
+    for row in read(CSTR / "mixed_degradation/mixed_degradation_summary.csv"):
+        if row["population"] == "CSTR mixed degradation":
             add("CSTR mixed-degradation fault-blind transfer", "CSTR", row, row["method"], "number_of_episodes", "SAFE_count",
                 "SAFE_certification_rate", "false_safe_count", "joint_false_safe_probability", "joint_false_safe_CI_lower",
                 "joint_false_safe_CI_upper", "upper_trajectory_coverage" if row["method"] == "proposed_method" else None,
-                "artifacts/cstr/mixed_degradation/MULTIFAULT_SUMMARY.csv", f"population={row['population']}, method={row['method']}")
-    primary = completeness(FLASH / "FLASH_FINAL_RESULTS.csv")
-    for row in read(FLASH / "FLASH_FINAL_ABLATION.csv"):
+                "artifacts/cstr/mixed_degradation/mixed_degradation_summary.csv", f"population={row['population']}, method={row['method']}")
+    primary = completeness(FLASH / "flash_primary_episode_results.csv")
+    for row in read(FLASH / "flash_primary_ablation.csv"):
         if row["group_type"] == "pooled" and row["method"] not in UNSUPPORTED:
             add("Flash primary prospective evaluation / component ablation", "flash", row, row["method"], "episode_count",
                 "certified_safe_count", "certification_rate", "false_safe_count", "joint_false_safe_probability",
                 "joint_false_safe_wilson_95_lower", "joint_false_safe_wilson_95_upper", "whole_trajectory_safety_direction_coverage",
-                "artifacts/flash_study/FLASH_FINAL_ABLATION.csv", f"group_type=pooled, method={row['method']}", primary[row["method"]])
-    for row in read(FLASH / "RISK_AVAILABILITY_RESULTS.csv"):
+                "artifacts/flash_study/flash_primary_ablation.csv", f"group_type=pooled, method={row['method']}", primary[row["method"]])
+    for row in read(FLASH / "boundary_risk_availability.csv"):
         if row["process"] == "flash" and not (row["method"] == "nominal_DT" or row["confidence_level"] == "0.95"):
             continue
         add(f"{'Flash' if row['process'] == 'flash' else 'CSTR'} boundary-region challenge", row["process"].lower(), row, row["method"],
             "episode_count", "certified_safe_count", "certification_availability", "false_safe_count", "joint_false_safe_risk",
             "joint_false_safe_wilson_95_lower", "joint_false_safe_wilson_95_upper", None,
-            "artifacts/flash_study/RISK_AVAILABILITY_RESULTS.csv", f"process={row['process']}, method={row['method']}, confidence_level={row['confidence_level'] or 'n/a'}")
-    for table, summary, experiment in (("FLASH_STRUCTURAL_RESULTS.csv", "FLASH_STRUCTURAL_SUMMARY.csv", "Flash structural mismatch (actuator lag)"),
-                                       ("FLASH_RELIABILITY_RESULTS.csv", "FLASH_RELIABILITY_SUMMARY.csv", "Flash secondary mixed-regime reliability audit")):
+            "artifacts/flash_study/boundary_risk_availability.csv", f"process={row['process']}, method={row['method']}, confidence_level={row['confidence_level'] or 'n/a'}")
+    for table, summary, experiment in (("flash_structural_episode_results.csv", "flash_structural_summary.csv", "Flash structural mismatch (actuator lag)"),
+                                       ("flash_reliability_episode_results.csv", "flash_reliability_summary.csv", "Flash secondary mixed-regime reliability audit")):
         complete = completeness(FLASH / table)
         for row in read(FLASH / summary):
             if row["method"] not in UNSUPPORTED:
                 add(experiment, "flash", row, row["method"], "episode_count", "certified_safe_count", "certification_rate",
                     "false_safe_count", "joint_false_safe_probability", "joint_false_safe_exact_95_lower", "joint_false_safe_exact_95_upper",
                     "trajectory_coverage", f"artifacts/flash_study/{summary}", f"method={row['method']}", complete[row["method"]])
-    for row in read(FLASH / "CSTR_RELIABILITY_SUMMARY.csv"):
+    for row in read(FLASH / "cstr_reliability_summary.csv"):
         add("CSTR secondary mixed-regime reliability audit", "CSTR", row, row["method"], "episode_count", "certified_safe_count",
             "certification_rate", "false_safe_count", "joint_false_safe_probability", "joint_false_safe_exact_95_lower",
-            "joint_false_safe_exact_95_upper", "trajectory_coverage", "artifacts/flash_study/CSTR_RELIABILITY_SUMMARY.csv", f"method={row['method']}")
+            "joint_false_safe_exact_95_upper", "trajectory_coverage", "artifacts/flash_study/cstr_reliability_summary.csv", f"method={row['method']}")
     return rows
 
 
@@ -126,7 +126,7 @@ def retrospective_baselines() -> list[dict[str, object]]:
                      "joint_false_safe": joint, "whole_trajectory_coverage": coverage, "coverage_denominator": coverage_n,
                      "source_file": source})
 
-    source = "artifacts/retrospective_baselines/cstr_conformal_controls/cstr_final_baseline_comparison_alpha_0p05.csv"
+    source = "artifacts/retrospective_baselines/cstr_conformal_controls/cstr_control_comparison_alpha_0p05.csv"
     for r in read(ROOT / source):
         add("CSTR", r["method"], r["test_episodes"], r["conformal_quantile"], r["certified_count"], r["certification_availability"],
             r["false_safe_count"], r["joint_false_safe_frequency"], r["upper_trajectory_coverage"], r["test_episodes"], source)
@@ -134,7 +134,7 @@ def retrospective_baselines() -> list[dict[str, object]]:
     for r in read(ROOT / source):
         add("CSTR", r["method"], r["n_test"], r["q_K"], r["certified_count"], r["availability"], r["false_safe_count"],
             r["joint_false_safe"], r["upper_trajectory_coverage"], r["n_test"], source)
-    source = "artifacts/retrospective_baselines/flash_conformal_controls/flash_final_baseline_comparison_alpha_0p05.csv"
+    source = "artifacts/retrospective_baselines/flash_conformal_controls/flash_control_comparison_alpha_0p05.csv"
     for r in read(ROOT / source):
         add("flash", r["method"], r["episode_count"], r["conformal_quantile"], r["certified_count"], r["certification_availability"],
             r["false_safe_count"], r["joint_false_safe_frequency"], r["whole_trajectory_safety_direction_coverage"],
@@ -159,26 +159,26 @@ def build() -> dict[str, str]:
             flash_quantiles.append({"calibration_population": population, "alpha": alpha, "calibration_episodes": entry["sample_count"],
                                     "corrected_rank": entry["corrected_rank"], "conformal_quantile": entry["quantile"],
                                     "source": "artifacts/flash_study/flash_conformal_config.json"})
-    reliability = [{"process": "flash", **row} for row in without_unsupported(read(FLASH / "FLASH_RELIABILITY_SUMMARY.csv"))]
-    reliability += [{"process": "CSTR", **row} for row in read(FLASH / "CSTR_RELIABILITY_SUMMARY.csv")]
+    reliability = [{"process": "flash", **row} for row in without_unsupported(read(FLASH / "flash_reliability_summary.csv"))]
+    reliability += [{"process": "CSTR", **row} for row in read(FLASH / "cstr_reliability_summary.csv")]
     keys = list(dict.fromkeys(k for row in reliability for k in row))
     reliability = [{k: row.get(k, "") for k in keys} for row in reliability]
     return {
         "paper_headline_results.csv": render(headline()),
         "cstr_primary_results.csv": render(read(CSTR / "primary_evaluation/safety_summary.csv")),
         "cstr_one_sided_conformal_quantiles.csv": render(read(CSTR / "primary_evaluation/one_sided_quantiles.csv")),
-        "cstr_mixed_degradation_results.csv": render(read(CSTR / "mixed_degradation/MULTIFAULT_SUMMARY.csv")),
-        "cstr_mixed_degradation_by_fault.csv": render(read(CSTR / "mixed_degradation/FAULT_SPECIFIC_RESULTS.csv")),
-        "cstr_mixed_degradation_by_severity.csv": render(read(CSTR / "mixed_degradation/SEVERITY_RESULTS.csv")),
-        "flash_component_ablation.csv": render(without_unsupported(read(FLASH / "FLASH_FINAL_ABLATION.csv"))),
+        "cstr_mixed_degradation_results.csv": render(read(CSTR / "mixed_degradation/mixed_degradation_summary.csv")),
+        "cstr_mixed_degradation_by_fault.csv": render(read(CSTR / "mixed_degradation/mixed_degradation_by_fault.csv")),
+        "cstr_mixed_degradation_by_severity.csv": render(read(CSTR / "mixed_degradation/mixed_degradation_by_severity.csv")),
+        "flash_component_ablation.csv": render(without_unsupported(read(FLASH / "flash_primary_ablation.csv"))),
         "flash_model_selection.csv": render(read(FLASH / "flash_model_selection.csv")),
         "flash_conformal_quantiles.csv": render(flash_quantiles),
-        "boundary_risk_availability.csv": render(without_unsupported(read(FLASH / "RISK_AVAILABILITY_RESULTS.csv"))),
-        "flash_structural_mismatch_results.csv": render(without_unsupported(read(FLASH / "FLASH_STRUCTURAL_SUMMARY.csv"))),
+        "boundary_risk_availability.csv": render(without_unsupported(read(FLASH / "boundary_risk_availability.csv"))),
+        "flash_structural_mismatch_results.csv": render(without_unsupported(read(FLASH / "flash_structural_summary.csv"))),
         "mixed_regime_audit_results.csv": render(reliability),
-        "margin_ladder_risk_availability.csv": render(read(LADDER / "E6B_RISK_AVAILABILITY.csv")),
-        "flash_healthy_parity_summary.csv": render(read(FLASH / "e1_validation/HEALTHY_SCENARIO_SUMMARY.csv")),
-        "flash_action_step_responses.csv": render(read(FLASH / "e1_validation/ACTION_STEP_RESPONSES.csv")),
+        "margin_ladder_risk_availability.csv": render(read(LADDER / "margin_ladder_risk_availability.csv")),
+        "flash_healthy_parity_summary.csv": render(read(FLASH / "simulator_validation/HEALTHY_SCENARIO_SUMMARY.csv")),
+        "flash_action_step_responses.csv": render(read(FLASH / "simulator_validation/ACTION_STEP_RESPONSES.csv")),
         "retrospective_baseline_comparison.csv": render(retrospective_baselines()),
     }
 

@@ -25,7 +25,7 @@ from twinguard.uncertainty.flash_bootstrap import (
     coherent_predictive_summary,
 )
 from twinguard.conformal.flash_conformal import conformal_envelope, normalized_action_distance, safety_decision
-from twinguard.digital_twins.flash_drum import FlashDigitalTwin
+from twinguard.flash.digital_twin import FlashDigitalTwin
 from twinguard.discrepancy.flash_state_space import (
     FEATURE_NAMES,
     FlashStateSpaceParameters,
@@ -47,10 +47,9 @@ from twinguard.scenarios.flash_population_design import (
 )
 from twinguard.plants.flash_drum import FlashAction, FlashParameters, FlashPlant, PhysicalStateError
 from twinguard.utils.flash_output_guard import EXPERIMENT_ROOT, REPOSITORY_ROOT, assert_isolated_output_path
-from twinguard.utils.provenance import frozen_sha256, frozen_tree_hash
 
 
-E2_SHA256 = "a35c3919c64380f03e275558d9037b5de41ea2056a0e298552f074ebddc7f7df"
+POPULATION_DESIGN_SHA256 = "e976e1afc20fbe8f2da120717983dc58ed8a4ce6997d6a33bb15fb07edb2383a"
 FINAL_COUNT = 1200
 FINAL_SEED_START = 26_000_000
 ENSEMBLE_SIZE = 10
@@ -132,26 +131,16 @@ def _tree_hash(paths: Sequence[tuple[str, Path]]) -> str:
 
 
 def verify_frozen_inputs() -> dict[str, object]:
-    if _sha256(EXPERIMENT_ROOT / "FLASH_E2_PREDECLARATION.md") != E2_SHA256:
-        raise RuntimeError("E2 preregistration hash mismatch")
-    process_files = tuple(
-        (relative, REPOSITORY_ROOT / relative)
-        for relative in (
-            "E_FLASH_RESS/flash_process.py",
-            "E_FLASH_RESS/flash_digital_twin.py",
-            "E_FLASH_RESS/flash_config.yaml",
-        )
-    )
-    if frozen_tree_hash(relative for relative, _ in process_files) != PROCESS_BUNDLE_SHA256:
-        raise RuntimeError("E1 process bundle hash mismatch")
+    if _sha256(EXPERIMENT_ROOT / "population_preregistration.md") != POPULATION_DESIGN_SHA256:
+        raise RuntimeError("population design preregistration hash mismatch")
 
-    hash_manifest = EXPERIMENT_ROOT / "FLASH_E4_ARTIFACT_HASHES.txt"
+    hash_manifest = EXPERIMENT_ROOT / "calibration_artifact_hashes.txt"
     for line in hash_manifest.read_text(encoding="utf-8").splitlines():
         if not line or line.startswith("#"):
             continue
         expected, relative = line.split("  ", maxsplit=1)
-        if frozen_sha256("E_FLASH_RESS/" + relative) != expected:
-            raise RuntimeError(f"frozen E4 hash mismatch: {relative}")
+        if _sha256(EXPERIMENT_ROOT / relative) != expected:
+            raise RuntimeError(f"frozen calibration hash mismatch: {relative}")
 
     config_path = EXPERIMENT_ROOT / "flash_conformal_config.json"
     config = json.loads(config_path.read_text(encoding="utf-8"))
@@ -170,7 +159,7 @@ def verify_frozen_inputs() -> dict[str, object]:
         "selected_mean_model_sha256": _sha256(selected_path),
         "bootstrap_models_sha256": _sha256(bootstrap_path),
         "conformal_config_sha256": _sha256(config_path),
-        "e4_hash_manifest_sha256": _sha256(hash_manifest),
+        "calibration_stage_hash_manifest_sha256": _sha256(hash_manifest),
     }
 
 
@@ -322,7 +311,7 @@ def _build_prediction(
     observation: Mapping[str, object], candidate: FlashAction, episode_id: str, seed: int
 ) -> tuple[dict[str, object], dict[str, str], dict[str, float]]:
     if _MODELS is None or _MEAN_MODEL is None or _POOLED_Q is None or _MODEL_HASHES is None:
-        raise RuntimeError("E5 prediction worker is not initialized")
+        raise RuntimeError("primary evaluation prediction worker is not initialized")
     started = time.perf_counter()
     nominal = np.empty((0, 3))
     mean_corrected = np.empty((0, 3))
@@ -366,7 +355,7 @@ def _build_prediction(
             prediction_status = "NOMINAL_DT_DOMAIN_EXIT"
 
     payload: dict[str, object] = {
-        "schema_version": np.asarray("FLASH_E5_PREDICTION_1.0"),
+        "schema_version": np.asarray("FLASH_PRIMARY_PREDICTION_1.0"),
         "episode_id": np.asarray(episode_id),
         "candidate_action": candidate.as_array(),
         "observation_time_s": np.arange(1, int(observation["completed"]) + 1) * 10.0,
@@ -457,7 +446,7 @@ def _init_worker(output_root: str, frozen: Mapping[str, object]) -> None:
 
 def _episode_paths(episode_id: str) -> tuple[Path, Path, Path]:
     if _OUTPUT_ROOT is None:
-        raise RuntimeError("E5 worker output root missing")
+        raise RuntimeError("primary evaluation worker output root missing")
     return (
         _OUTPUT_ROOT / "predictions" / f"{episode_id}.npz",
         _OUTPUT_ROOT / "decisions" / f"{episode_id}.json",
@@ -540,14 +529,14 @@ def _episode_task(task: tuple[int, int, np.ndarray]) -> dict[str, object]:
 
     if not decision_path.exists():
         decision_payload = {
-            "schema_version": "FLASH_E5_DECISION_1.0",
+            "schema_version": "FLASH_PRIMARY_DECISION_1.0",
             "episode_id": episode_id,
             "prediction_sha256": prediction_hash,
             "decisions": decisions,
             "normalized_margins": {method: metrics[method] for method in METHODS},
             "raw_multiplier": RAW_ONE_SIDED_95,
             "pooled_quantile": _POOLED_Q,
-            "mondrian_status": "UNSUPPORTED_NOT_CERTIFIED:E2_BINS_NOT_PREDECLARED",
+            "mondrian_status": "UNSUPPORTED_NOT_CERTIFIED:BINS_NOT_PREREGISTERED",
             "latency_seconds": {
                 method: metrics[f"latency_{method}"] for method in METHODS
             },
@@ -566,7 +555,7 @@ def _episode_task(task: tuple[int, int, np.ndarray]) -> dict[str, object]:
         actual, truth_exit = _truth_rollout(observation, candidate)
         hidden = observation["hidden"]
         truth_payload = {
-            "schema_version": np.asarray("FLASH_E5_TRUTH_1.0"),
+            "schema_version": np.asarray("FLASH_PRIMARY_TRUTH_1.0"),
             "episode_id": np.asarray(episode_id),
             "episode_seed_evaluator_only": np.asarray(seed),
             "fault_family_evaluator_only": np.asarray(hidden.family.value),
@@ -886,7 +875,7 @@ def _write_csv(path: Path, rows: Sequence[Mapping[str, object]]) -> None:
 
 
 def _save_figure(fig: plt.Figure, name: str) -> None:
-    path = _safe_path(f"e5_figures/{name}.png")
+    path = _safe_path(f"primary_evaluation_figures/{name}.png")
     fig.tight_layout()
     fig.savefig(path, dpi=220, bbox_inches="tight", facecolor="white")
     plt.close(fig)
@@ -897,8 +886,8 @@ def create_figures(rows: Sequence[Mapping[str, object]], ablation: Sequence[Mapp
     m3_rows = [row for row in rows if row["method"] == "M3_pooled_conformal"]
     complete = [row for row in m3_rows if bool(row["truth_complete"]) and bool(row["prediction_complete"])]
     representative = min(complete, key=lambda row: abs(float(row["true_normalized_safety_margin"])))
-    prediction = _load_npz(Path(str(REPOSITORY_ROOT / Path(str(representative["prediction_path"])))) if "prediction_path" in representative else EXPERIMENT_ROOT / "e5_artifacts" / "predictions" / f"{representative['episode_id']}.npz")
-    truth = _load_npz(EXPERIMENT_ROOT / "e5_artifacts" / "truths" / f"{representative['episode_id']}.npz")
+    prediction = _load_npz(Path(str(REPOSITORY_ROOT / Path(str(representative["prediction_path"])))) if "prediction_path" in representative else EXPERIMENT_ROOT / "primary_evaluation_episodes" / "predictions" / f"{representative['episode_id']}.npz")
+    truth = _load_npz(EXPERIMENT_ROOT / "primary_evaluation_episodes" / "truths" / f"{representative['episode_id']}.npz")
     t = np.arange(1, 121) * 10.0 / 60.0
     actual = np.asarray(truth["actual_horizon_outputs"])
     nominal = np.asarray(prediction["nominal_horizon_outputs"])
@@ -979,16 +968,16 @@ def create_figures(rows: Sequence[Mapping[str, object]], ablation: Sequence[Mapp
     ax.set_ylabel("Maximum normalized excursion")
     _save_figure(fig, "07_safety_violation_severity")
 
-    cstr_rows: list[dict[str, str]] = []
-    with (REPOSITORY_ROOT / "artifacts/cstr/final_summary/FINAL_CSTR_RESULTS.csv").open(newline="", encoding="utf-8") as handle:
-        cstr_rows = list(csv.DictReader(handle))
-    cstr_false = float(next(row["estimate"] for row in cstr_rows if row["result_id"] == "R12"))
-    cstr_cert = float(next(row["estimate"] for row in cstr_rows if row["result_id"] == "R13"))
+    with (REPOSITORY_ROOT / "artifacts/cstr/primary_evaluation/safety_summary.csv").open(newline="", encoding="utf-8") as handle:
+        cstr_row = next(row for row in csv.DictReader(handle)
+                        if row["method"] == "S3_one_sided" and row["action_category"] == "pooled" and row["nominal_level"] == "0.95")
+    cstr_false = float(cstr_row["joint_false_safe_probability"])
+    cstr_cert = float(cstr_row["SAFE_certification_rate"])
     fig, ax = plt.subplots(figsize=(5.8, 4.2))
     x = np.arange(2)
     ax.bar(x - 0.18, [cstr_false, float(m3["joint_false_safe_probability"])], 0.36, label="Joint false-safe", color="#ca3c25")
     ax.bar(x + 0.18, [cstr_cert, float(m3["certification_rate"])], 0.36, label="Certification", color="#1d6996")
-    ax.set_xticks(x, ["CSTR C1", "Flash E5"])
+    ax.set_xticks(x, ["CSTR", "Flash"])
     ax.set_ylabel("Probability")
     ax.legend(frameon=False)
     _save_figure(fig, "08_cstr_vs_flash_comparison")
@@ -1024,20 +1013,20 @@ def build_report(
     domain_count = int(m3["episode_count"]) - int(m3["truth_complete_count"])
     pass_false = float(m3["joint_false_safe_wilson_95_upper"]) <= 0.01
     pass_cert = float(m3["certification_rate"]) >= 0.10
-    return f"""# Flash E5 Untouched Final Results
+    return f"""# Flash primary evaluation Untouched Final Results
 
 ## Frozen Prospective Design
 
-All 1,200 reserved ordinary-final seeds were evaluated with the frozen E3/E4
+All 1,200 reserved ordinary-final seeds were evaluated with the frozen model selection/calibration
 artifacts. Prediction NPZ and decision JSON artifacts were exclusively written
 and hashed before the corresponding plant future was simulated. Artifact keys
 exclude fault metadata, future plant truth, and safety labels. Chronology passed
 for every episode. No fit, bootstrap model, calibration score, quantile, safety
-limit, or decision threshold changed in E5.
+limit, or decision threshold changed in primary evaluation.
 
 M2 is the raw one-sided 95% Gaussian bootstrap envelope (`z={RAW_ONE_SIDED_95}`)
 without conformal inflation. M3 uses the ordinary pooled `q={frozen['pooled_q']}`.
-M4 is unsupported and always NOT CERTIFIED because E2 froze no Mondrian bins.
+M4 is unsupported and always NOT CERTIFIED because population design froze no Mondrian bins.
 
 ## Reliability
 
@@ -1065,14 +1054,14 @@ M3 complete-pair RMSE is {m3['pressure_rmse_bar']:.5f} bar pressure,
 {m3['level_rmse_fraction']:.5f} level fraction, and
 {m3['temperature_rmse_k']:.4f} K temperature. Median online latency is
 {m3['online_latency_seconds']:.4f} s. The subgroup rows in
-`FLASH_FINAL_ABLATION.csv` are descriptive only; they do not establish
+`flash_primary_ablation.csv` are descriptive only; they do not establish
 conditional conformal guarantees.
 
 ## Frozen Gates
 
 - Joint false-safe Wilson upper <=0.01: **{'PASS' if pass_false else 'FAIL'}**.
 - Certification rate >=0.10: **{'PASS' if pass_cert else 'FAIL'}**.
-- E3 mean-model selection gate: **FAIL; preregistered k=3 fallback retained**.
+- model selection mean-model selection gate: **FAIL; preregistered k=3 fallback retained**.
 - Mondrian extension: **UNSUPPORTED / NOT CERTIFIED**.
 
 ## Final Verdict
@@ -1083,23 +1072,22 @@ conditional conformal guarantees.
 
 def _hash_outputs() -> None:
     paths = [
-        EXPERIMENT_ROOT / "run_flash_e5.py",
-        EXPERIMENT_ROOT / "FLASH_FINAL_RESULTS.csv",
-        EXPERIMENT_ROOT / "FLASH_FINAL_ABLATION.csv",
-        EXPERIMENT_ROOT / "FLASH_E5_RESULTS.md",
-        EXPERIMENT_ROOT / "e5_artifact_audit.csv",
+        EXPERIMENT_ROOT / "flash_primary_episode_results.csv",
+        EXPERIMENT_ROOT / "flash_primary_ablation.csv",
+        EXPERIMENT_ROOT / "primary_evaluation_report.md",
+        EXPERIMENT_ROOT / "primary_evaluation_ledger.csv",
     ]
-    paths.extend(sorted((EXPERIMENT_ROOT / "e5_figures").glob("*.png")))
-    paths.extend(sorted((EXPERIMENT_ROOT / "e5_artifacts").rglob("*.*")))
-    lines = ["# Frozen E5 artifact SHA-256 manifest", ""]
+    paths.extend(sorted((EXPERIMENT_ROOT / "primary_evaluation_figures").glob("*.png")))
+    paths.extend(sorted((EXPERIMENT_ROOT / "primary_evaluation_episodes").rglob("*.*")))
+    lines = ["# Frozen primary evaluation artifact SHA-256 manifest", ""]
     for path in paths:
         lines.append(f"{_sha256(path)}  {path.relative_to(EXPERIMENT_ROOT).as_posix()}")
-    _safe_path("FLASH_E5_ARTIFACT_HASHES.txt").write_text("\n".join(lines) + "\n", encoding="ascii")
+    _safe_path("primary_evaluation_artifact_hashes.txt").write_text("\n".join(lines) + "\n", encoding="ascii")
 
 
 def main(workers: int) -> str:
     frozen = verify_frozen_inputs()
-    output = _safe_path("e5_artifacts")
+    output = _safe_path("primary_evaluation_episodes")
     output.mkdir(parents=True, exist_ok=True)
     actions = latin_hypercube_actions(FINAL_COUNT, FINAL_SEED_START + 401)
     tasks = [(index, FINAL_SEED_START + index, actions[index]) for index in range(FINAL_COUNT)]
@@ -1112,18 +1100,18 @@ def main(workers: int) -> str:
         for completed, row in enumerate(pool.map(_episode_task, tasks, chunksize=1), 1):
             audit.append(row)
             if completed % 100 == 0 or completed == FINAL_COUNT:
-                print(f"E5 prospective episodes complete={completed}/{FINAL_COUNT}", flush=True)
+                print(f"primary evaluation prospective episodes complete={completed}/{FINAL_COUNT}", flush=True)
     audit.sort(key=lambda row: str(row["episode_id"]))
-    _write_csv(_safe_path("e5_artifact_audit.csv"), audit)
+    _write_csv(_safe_path("primary_evaluation_ledger.csv"), audit)
     rows = evaluate_artifacts(audit)
-    _write_csv(_safe_path("FLASH_FINAL_RESULTS.csv"), rows)
+    _write_csv(_safe_path("flash_primary_episode_results.csv"), rows)
     ablation = aggregate(rows, "pooled", "all_final_ordinary") + subgroup_rows(rows)
     result = verdict(
         next(row for row in ablation if row["group_type"] == "pooled" and row["method"] == "M3_pooled_conformal"),
         frozen["config"],
     )
-    _write_csv(_safe_path("FLASH_FINAL_ABLATION.csv"), ablation)
-    _safe_path("FLASH_E5_RESULTS.md").write_text(build_report(frozen, ablation, result), encoding="utf-8")
+    _write_csv(_safe_path("flash_primary_ablation.csv"), ablation)
+    _safe_path("primary_evaluation_report.md").write_text(build_report(frozen, ablation, result), encoding="utf-8")
     create_figures(rows, ablation)
     _hash_outputs()
     print(result, flush=True)

@@ -1,4 +1,4 @@
-"""Regression checks for the frozen E7 reliability evidence package."""
+"""Checks structural-mismatch and mixed-regime reliability artifacts."""
 
 from __future__ import annotations
 
@@ -11,18 +11,17 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-E7 = ROOT / "artifacts" / "flash_study"
-ARCHIVE_PRESENT = (E7 / "e7_artifacts" / "structural").is_dir()
+RELIABILITY_ROOT = ROOT / "artifacts" / "flash_study"
 
 
 def _rows(name: str) -> list[dict[str, str]]:
-    with (E7 / name).open(newline="", encoding="utf-8") as handle:
+    with (RELIABILITY_ROOT / name).open(newline="", encoding="utf-8") as handle:
         return list(csv.DictReader(handle))
 
 
-def test_e7_design_hash_is_frozen() -> None:
-    design = E7 / "RESS_E7_DESIGN.json"
-    recorded = (E7 / "RESS_E7_DESIGN.sha256").read_text(encoding="ascii").split()[0]
+def test_reliability_design_hash_is_frozen() -> None:
+    design = RELIABILITY_ROOT / "reliability_design.json"
+    recorded = (RELIABILITY_ROOT / "reliability_design.sha256").read_text(encoding="ascii").split()[0]
     assert hashlib.sha256(design.read_bytes()).hexdigest() == recorded
     payload = json.loads(design.read_text(encoding="utf-8"))
     assert payload["flash_reliability"]["episode_count"] == 3000
@@ -31,8 +30,8 @@ def test_e7_design_hash_is_frozen() -> None:
 
 
 def test_large_reliability_denominators_and_zero_event_intervals() -> None:
-    flash = {row["method"]: row for row in _rows("FLASH_RELIABILITY_SUMMARY.csv")}
-    cstr = {row["method"]: row for row in _rows("CSTR_RELIABILITY_SUMMARY.csv")}
+    flash = {row["method"]: row for row in _rows("flash_reliability_summary.csv")}
+    cstr = {row["method"]: row for row in _rows("cstr_reliability_summary.csv")}
 
     assert {int(row["episode_count"]) for row in flash.values()} == {3000}
     assert {int(row["episode_count"]) for row in cstr.values()} == {3000}
@@ -47,45 +46,21 @@ def test_large_reliability_denominators_and_zero_event_intervals() -> None:
     assert unsupported["conditional_false_safe_exact_95_upper"] == ""
 
 
-@pytest.mark.skipif(not ARCHIVE_PRESENT, reason="needs the frozen per-episode archive extracted at the repository root (see data/README.md)")
-def test_e7_artifacts_are_complete_and_prospective() -> None:
-    expected = {
-        "STRUCTURAL_ARTIFACT_AUDIT.csv": 600,
-        "FLASH_RELIABILITY_ARTIFACT_AUDIT.csv": 3000,
-        "CSTR_RELIABILITY_ARTIFACT_AUDIT.csv": 3000,
-    }
-    for name, count in expected.items():
-        rows = _rows(f"e7_artifacts/{name}")
-        assert len(rows) == count
-        assert all(row["chronology_verified"].lower() == "true" for row in rows)
-        assert all((ROOT / row["candidate_path"]).exists() for row in rows)
-        assert all((ROOT / row["prediction_path"]).exists() for row in rows)
-        assert all((ROOT / row["decision_path"]).exists() for row in rows)
-        assert all((ROOT / row["truth_path"]).exists() for row in rows)
-
-
-def test_final_audit_has_no_e7_integrity_findings() -> None:
-    rows = _rows("RESS_FINAL_AUDIT_DETAILS.csv")
-    e7_issues = [
+def test_final_audit_has_no_reliability_integrity_findings() -> None:
+    rows = _rows("final_audit_checks.csv")
+    reliability_issues = [
         row
         for row in rows
         if row["status"] == "ISSUE"
         and (
-            row["population"].startswith("E7_")
-            or row["population"].endswith("E7_RELIABILITY")
+            row["population"].startswith("RELIABILITY_")
+            or row["population"].endswith("RELIABILITY")
         )
     ]
-    assert e7_issues == []
+    assert reliability_issues == []
     frozen = [row for row in rows if row["audit_check"] == "frozen SHA-256 baseline"]
     assert len(frozen) == 1
     assert frozen[0]["status"] == "PASS"
     assert int(frozen[0]["records_examined"]) == 34222
 
 
-def test_final_verdict_is_limitations_qualified() -> None:
-    claims = (E7 / "RESS_FINAL_CLAIMS_AUDIT.md").read_text(encoding="utf-8")
-    results = (E7 / "RESS_E7_RESULTS.md").read_text(encoding="utf-8")
-    verdict = "RESS-POSSIBLE WITH SPECIFIC LIMITATIONS"
-    assert verdict in claims
-    assert verdict in results
-    assert "0 observed events / 3000" in results

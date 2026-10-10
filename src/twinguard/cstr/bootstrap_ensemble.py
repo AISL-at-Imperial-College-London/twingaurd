@@ -1,4 +1,4 @@
-"""Milestone B.11: whole-episode bootstrap parameter uncertainty for k=1."""
+"""Fit bootstrap ensembles of CSTR discrepancy models to estimate parameter uncertainty."""
 
 from __future__ import annotations
 
@@ -18,13 +18,13 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from twinguard.cstr import episode_design as b5
-from twinguard.cstr import freeze_discrepancy_model as b10
+from twinguard.cstr import episode_design as episode_design
+from twinguard.cstr import freeze_discrepancy_model as discrepancy_freeze
 from twinguard.discrepancy.cstr_state_space import StateSpaceParameters,fit_scalar_state_space_em_checkpoints,kalman_filter,predictive_rollout
 
 
-LEVELS=b5.COVERAGE_LEVELS
-CATEGORIES=b10.CATEGORIES
+LEVELS=episode_design.COVERAGE_LEVELS
+CATEGORIES=discrepancy_freeze.CATEGORIES
 J_VALUES=(10,20,50)
 M_VALUES=(1000,2000,5000)
 HORIZON=240
@@ -34,9 +34,9 @@ BOOTSTRAP_INIT_SEED=91_005
 
 
 @dataclass(frozen=True)
-class MilestoneB11Config:
-    b9_dir:str="artifacts/cstr/discrepancy_fit"
-    b10_dir:str="artifacts/cstr/discrepancy_freeze"
+class BootstrapEnsembleConfig:
+    fit_dir:str="artifacts/cstr/discrepancy_fit"
+    freeze_dir:str="artifacts/cstr/discrepancy_freeze"
     output_dir:str="artifacts/cstr/bootstrap_ensemble"
     bootstrap_target:int=50
     bootstrap_max_attempts:int=75
@@ -48,8 +48,8 @@ class MilestoneB11Config:
     limit_episodes:int|None=None
 
     def validate(self)->None:
-        if self.bootstrap_target!=50 or self.bootstrap_max_attempts<self.bootstrap_target:raise ValueError("full B.11 targets J=50 with declared supplemental attempts")
-        if self.limit_episodes is None and (self.calibration_per_category!=20 or self.final_per_category!=80 or self.total_trajectories!=2000):raise ValueError("full B.11 freezes 60 calibration, 240 final, and M=2000")
+        if self.bootstrap_target!=50 or self.bootstrap_max_attempts<self.bootstrap_target:raise ValueError("full bootstrap ensemble targets J=50 with declared supplemental attempts")
+        if self.limit_episodes is None and (self.calibration_per_category!=20 or self.final_per_category!=80 or self.total_trajectories!=2000):raise ValueError("full bootstrap ensemble freezes 60 calibration, 240 final, and M=2000")
 
 
 _TRAIN_Y=None
@@ -93,7 +93,7 @@ def fit_bootstrap_ensemble(training_path:Path,target:int,max_attempts:int,worker
 
 def parameter_summary(models:Sequence[StateSpaceParameters])->list[dict[str,object]]:
     values={"A":np.asarray([p.A[0,0] for p in models]),"C":np.asarray([p.C[0,0] for p in models]),"Q":np.asarray([p.Q[0,0] for p in models]),"R":np.asarray([p.R for p in models]),"spectral_radius":np.asarray([p.spectral_radius for p in models]),"stability_margin":np.asarray([1-p.spectral_radius for p in models])}
-    for i,name in enumerate(b10.b9.FEATURE_NAMES):values[f"B_{name}"]=np.asarray([p.B[0,i] for p in models]);values[f"D_{name}"]=np.asarray([p.D[0,i] for p in models])
+    for i,name in enumerate(discrepancy_freeze.discrepancy_fit.FEATURE_NAMES):values[f"B_{name}"]=np.asarray([p.B[0,i] for p in models]);values[f"D_{name}"]=np.asarray([p.D[0,i] for p in models])
     for h in (1,10,50,100,240):values[f"A_power_{h}"]=values["A"]**h
     rows=[]
     for name,x in values.items():rows.append({"parameter":name,"number_of_models":len(x),"mean":float(np.mean(x)),"standard_deviation":float(np.std(x,ddof=1)),"median":float(np.median(x)),"q025":float(np.quantile(x,.025)),"q975":float(np.quantile(x,.975)),"minimum":float(np.min(x)),"maximum":float(np.max(x))})
@@ -103,28 +103,28 @@ def parameter_summary(models:Sequence[StateSpaceParameters])->list[dict[str,obje
 def _hash(path:Path)->str:return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _reveal(item:b10.EpisodeInputs)->np.ndarray:
+def _reveal(item:discrepancy_freeze.EpisodeInputs)->np.ndarray:
     if item.truth_path.exists():
         with np.load(item.truth_path) as saved:return np.asarray(saved["actual_plant_temperature_k"],float)
     if item.hidden_plant is None or item.hidden_measurement_seed is None:raise RuntimeError("hidden plant unavailable")
     rng=np.random.default_rng(item.hidden_measurement_seed);actual=[]
     for _ in range(HORIZON):
-        out=item.hidden_plant.simulate_step(Fin_sp_normal=item.proposed_action,Fin_sp_startup=item.proposed_action);actual.append(float(out["T_true"])+float(rng.normal(0,b5.MilestoneB5Config().measurement_noise_k)))
+        out=item.hidden_plant.simulate_step(Fin_sp_normal=item.proposed_action,Fin_sp_startup=item.proposed_action);actual.append(float(out["T_true"])+float(rng.normal(0,episode_design.EpisodeDesignConfig().measurement_noise_k)))
     actual=np.asarray(actual);item.truth_path.parent.mkdir(parents=True,exist_ok=True);np.savez_compressed(item.truth_path,actual_plant_temperature_k=actual,actual_residual_k=actual-item.nominal_future);return actual
 
 
-def _paths_for_model(p:StateSpaceParameters,item:b10.EpisodeInputs,count:int,seed:int)->tuple[np.ndarray,np.ndarray,np.ndarray,float,float]:
+def _paths_for_model(p:StateSpaceParameters,item:discrepancy_freeze.EpisodeInputs,count:int,seed:int)->tuple[np.ndarray,np.ndarray,np.ndarray,float,float]:
     start=time.perf_counter();filtered=kalman_filter(p,item.residual_online,item.z_online);filter_seconds=time.perf_counter()-start;roll=predictive_rollout(p,filtered.filtered_mean[-1],filtered.filtered_covariance[-1],item.z_future,count,np.random.default_rng(seed));paths=item.nominal_future[None,:]+roll["residual_samples"];mean=item.nominal_future+roll["analytical_mean"];return paths,mean,np.asarray(roll["analytical_variance"]),filter_seconds,float(roll["monte_carlo_seconds"])
 
 
 def _interval_payload(name:str,paths:np.ndarray)->tuple[dict[str,np.ndarray],dict[float,tuple[np.ndarray,np.ndarray]],object]:
-    payload={};point={};sim=b5.construct_simultaneous_bands(paths)
+    payload={};point={};sim=episode_design.construct_simultaneous_bands(paths)
     for level in LEVELS:
         tail=(1-level)/2;lo,hi=np.quantile(paths,[tail,1-tail],axis=0);label=int(level*100);point[level]=(lo,hi);payload[f"{name}_pointwise_{label}_lower_k"]=lo;payload[f"{name}_pointwise_{label}_upper_k"]=hi;payload[f"{name}_simultaneous_{label}_lower_k"]=sim.lower[level];payload[f"{name}_simultaneous_{label}_upper_k"]=sim.upper[level]
     return payload,point,sim
 
 
-def evaluate_episode(fixed:StateSpaceParameters,ensemble:Sequence[StateSpaceParameters],item:b10.EpisodeInputs,j:int,m_total:int,prediction_dir:Path,include_u0:bool=True)->tuple[list[dict[str,object]],list[dict[str,object]],dict[str,object]]:
+def evaluate_episode(fixed:StateSpaceParameters,ensemble:Sequence[StateSpaceParameters],item:discrepancy_freeze.EpisodeInputs,j:int,m_total:int,prediction_dir:Path,include_u0:bool=True)->tuple[list[dict[str,object]],list[dict[str,object]],dict[str,object]]:
     chosen=list(ensemble[:j]);payload={"nominal_temperature_k":item.nominal_future};details={};runtime={"episode_id":item.episode_id,"action_category":item.category,"ensemble_size_J":j,"total_trajectories":m_total}
     if include_u0:
         u0_start=time.perf_counter()
@@ -178,70 +178,70 @@ def decision(summary,comparison)->tuple[str,dict[str,float]]:
     return ("PARAMETER UNCERTAINTY SUFFICIENT" if sufficient else "PARAMETER UNCERTAINTY PARTIALLY SUFFICIENT" if partial else "STRUCTURAL UNCERTAINTY REMAINS"),metrics
 
 
-def _write_csv(path:Path,rows:Sequence[dict[str,object]])->None:b10._write_csv(path,rows)
+def _write_csv(path:Path,rows:Sequence[dict[str,object]])->None:discrepancy_freeze._write_csv(path,rows)
 
 
 def create_figures(output:Path,models,fixed,summary,horizon,decomp,sensitivity,episode_rows)->None:
     figures=output/"figures";figures.mkdir(parents=True,exist_ok=True);plt.rcParams.update({"font.size":9,"figure.dpi":150})
     def save(fig,name):fig.tight_layout();fig.savefig(figures/f"{name}.png",dpi=300);fig.savefig(figures/f"{name}.pdf");plt.close(fig)
-    a=np.asarray([p.A[0,0] for p in models]);fig,ax=plt.subplots(figsize=(6.5,4));ax.hist(a,bins=14,alpha=.75);ax.axvline(fixed.A[0,0],color="black",ls="--",label="frozen U0");ax.set(xlabel="A = spectral radius",ylabel="Bootstrap models");ax.legend();save(fig,"figure_B11_1_bootstrap_A")
-    hs=(1,10,50,100,240);fig,ax=plt.subplots(figsize=(6.5,4));ax.boxplot([a**h for h in hs],tick_labels=hs);ax.set(xlabel="Horizon h",ylabel=r"$A^h$");save(fig,"figure_B11_2_A_power_h")
+    a=np.asarray([p.A[0,0] for p in models]);fig,ax=plt.subplots(figsize=(6.5,4));ax.hist(a,bins=14,alpha=.75);ax.axvline(fixed.A[0,0],color="black",ls="--",label="frozen U0");ax.set(xlabel="A = spectral radius",ylabel="Bootstrap models");ax.legend();save(fig,"figure_BOOTSTRAP_1_bootstrap_A")
+    hs=(1,10,50,100,240);fig,ax=plt.subplots(figsize=(6.5,4));ax.boxplot([a**h for h in hs],tick_labels=hs);ax.set(xlabel="Horizon h",ylabel=r"$A^h$");save(fig,"figure_BOOTSTRAP_2_A_power_h")
     for number,metric,title in ((3,"pointwise_empirical_coverage","Pointwise calibration"),(4,"simultaneous_empirical_coverage","Simultaneous calibration")):
         fig,axes=plt.subplots(1,3,figsize=(11,3.6),sharex=True,sharey=True)
         for ax,category in zip(axes,CATEGORIES):
             for model in ("U0","U3"):
                 rows=[r for r in summary if r["action_category"]==category and r["uncertainty_model"]==model];values=np.asarray([r[metric] for r in rows]);lo=np.asarray([r["pointwise_CI_lower" if number==3 else "simultaneous_CI_lower"] for r in rows]);hi=np.asarray([r["pointwise_CI_upper" if number==3 else "simultaneous_CI_upper"] for r in rows]);ax.errorbar([r["nominal_level"] for r in rows],values,yerr=np.vstack((values-lo,hi-values)),fmt="o-",capsize=2,label=model)
             ax.plot([.45,1],[.45,1],"k--",lw=.8);ax.set_title(category);ax.set_xlabel("Nominal coverage");ax.grid(alpha=.25)
-        axes[0].set_ylabel("Empirical coverage");axes[-1].legend();fig.suptitle(title);save(fig,f"figure_B11_{number}_{'pointwise' if number==3 else 'simultaneous'}_calibration")
+        axes[0].set_ylabel("Empirical coverage");axes[-1].legend();fig.suptitle(title);save(fig,f"figure_BOOTSTRAP_{number}_{'pointwise' if number==3 else 'simultaneous'}_calibration")
     pooled=[r for r in horizon if r["action_category"]=="pooled"];fig,ax=plt.subplots(figsize=(7,4));
     for model in ("U0","U3"):
         rows=[r for r in pooled if r["uncertainty_model"]==model];ax.plot([r["horizon_step"] for r in rows],[r["empirical_95_coverage"] for r in rows],label=model)
-    ax.axhline(.95,color="black",ls="--");ax.set(xlabel="Horizon",ylabel="Empirical 95% coverage");ax.legend();save(fig,"figure_B11_5_horizon_coverage")
-    rows=[r for r in decomp if r["action_category"]=="pooled"];fig,ax=plt.subplots(figsize=(7,4));ax.plot([r["horizon_step"] for r in rows],[r["mean_within_model_variance_k2"] for r in rows],label="within-model");ax.plot([r["horizon_step"] for r in rows],[r["mean_between_model_variance_k2"] for r in rows],label="between-model");ax.plot([r["horizon_step"] for r in rows],[r["mean_total_variance_k2"] for r in rows],label="total");ax.set(xlabel="Horizon",ylabel=r"Variance (K$^2$)");ax.legend();save(fig,"figure_B11_6_variance_decomposition")
+    ax.axhline(.95,color="black",ls="--");ax.set(xlabel="Horizon",ylabel="Empirical 95% coverage");ax.legend();save(fig,"figure_BOOTSTRAP_5_horizon_coverage")
+    rows=[r for r in decomp if r["action_category"]=="pooled"];fig,ax=plt.subplots(figsize=(7,4));ax.plot([r["horizon_step"] for r in rows],[r["mean_within_model_variance_k2"] for r in rows],label="within-model");ax.plot([r["horizon_step"] for r in rows],[r["mean_between_model_variance_k2"] for r in rows],label="between-model");ax.plot([r["horizon_step"] for r in rows],[r["mean_total_variance_k2"] for r in rows],label="total");ax.set(xlabel="Horizon",ylabel=r"Variance (K$^2$)");ax.legend();save(fig,"figure_BOOTSTRAP_6_variance_decomposition")
     pooled=[r for r in summary if r["action_category"]=="pooled"];fig,ax=plt.subplots(figsize=(6.5,4));
     for model in ("U0","U3"):
         rows=[r for r in pooled if r["uncertainty_model"]==model];ax.plot([r["average_predictive_width_k"] for r in rows],[r["pointwise_empirical_coverage"] for r in rows],"o-",label=model)
-    ax.set(xlabel="Average width (K)",ylabel="Pointwise coverage");ax.legend();save(fig,"figure_B11_7_coverage_width")
+    ax.set(xlabel="Average width (K)",ylabel="Pointwise coverage");ax.legend();save(fig,"figure_BOOTSTRAP_7_coverage_width")
     for number,category in enumerate(CATEGORIES,start=8):
         rows=[r for r in episode_rows if r["uncertainty_model"]=="U3" and r["action_category"]==category and np.isclose(r["nominal_level"],.95)];med=np.median([r["rollout_RMSE_k"] for r in rows]);chosen=min(rows,key=lambda r:abs(r["rollout_RMSE_k"]-med));eid=chosen["episode_id"]
         with np.load(output/"predictions"/f"{eid}.npz") as pred,np.load(output/"revealed_final_truth"/f"{eid}.npz") as truth:mean=np.asarray(pred["U3_predictive_mean_temperature_k"]);lo=np.asarray(pred["U3_pointwise_95_lower_k"]);hi=np.asarray(pred["U3_pointwise_95_upper_k"]);nom=np.asarray(pred["nominal_temperature_k"]);actual=np.asarray(truth["actual_plant_temperature_k"])
-        fig,ax=plt.subplots(figsize=(7,4));h=np.arange(1,HORIZON+1);ax.fill_between(h,lo,hi,alpha=.25,label="U3 95% pointwise");ax.plot(h,nom,"--",label="nominal DT");ax.plot(h,mean,label="U3 mean");ax.plot(h,actual,color="black",label="revealed plant");ax.set(xlabel="Horizon",ylabel="Temperature (K)",title=f"{category}: {eid}");ax.legend();save(fig,f"figure_B11_{number}_{category}_rollout")
-    rows=[r for r in sensitivity if r["experiment_type"]=="ensemble_size"];fig,ax=plt.subplots(figsize=(6.5,4));ax.plot([r["ensemble_size_J"] for r in rows],[r["pointwise_95_coverage"] for r in rows],"o-",label="pointwise");ax.plot([r["ensemble_size_J"] for r in rows],[r["simultaneous_95_coverage"] for r in rows],"s-",label="simultaneous");ax.axhline(.95,color="black",ls="--");ax.set(xlabel="Ensemble size J",ylabel="95% coverage");ax.legend();save(fig,"figure_B11_11_calibration_vs_J")
-    fig,ax=plt.subplots(figsize=(6.5,4));ax.plot([r["ensemble_size_J"] for r in rows],[r["median_online_latency_seconds"] for r in rows],"o-");ax.set(xlabel="Ensemble size J",ylabel="Median online latency (s)");save(fig,"figure_B11_12_latency_vs_J")
+        fig,ax=plt.subplots(figsize=(7,4));h=np.arange(1,HORIZON+1);ax.fill_between(h,lo,hi,alpha=.25,label="U3 95% pointwise");ax.plot(h,nom,"--",label="nominal DT");ax.plot(h,mean,label="U3 mean");ax.plot(h,actual,color="black",label="revealed plant");ax.set(xlabel="Horizon",ylabel="Temperature (K)",title=f"{category}: {eid}");ax.legend();save(fig,f"figure_BOOTSTRAP_{number}_{category}_rollout")
+    rows=[r for r in sensitivity if r["experiment_type"]=="ensemble_size"];fig,ax=plt.subplots(figsize=(6.5,4));ax.plot([r["ensemble_size_J"] for r in rows],[r["pointwise_95_coverage"] for r in rows],"o-",label="pointwise");ax.plot([r["ensemble_size_J"] for r in rows],[r["simultaneous_95_coverage"] for r in rows],"s-",label="simultaneous");ax.axhline(.95,color="black",ls="--");ax.set(xlabel="Ensemble size J",ylabel="95% coverage");ax.legend();save(fig,"figure_BOOTSTRAP_11_calibration_vs_J")
+    fig,ax=plt.subplots(figsize=(6.5,4));ax.plot([r["ensemble_size_J"] for r in rows],[r["median_online_latency_seconds"] for r in rows],"o-");ax.set(xlabel="Ensemble size J",ylabel="Median online latency (s)");save(fig,"figure_BOOTSTRAP_12_latency_vs_J")
 
 
 def create_reports(output:Path,manifest,param_summary,sensitivity,summary,comparison,horizon,decomp,runtime,selected_j,decision_name,metrics)->None:
-    pooled={r["uncertainty_model"]:r for r in comparison if r["action_category"]=="pooled"};u0=pooled["U0"];u3=pooled["U3"];d1=next(r for r in decomp if r["action_category"]=="pooled" and r["horizon_step"]==1);d240=next(r for r in decomp if r["action_category"]=="pooled" and r["horizon_step"]==240);h1={r["uncertainty_model"]:r for r in horizon if r["action_category"]=="pooled" and r["horizon_step"]==1};h240={r["uncertainty_model"]:r for r in horizon if r["action_category"]=="pooled" and r["horizon_step"]==240};online=next(r for r in runtime if r["runtime_type"]=="final_online" and r["uncertainty_model"]=="U3" and r["action_category"]=="pooled");failed=sum(str(r["fit_success"]).lower()!="true" for r in manifest)
-    readme=f"""# Milestone B.11 — parameter-uncertainty propagation
+    pooled={r["uncertainty_model"]:r for r in comparison if r["action_category"]=="pooled"};u0=pooled["U0"];u3=pooled["U3"];two_tank_setup=next(r for r in decomp if r["action_category"]=="pooled" and r["horizon_step"]==1);d240=next(r for r in decomp if r["action_category"]=="pooled" and r["horizon_step"]==240);h1={r["uncertainty_model"]:r for r in horizon if r["action_category"]=="pooled" and r["horizon_step"]==1};h240={r["uncertainty_model"]:r for r in horizon if r["action_category"]=="pooled" and r["horizon_step"]==240};online=next(r for r in runtime if r["runtime_type"]=="final_online" and r["uncertainty_model"]=="U3" and r["action_category"]=="pooled");failed=sum(str(r["fit_success"]).lower()!="true" for r in manifest)
+    readme=f"""# bootstrap ensemble — parameter-uncertainty propagation
 
 ## Result
 
 **{decision_name}**
 
-Fifty converged, stable bootstrap models were obtained from complete-episode resamples of the original 600-episode offline training population. {failed} attempted fits failed the predeclared convergence/stability rule and were recorded. No calibration, selection, B.10 test, or B.11 outcome entered bootstrap fitting. Calibration used 60 newly generated episodes; after J={selected_j} and M=2000 were frozen, final evaluation used another 240 new episodes with distinct seeds and prediction-before-reveal snapshots.
+Fifty converged, stable bootstrap models were obtained from complete-episode resamples of the original 600-episode offline training population. {failed} attempted fits failed the predeclared convergence/stability rule and were recorded. No calibration, selection, discrepancy freeze test, or bootstrap ensemble outcome entered bootstrap fitting. Calibration used 60 newly generated episodes; after J={selected_j} and M=2000 were frozen, final evaluation used another 240 new episodes with distinct seeds and prediction-before-reveal snapshots.
 
 U0 pooled pointwise/simultaneous MACE are {u0['pointwise_MACE']:.3f}/{u0['simultaneous_MACE']:.3f}; U3 values are {u3['pointwise_MACE']:.3f}/{u3['simultaneous_MACE']:.3f}. U3 changes 95% coverage by {metrics['pointwise_95_gain']:+.3f} pointwise and {metrics['simultaneous_95_gain']:+.3f} simultaneous. Its width ratio is {metrics['width_ratio']:.2f}, while its mean-RMSE ratio is {metrics['RMSE_ratio']:.3f}. Extremely broad bands do not qualify as success under the frozen rule.
 
 ## Scientific questions
 
 1. Missing uncertainty explained: MACE reductions are {metrics['pointwise_MACE_reduction']:.1%} pointwise and {metrics['simultaneous_MACE_reduction']:.1%} simultaneous.
-2. Between-model variance changes from {d1['mean_between_model_variance_k2']:.4f} K² at h=1 to {d240['mean_between_model_variance_k2']:.4f} K² at h=240; its final share is {d240['between_variance_fraction']:.1%}.
+2. Between-model variance changes from {two_tank_setup['mean_between_model_variance_k2']:.4f} K² at h=1 to {d240['mean_between_model_variance_k2']:.4f} K² at h=240; its final share is {d240['between_variance_fraction']:.1%}.
 3. Late-horizon 95% coverage changes from {h240['U0']['empirical_95_coverage']:.3f} to {h240['U3']['empirical_95_coverage']:.3f}, versus h=1 values {h1['U0']['empirical_95_coverage']:.3f}/{h1['U3']['empirical_95_coverage']:.3f}.
 4. Central prediction: U0/U3 median recursive RMSE is {u0['median_rollout_RMSE_k']:.3f}/{u3['median_rollout_RMSE_k']:.3f} K; U3 MAE and horizon bias are reported in the episode and horizon tables.
 5. Operational ensemble: J={selected_j}, the smallest calibration-equivalent size under the frozen J50 comparison rule.
 6. Runtime: U3 median total latency is {online['median_total_seconds']:.4f} s; offline bootstrap fitting is separately reported and is not an online cost.
 7. Safety-probability readiness: {'yes, subject to later decision-level validation' if decision_name=='PARAMETER UNCERTAINTY SUFFICIENT' else 'no; the remaining calibration limitation must be resolved or explicitly bounded first'}.
 
-The parameter family, preprocessing, N=50 filter, latent dimension, and conditional mean formulation are unchanged from B.10. U3 adds only whole-episode-bootstrap parameter uncertainty.
+The parameter family, preprocessing, N=50 filter, latent dimension, and conditional mean formulation are unchanged from discrepancy freeze. U3 adds only whole-episode-bootstrap parameter uncertainty.
 """
-    (output/"README.md").write_text(readme,encoding="utf-8");(output/"GO_NO_GO.md").write_text(f"# Milestone B.11 go/no-go\n\n**{decision_name}**\n\nPointwise/simultaneous MACE reductions: {metrics['pointwise_MACE_reduction']:.1%}/{metrics['simultaneous_MACE_reduction']:.1%}. U3 95% coverage: {metrics['U3_pointwise_95']:.3f}/{metrics['U3_simultaneous_95']:.3f}. Width and RMSE ratios: {metrics['width_ratio']:.2f}/{metrics['RMSE_ratio']:.3f}.\n",encoding="utf-8")
+    (output/"README.md").write_text(readme,encoding="utf-8");(output/"decision_summary.md").write_text(f"# bootstrap ensemble decision\n\n**{decision_name}**\n\nPointwise/simultaneous MACE reductions: {metrics['pointwise_MACE_reduction']:.1%}/{metrics['simultaneous_MACE_reduction']:.1%}. U3 95% coverage: {metrics['U3_pointwise_95']:.3f}/{metrics['U3_simultaneous_95']:.3f}. Width and RMSE ratios: {metrics['width_ratio']:.2f}/{metrics['RMSE_ratio']:.3f}.\n",encoding="utf-8")
 
 
-def run(config:MilestoneB11Config)->str:
-    config.validate();output=Path(config.output_dir);output.mkdir(parents=True,exist_ok=True);b9dir=Path(config.b9_dir);b10dir=Path(config.b10_dir);fixed=b10._parameter_from_payload(json.loads((b10dir/"frozen_latent_model.json").read_text(encoding="utf-8"))["parameters"])
-    models,manifest=fit_bootstrap_ensemble(b9dir/"training_population.npz",config.bootstrap_target,config.bootstrap_max_attempts,config.workers);_write_csv(output/"bootstrap_model_manifest.csv",manifest);params=parameter_summary(models);_write_csv(output/"bootstrap_parameter_summary.csv",params);(output/"bootstrap_models.json").write_text(json.dumps([b10._parameter_payload(p) for p in models],indent=2),encoding="utf-8")
-    b5cfg=b5.MilestoneB5Config();template=b5.build_template(b5cfg);cal_n=config.limit_episodes or config.calibration_per_category;final_n=config.limit_episodes or config.final_per_category
-    calibration,cal_manifest=b10.generate_new_test_inputs(b5cfg,template,output,cal_n,830_000,"b11_calibration","revealed_calibration_truth");_write_csv(output/"calibration_population_manifest.csv",cal_manifest)
+def run(config:BootstrapEnsembleConfig)->str:
+    config.validate();output=Path(config.output_dir);output.mkdir(parents=True,exist_ok=True);b9dir=Path(config.fit_dir);b10dir=Path(config.freeze_dir);fixed=discrepancy_freeze._parameter_from_payload(json.loads((b10dir/"frozen_latent_model.json").read_text(encoding="utf-8"))["parameters"])
+    models,manifest=fit_bootstrap_ensemble(b9dir/"training_population.npz",config.bootstrap_target,config.bootstrap_max_attempts,config.workers);_write_csv(output/"bootstrap_model_manifest.csv",manifest);params=parameter_summary(models);_write_csv(output/"bootstrap_parameter_summary.csv",params);(output/"bootstrap_models.json").write_text(json.dumps([discrepancy_freeze._parameter_payload(p) for p in models],indent=2),encoding="utf-8")
+    b5cfg=episode_design.EpisodeDesignConfig();template=episode_design.build_template(b5cfg);cal_n=config.limit_episodes or config.calibration_per_category;final_n=config.limit_episodes or config.final_per_category
+    calibration,cal_manifest=discrepancy_freeze.generate_new_test_inputs(b5cfg,template,output,cal_n,830_000,"cstr_bootstrap_calibration","revealed_calibration_truth");_write_csv(output/"calibration_population_manifest.csv",cal_manifest)
     sensitivity=[]
     for j in J_VALUES:
         rows=[];times=[]
@@ -255,12 +255,12 @@ def run(config:MilestoneB11Config)->str:
             result,_,runtime=evaluate_episode(fixed,models,item,selected_j,m,output/"calibration_predictions"/f"M{m}",False);rows.extend(result);times.append(runtime)
         sensitivity.append(sensitivity_row(rows,times,"monte_carlo_budget",selected_j,m))
     _write_csv(output/"ensemble_size_sensitivity.csv",sensitivity)
-    final,final_manifest=b10.generate_new_test_inputs(b5cfg,template,output,final_n,930_000,"b11_final","revealed_final_truth");_write_csv(output/"final_population_manifest.csv",final_manifest)
+    final,final_manifest=discrepancy_freeze.generate_new_test_inputs(b5cfg,template,output,final_n,930_000,"cstr_bootstrap_test","revealed_final_truth");_write_csv(output/"final_population_manifest.csv",final_manifest)
     episode_rows=[];horizon_rows=[];runtime_rows=[]
     for index,item in enumerate(final):
         rows,hrows,runtime=evaluate_episode(fixed,models,item,selected_j,config.total_trajectories,output/"predictions",True);episode_rows.extend(rows);horizon_rows.extend(hrows);runtime_rows.append(runtime)
-        if (index+1)%40==0:print(f"completed {index+1}/{len(final)} B.11 final episodes",flush=True)
-    summary,comparison=b10.summarize_calibration(episode_rows,config.bootstrap_samples);horizon_summary,decomp=summarize_horizon(horizon_rows);decision_name,metrics=decision(summary,comparison)
+        if (index+1)%40==0:print(f"completed {index+1}/{len(final)} bootstrap ensemble final episodes",flush=True)
+    summary,comparison=discrepancy_freeze.summarize_calibration(episode_rows,config.bootstrap_samples);horizon_summary,decomp=summarize_horizon(horizon_rows);decision_name,metrics=decision(summary,comparison)
     runtime=[]
     runtime.append({"runtime_type":"offline_bootstrap_fit","uncertainty_model":"U3","action_category":"pooled","ensemble_size_J":50,"number_of_episodes":600,"median_filtering_seconds":"","median_trajectory_seconds":"","median_total_seconds":float(np.sum([float(r["fit_seconds"]) for r in manifest if r["fit_seconds"]!=""]))})
     for model in ("U0","U3"):
@@ -273,8 +273,8 @@ def run(config:MilestoneB11Config)->str:
 
 
 def parser()->argparse.ArgumentParser:
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument("--b9-dir",default="artifacts/cstr/discrepancy_fit");p.add_argument("--b10-dir",default="artifacts/cstr/discrepancy_freeze");p.add_argument("--output-dir",default="artifacts/cstr/bootstrap_ensemble");p.add_argument("--workers",type=int,default=min(5,os.cpu_count() or 1));p.add_argument("--limit-episodes",type=int);p.add_argument("--total-trajectories",type=int,default=2000);p.add_argument("--bootstrap-samples",type=int,default=2000);return p
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument("--fit-dir",default="artifacts/cstr/discrepancy_fit");p.add_argument("--freeze-dir",default="artifacts/cstr/discrepancy_freeze");p.add_argument("--output-dir",default="artifacts/cstr/bootstrap_ensemble");p.add_argument("--workers",type=int,default=min(5,os.cpu_count() or 1));p.add_argument("--limit-episodes",type=int);p.add_argument("--total-trajectories",type=int,default=2000);p.add_argument("--bootstrap-samples",type=int,default=2000);return p
 
 
 if __name__=="__main__":
-    result=run(MilestoneB11Config(**vars(parser().parse_args())));print(f"Milestone B.11 complete: {result}")
+    result=run(BootstrapEnsembleConfig(**vars(parser().parse_args())));print(f"bootstrap ensemble complete: {result}")

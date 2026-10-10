@@ -1,9 +1,9 @@
-"""Milestone B.6: diagnose recursive instability in the frozen M4 model.
+"""Compare recursive and teacher-forced forecasts for the CSTR discrepancy model.
 
-The experiment reconstructs the existing B.5A episodes from their recorded
-seeds, fits the unchanged frozen model to the same 50 rows, and evaluates the
-same posterior draws under teacher forcing and free-running recursion.  It does
-not introduce features, alter priors, recalibrate, or fit a replacement model.
+Rebuild observed histories from recorded seeds and fit the model to those rows.
+Both forecast modes use the same model and posterior draws.
+The results show how recursive prediction affects trajectory error.
+Each comparison uses the same observed episode histories.
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ from twinguard.cstr.episode_design import (
     COVERAGE_LEVELS,
     FROZEN_FEATURES,
     TRAINING_ACTIONS_LPS,
-    MilestoneB5Config,
+    EpisodeDesignConfig,
     _configure_episode_models,
     _feature_matrix,
     _paired_observation,
@@ -68,7 +68,7 @@ STABILITY_FIELDS = (
 
 
 @dataclass(frozen=True)
-class MilestoneB6Config:
+class RecursiveDiagnosticsConfig:
     source_dir: str = "artifacts/cstr/episode_design"
     output_dir: str = "artifacts/cstr/recursive_rollout_diagnostics"
     workers: int = 8
@@ -85,7 +85,7 @@ class MilestoneB6Config:
 
 
 _WORKER_TEMPLATE = None
-_WORKER_B5_CONFIG: MilestoneB5Config | None = None
+_WORKER_EPISODE_DESIGN_CONFIG: EpisodeDesignConfig | None = None
 _WORKER_SOURCE: Path | None = None
 _WORKER_OUTPUT: Path | None = None
 _WORKER_EXPLOSION_THRESHOLD = EXPLOSION_THRESHOLD_K
@@ -93,15 +93,15 @@ _WORKER_EXPLOSION_THRESHOLD = EXPLOSION_THRESHOLD_K
 
 def _init_worker(
     template: object,
-    b5_config: MilestoneB5Config,
+    episode_design_config: EpisodeDesignConfig,
     source_dir: str,
     output_dir: str,
     explosion_threshold: float,
 ) -> None:
-    global _WORKER_TEMPLATE, _WORKER_B5_CONFIG, _WORKER_SOURCE, _WORKER_OUTPUT
+    global _WORKER_TEMPLATE, _WORKER_EPISODE_DESIGN_CONFIG, _WORKER_SOURCE, _WORKER_OUTPUT
     global _WORKER_EXPLOSION_THRESHOLD
     _WORKER_TEMPLATE = template
-    _WORKER_B5_CONFIG = b5_config
+    _WORKER_EPISODE_DESIGN_CONFIG = episode_design_config
     _WORKER_SOURCE = Path(source_dir)
     _WORKER_OUTPUT = Path(output_dir)
     _WORKER_EXPLOSION_THRESHOLD = float(explosion_threshold)
@@ -115,11 +115,11 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def load_b5_episodes(path: Path) -> list[dict[str, str]]:
+def load_episode_design_episodes(path: Path) -> list[dict[str, str]]:
     with path.open(newline="", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
     if not rows:
-        raise ValueError(f"no B.5 episodes found in {path}")
+        raise ValueError(f"no episode design episodes found in {path}")
     required = {
         "episode_id",
         "random_seed",
@@ -131,9 +131,9 @@ def load_b5_episodes(path: Path) -> list[dict[str, str]]:
     }
     missing = required.difference(rows[0])
     if missing:
-        raise ValueError(f"B.5 episode table is missing: {sorted(missing)}")
+        raise ValueError(f"episode design episode table is missing: {sorted(missing)}")
     if len({row["episode_id"] for row in rows}) != len(rows):
-        raise ValueError("B.5 episode identifiers are not unique")
+        raise ValueError("episode design episode identifiers are not unique")
     return sorted(rows, key=lambda row: row["episode_id"])
 
 
@@ -242,9 +242,9 @@ def _reconstruct_posterior(
     float,
     float,
 ]:
-    if _WORKER_TEMPLATE is None or _WORKER_B5_CONFIG is None:
-        raise RuntimeError("B.6 worker is not initialized")
-    config = _WORKER_B5_CONFIG
+    if _WORKER_TEMPLATE is None or _WORKER_EPISODE_DESIGN_CONFIG is None:
+        raise RuntimeError("recursive diagnostics worker is not initialized")
+    config = _WORKER_EPISODE_DESIGN_CONFIG
     seed = int(float(source_row["random_seed"]))
     rng = np.random.default_rng(seed)
     measurement_rng = np.random.default_rng(seed + 1_000_000)
@@ -257,12 +257,12 @@ def _reconstruct_posterior(
         _WORKER_TEMPLATE, config, rng, fault_onset, fault_magnitude
     )
     if not np.isclose(fault_onset, float(source_row["hidden_fault_onset_s"])):
-        raise RuntimeError("reconstructed fault onset differs from B.5")
+        raise RuntimeError("reconstructed fault onset differs from episode design")
     if not np.isclose(fault_magnitude, float(source_row["hidden_fault_magnitude"])):
-        raise RuntimeError("reconstructed fault magnitude differs from B.5")
+        raise RuntimeError("reconstructed fault magnitude differs from episode design")
     for key, value in metadata.items():
         if key in source_row and not np.isclose(value, float(source_row[key])):
-            raise RuntimeError(f"reconstructed {key} differs from B.5")
+            raise RuntimeError(f"reconstructed {key} differs from episode design")
 
     pre_fault = [
         _paired_observation(
@@ -300,7 +300,7 @@ def _reconstruct_posterior(
     posterior = model.fit(features, targets)
     proposed_action = _select_action_after_fit(source_row["action_category"], action_rng)
     if not np.isclose(proposed_action, float(source_row["proposed_action"])):
-        raise RuntimeError("reconstructed held-out action differs from B.5")
+        raise RuntimeError("reconstructed held-out action differs from episode design")
     current_residual = float(learning_rows[-1]["temperature_residual_k"])
     previous_residual = float(learning_rows[-2]["temperature_residual_k"])
     current_delta = current_residual - previous_residual
@@ -423,8 +423,8 @@ def _save_representative_candidates(
 
 
 def _episode_task(source_row: dict[str, str]) -> dict[str, object]:
-    if _WORKER_B5_CONFIG is None or _WORKER_SOURCE is None or _WORKER_OUTPUT is None:
-        raise RuntimeError("B.6 worker is not initialized")
+    if _WORKER_EPISODE_DESIGN_CONFIG is None or _WORKER_SOURCE is None or _WORKER_OUTPUT is None:
+        raise RuntimeError("recursive diagnostics worker is not initialized")
     episode_id = source_row["episode_id"]
     category = source_row["action_category"]
     seed = int(float(source_row["random_seed"]))
@@ -451,8 +451,8 @@ def _episode_task(source_row: dict[str, str]) -> dict[str, object]:
         time_s = np.asarray(evaluation["time_s"], dtype=float)
     if not np.allclose(actions, proposed_action):
         raise RuntimeError("saved future action differs from reconstructed action")
-    if actual_temperature.size != _WORKER_B5_CONFIG.horizon_steps:
-        raise RuntimeError("saved B.5 horizon differs from frozen configuration")
+    if actual_temperature.size != _WORKER_EPISODE_DESIGN_CONFIG.horizon_steps:
+        raise RuntimeError("saved episode design horizon differs from frozen configuration")
 
     teacher_features, _true_delta = true_future_feature_matrix(
         actual_residual,
@@ -469,7 +469,7 @@ def _episode_task(source_row: dict[str, str]) -> dict[str, object]:
 
     rng = np.random.default_rng(seed + 3_000_000)
     standardized_coefficients, noise_variances = model.sample_posterior(
-        posterior, _WORKER_B5_CONFIG.rollout_samples, rng
+        posterior, _WORKER_EPISODE_DESIGN_CONFIG.rollout_samples, rng
     )
     raw_coefficients = standardized_to_raw_coefficients(
         posterior, standardized_coefficients
@@ -525,7 +525,7 @@ def _episode_task(source_row: dict[str, str]) -> dict[str, object]:
     nonfinite_count = int(np.size(free_residual) - np.count_nonzero(np.isfinite(free_residual)))
     if nonfinite_count:
         raise RuntimeError(
-            f"{episode_id} produced {nonfinite_count} non-finite values; cannot reproduce B.5"
+            f"{episode_id} produced {nonfinite_count} non-finite values; cannot reproduce episode design"
         )
 
     free_temperature = nominal[None, :] + free_residual
@@ -536,7 +536,7 @@ def _episode_task(source_row: dict[str, str]) -> dict[str, object]:
     reproduction_error = float(np.max(np.abs(saved_mean - free_mean_temperature)))
     if not np.allclose(saved_mean, free_mean_temperature, rtol=1.0e-12, atol=1.0e-8):
         raise RuntimeError(
-            f"free-running reconstruction does not reproduce B.5 ({reproduction_error:g} K)"
+            f"free-running reconstruction does not reproduce episode design ({reproduction_error:g} K)"
         )
 
     free_errors = free_mean_temperature - actual_temperature
@@ -577,7 +577,7 @@ def _episode_task(source_row: dict[str, str]) -> dict[str, object]:
         "free_running_posterior_median_RMSE_k": float(
             np.sqrt(np.mean(np.square(free_median - actual_temperature)))
         ),
-        "saved_B5_one_step_RMSE_k": float(source_row["one_step_RMSE"]),
+        "saved_EPISODE_DESIGN_one_step_RMSE_k": float(source_row["one_step_RMSE"]),
         "teacher_minus_saved_one_step_RMSE_k": float(
             np.sqrt(np.mean(np.square(teacher_errors)))
             - float(source_row["one_step_RMSE"])
@@ -939,7 +939,7 @@ def create_figures(
     axes[0].legend(frameon=False, ncol=2)
     fig.suptitle("Teacher-forced versus free-running error growth")
     fig.tight_layout()
-    _save_figure(fig, figure_dir, "figure_B6_1_teacher_vs_free_RMSE")
+    _save_figure(fig, figure_dir, "figure_RECURSIVE_1_teacher_vs_free_RMSE")
 
     category_data = {
         category: np.vstack(
@@ -967,13 +967,13 @@ def create_figures(
     ax.set_title("Posterior dynamical stability (0.1% tails clipped)")
     ax.grid(True, which="both")
     ax.legend(frameon=False)
-    _save_figure(fig, figure_dir, "figure_B6_2_spectral_radius_distribution")
+    _save_figure(fig, figure_dir, "figure_RECURSIVE_2_spectral_radius_distribution")
 
     sample = _downsample(all_data)
     stable = sample[:, 0] < 1.0
     for y_index, ylabel, stem in (
-        (1, "Maximum absolute residual [K]", "figure_B6_3_spectral_vs_max_residual"),
-        (2, "Posterior-sample rollout RMSE [K]", "figure_B6_4_spectral_vs_RMSE"),
+        (1, "Maximum absolute residual [K]", "figure_RECURSIVE_3_spectral_vs_max_residual"),
+        (2, "Posterior-sample rollout RMSE [K]", "figure_RECURSIVE_4_spectral_vs_RMSE"),
     ):
         fig, ax = plt.subplots(figsize=(5.8, 4.3))
         ax.scatter(sample[stable, 0], sample[stable, y_index], s=6, alpha=0.16, color="#0072B2", label="stable sample")
@@ -995,8 +995,8 @@ def create_figures(
         for candidate in result["representative_candidates"]
     ]
     for regime, stem, title in (
-        ("stable", "figure_B6_5_representative_stable_rollout", "Representative stable posterior rollout"),
-        ("unstable", "figure_B6_6_representative_unstable_rollout", "Representative unstable posterior rollout"),
+        ("stable", "figure_RECURSIVE_5_representative_stable_rollout", "Representative stable posterior rollout"),
+        ("unstable", "figure_RECURSIVE_6_representative_unstable_rollout", "Representative unstable posterior rollout"),
     ):
         selected_candidates = [c for c in candidates if c["regime"] == regime]
         if not selected_candidates:
@@ -1044,7 +1044,7 @@ def create_figures(
     axes[0].legend(frameon=False)
     fig.suptitle("Posterior distributions of recursive coefficients")
     fig.tight_layout()
-    _save_figure(fig, figure_dir, "figure_B6_7_recursive_coefficient_distributions")
+    _save_figure(fig, figure_dir, "figure_RECURSIVE_7_recursive_coefficient_distributions")
 
 
 def _median(rows: Sequence[dict[str, object]], key: str) -> float:
@@ -1115,9 +1115,9 @@ def create_readme(
     episode_unstable_rmse_rho = float(
         spearmanr(episode_unstable_probability, episode_rmse).statistic
     )
-    report = f"""# Milestone B.6 — Recursive-instability diagnosis
+    report = f"""# recursive diagnostics — Recursive-instability diagnosis
 
-This experiment reconstructs the frozen B.5A M4 model and all {len(episode_summaries)} held-out episodes from the saved seeds. The source `calibration_episodes.csv` SHA-256 is `{source_hash}`. Features, priors, training count, posterior sampling, innovations, actions, and 240-step horizon are unchanged. Each reconstructed free-running posterior mean is checked against its saved B.5 prediction before evaluation.
+This experiment reconstructs the frozen episode design M4 model and all {len(episode_summaries)} held-out episodes from the saved seeds. The source `calibration_episodes.csv` SHA-256 is `{source_hash}`. Features, priors, training count, posterior sampling, innovations, actions, and 240-step horizon are unchanged. Each reconstructed free-running posterior mean is checked against its saved episode design prediction before evaluation.
 
 ## Final classification
 
@@ -1177,14 +1177,14 @@ Raw units are poorly conditioned, but the frozen implementation fits in training
 - `episode_stability_summary.csv`: per-episode stability, teacher-forced/free-running RMSE, and coverage.
 - `horizon_error_summary.csv`: category-stratified horizon error and pointwise coverage.
 - `numerical_conditioning_summary.csv`: feature scaling, conditioning, covariance, collinearity, and coefficient summaries.
-- `figures/figure_B6_1_...` through `figure_B6_7_...`: PNG and PDF figures.
+- `figures/figure_RECURSIVE_1_...` through `figure_RECURSIVE_7_...`: PNG and PDF figures.
 
 No replacement model, new feature, conformal method, or recalibration is implemented here.
 """
     (output_dir / "README.md").write_text(report, encoding="utf-8")
 
 
-def run_diagnostics(config: MilestoneB6Config) -> list[dict[str, object]]:
+def run_diagnostics(config: RecursiveDiagnosticsConfig) -> list[dict[str, object]]:
     config.validate()
     source_dir = Path(config.source_dir)
     output_dir = Path(config.output_dir)
@@ -1196,7 +1196,7 @@ def run_diagnostics(config: MilestoneB6Config) -> list[dict[str, object]]:
 
     source_episode_path = source_dir / "calibration_episodes.csv"
     source_hash = _sha256(source_episode_path)
-    source_rows = load_b5_episodes(source_episode_path)
+    source_rows = load_episode_design_episodes(source_episode_path)
     if config.limit_episodes is not None:
         grouped = {
             category: [
@@ -1221,7 +1221,7 @@ def run_diagnostics(config: MilestoneB6Config) -> list[dict[str, object]]:
     frozen = json.loads((source_dir / "frozen_model_config.json").read_text(encoding="utf-8"))
     if tuple(frozen["feature_order_without_intercept"]) != tuple(FROZEN_FEATURES):
         raise RuntimeError("saved frozen feature order differs from implementation")
-    b5_config = MilestoneB5Config(
+    episode_design_config = EpisodeDesignConfig(
         episodes_per_category=100,
         n_postfault=int(frozen["calibration_experiment_N_postfault"]),
         rollout_samples=int(frozen["calibration_experiment_M"]),
@@ -1229,8 +1229,8 @@ def run_diagnostics(config: MilestoneB6Config) -> list[dict[str, object]]:
         dt_s=float(frozen["dt_s"]),
         output_dir=str(source_dir),
     )
-    b5_config.validate()
-    template = build_template(b5_config)
+    episode_design_config.validate()
+    template = build_template(episode_design_config)
     results: list[dict[str, object]] = []
     try:
         with ProcessPoolExecutor(
@@ -1238,7 +1238,7 @@ def run_diagnostics(config: MilestoneB6Config) -> list[dict[str, object]]:
             initializer=_init_worker,
             initargs=(
                 template,
-                b5_config,
+                episode_design_config,
                 str(source_dir),
                 str(output_dir),
                 config.explosion_threshold_k,
@@ -1248,14 +1248,14 @@ def run_diagnostics(config: MilestoneB6Config) -> list[dict[str, object]]:
             for completed, future in enumerate(as_completed(futures), 1):
                 results.append(future.result())
                 if completed % 25 == 0 or completed == len(source_rows):
-                    print(f"completed {completed}/{len(source_rows)} B.6 episodes", flush=True)
+                    print(f"completed {completed}/{len(source_rows)} recursive diagnostics episodes", flush=True)
     except (OSError, RuntimeError) as exc:
         if results:
             raise
         print(f"process pool unavailable ({exc}); using sequential fallback", flush=True)
         _init_worker(
             template,
-            b5_config,
+            episode_design_config,
             str(source_dir),
             str(output_dir),
             config.explosion_threshold_k,
@@ -1282,11 +1282,11 @@ def run_diagnostics(config: MilestoneB6Config) -> list[dict[str, object]]:
         case,
     )
     metadata = {
-        "milestone": "B.6",
+        "stage": "recursive diagnostics",
         "source_episode_csv": str(source_episode_path),
         "source_episode_csv_sha256": source_hash,
         "episode_count": len(source_rows),
-        "posterior_samples_per_episode": b5_config.rollout_samples,
+        "posterior_samples_per_episode": episode_design_config.rollout_samples,
         "feature_order": FROZEN_FEATURES,
         "transition_matrix": "[[1+beta_r_t, beta_delta_r_t], [beta_r_t, beta_delta_r_t]]",
         "explosion_threshold_k": config.explosion_threshold_k,
@@ -1297,7 +1297,7 @@ def run_diagnostics(config: MilestoneB6Config) -> list[dict[str, object]]:
         json.dumps(metadata, indent=2), encoding="utf-8"
     )
     if _sha256(source_episode_path) != source_hash:
-        raise RuntimeError("B.5 source episode file changed during B.6")
+        raise RuntimeError("episode design source episode file changed during recursive diagnostics")
 
     for result in results:
         Path(str(result["part_path"])).unlink(missing_ok=True)
@@ -1309,7 +1309,7 @@ def run_diagnostics(config: MilestoneB6Config) -> list[dict[str, object]]:
     return results
 
 
-def aggregate_existing_diagnostics(config: MilestoneB6Config) -> list[dict[str, object]]:
+def aggregate_existing_diagnostics(config: RecursiveDiagnosticsConfig) -> list[dict[str, object]]:
     """Finish figures/report from completed per-episode and per-draw artifacts."""
     config.validate()
     source_dir = Path(config.source_dir)
@@ -1351,13 +1351,13 @@ def aggregate_existing_diagnostics(config: MilestoneB6Config) -> list[dict[str, 
         )
     case = classify_case(episode_summaries)
     expected_figure_stems = (
-        "figure_B6_1_teacher_vs_free_RMSE",
-        "figure_B6_2_spectral_radius_distribution",
-        "figure_B6_3_spectral_vs_max_residual",
-        "figure_B6_4_spectral_vs_RMSE",
-        "figure_B6_5_representative_stable_rollout",
-        "figure_B6_6_representative_unstable_rollout",
-        "figure_B6_7_recursive_coefficient_distributions",
+        "figure_RECURSIVE_1_teacher_vs_free_RMSE",
+        "figure_RECURSIVE_2_spectral_radius_distribution",
+        "figure_RECURSIVE_3_spectral_vs_max_residual",
+        "figure_RECURSIVE_4_spectral_vs_RMSE",
+        "figure_RECURSIVE_5_representative_stable_rollout",
+        "figure_RECURSIVE_6_representative_unstable_rollout",
+        "figure_RECURSIVE_7_recursive_coefficient_distributions",
     )
     if candidates:
         create_figures(results, horizon_rows, figure_dir)
@@ -1384,7 +1384,7 @@ def aggregate_existing_diagnostics(config: MilestoneB6Config) -> list[dict[str, 
         (source_dir / "frozen_model_config.json").read_text(encoding="utf-8")
     )
     metadata = {
-        "milestone": "B.6",
+        "stage": "recursive diagnostics",
         "source_episode_csv": str(source_episode_path),
         "source_episode_csv_sha256": source_hash,
         "episode_count": len(episode_summaries),
@@ -1422,7 +1422,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--aggregate-only",
         action="store_true",
-        help="finish tables, figures, and report from completed B.6 artifacts",
+        help="finish tables, figures, and report from completed recursive diagnostics artifacts",
     )
     return parser
 
@@ -1430,7 +1430,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parsed = vars(build_argument_parser().parse_args())
     aggregate_only = parsed.pop("aggregate_only")
-    config = MilestoneB6Config(**parsed)
+    config = RecursiveDiagnosticsConfig(**parsed)
     results = (
         aggregate_existing_diagnostics(config)
         if aggregate_only
@@ -1444,7 +1444,7 @@ def main() -> None:
     else:
         episode_count = len(results)
     print(
-        f"Milestone B.6 complete: {config.output_dir} ({episode_count} episodes)"
+        f"recursive diagnostics complete: {config.output_dir} ({episode_count} episodes)"
     )
 
 

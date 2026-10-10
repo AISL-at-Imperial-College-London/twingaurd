@@ -1,4 +1,4 @@
-"""Milestone C1.6B: fault-blind multi-fault CSTR revalidation."""
+"""Evaluate fault-blind CSTR revalidation under multiple degradation mechanisms."""
 
 from __future__ import annotations
 
@@ -20,12 +20,12 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from twinguard.cstr import episode_design as b5
-from twinguard.cstr import freeze_discrepancy_model as b10
-from twinguard.cstr import bootstrap_ensemble as b11
-from twinguard.cstr import conformal_calibration as b12
-from twinguard.cstr import safety_certification as c1
-from twinguard.cstr import feed_temperature_fault as c16a
+from twinguard.cstr import episode_design as episode_design
+from twinguard.cstr import freeze_discrepancy_model as discrepancy_freeze
+from twinguard.cstr import bootstrap_ensemble as bootstrap_ensemble
+from twinguard.cstr import conformal_calibration as trajectory_conformal
+from twinguard.cstr import safety_certification as certification
+from twinguard.cstr import feed_temperature_fault as cstr_fault_check
 from twinguard.plants.cstr import FaultManager
 from twinguard.discrepancy.cstr_state_space import fit_scalar_state_space_em_checkpoints, kalman_filter
 
@@ -58,7 +58,7 @@ class Config:
 
     def validate(self) -> None:
         if self.training_count != 600 or self.final_count < 600:
-            raise ValueError("C1.6B requires 600 training and at least 600 final episodes")
+            raise ValueError("mixed-degradation evaluation requires 600 training and at least 600 final episodes")
         if self.trajectories != 2000 or self.bootstrap_target != 50 or self.ensemble_size != 10:
             raise ValueError("the transferred method freezes M=2000, bootstrap J=50, online J=10")
         if self.training_steps != 120 or self.selection_count < 30 or self.calibration_count < 200:
@@ -87,7 +87,7 @@ def _fault_assignment(index: int) -> tuple[str, str]:
     return fault, severity
 
 
-def _configure_pair(template, config: b5.MilestoneB5Config, seed: int, fault: str, severity_label: str):
+def _configure_pair(template, config: episode_design.EpisodeDesignConfig, seed: int, fault: str, severity_label: str):
     rng = np.random.default_rng(seed)
     onset = float(rng.uniform(config.fault_onset_min_s, config.fault_onset_max_s))
     lo, hi = SEVERITY_RANGES[fault][severity_label]
@@ -100,12 +100,12 @@ def _configure_pair(template, config: b5.MilestoneB5Config, seed: int, fault: st
     temperature_shift = float(rng.normal(0.0, config.temperature_perturbation_sd_k))
     state[0] = max(.1, state[0] + volume_shift); state[1:5] = np.maximum(0, state[1:5] * concentration_scale); state[5] += temperature_shift
     nominal.x = state.copy(); plant.x = state.copy()
-    nominal_cfg = c16a._clean_fault(enable=False)
+    nominal_cfg = cstr_fault_check._clean_fault(enable=False)
     if fault == "ua_fouling":
-        plant_cfg = c16a._clean_fault(fouling_on=True, fouling_t_start=onset, fouling_tau=1.0, fouling_max=severity)
+        plant_cfg = cstr_fault_check._clean_fault(fouling_on=True, fouling_t_start=onset, fouling_tau=1.0, fouling_max=severity)
         units = "fractional UA loss"
     else:
-        plant_cfg = c16a._clean_fault(feed_temp_step_on=True, feed_temp_step_t=onset, feed_temp_step_K=severity)
+        plant_cfg = cstr_fault_check._clean_fault(feed_temp_step_on=True, feed_temp_step_t=onset, feed_temp_step_K=severity)
         units = "K feed-temperature increase"
     nominal.fault_cfg = nominal_cfg; nominal.faults = FaultManager(nominal_cfg, nominal.UA)
     plant.fault_cfg = plant_cfg; plant.faults = FaultManager(plant_cfg, plant.UA)
@@ -114,26 +114,26 @@ def _configure_pair(template, config: b5.MilestoneB5Config, seed: int, fault: st
 
 
 _TEMPLATE = None
-_B5_CONFIG = None
+_EPISODE_DESIGN_CONFIG = None
 
 
 def _init_population_worker(template, config):
-    global _TEMPLATE, _B5_CONFIG
-    _TEMPLATE = template; _B5_CONFIG = config
+    global _TEMPLATE, _EPISODE_DESIGN_CONFIG
+    _TEMPLATE = template; _EPISODE_DESIGN_CONFIG = config
 
 
 def _training_task(task):
     index, seed, steps = task; fault, severity_label = _fault_assignment(index)
-    nominal, plant, metadata = _configure_pair(_TEMPLATE, _B5_CONFIG, seed, fault, severity_label)
+    nominal, plant, metadata = _configure_pair(_TEMPLATE, _EPISODE_DESIGN_CONFIG, seed, fault, severity_label)
     rng = np.random.default_rng(seed); measurement_rng = np.random.default_rng(seed + 1_000_000); previous = 2 / 60
-    for _ in range(_B5_CONFIG.pre_fault_lead_steps): b5._paired_observation(nominal, plant, previous, measurement_rng, _B5_CONFIG.measurement_noise_k)
+    for _ in range(_EPISODE_DESIGN_CONFIG.pre_fault_lead_steps): episode_design._paired_observation(nominal, plant, previous, measurement_rng, _EPISODE_DESIGN_CONFIG.measurement_noise_k)
     residual = np.empty(steps); z = np.empty((steps, 4)); actions = np.empty(steps); remaining = 0; action = previous; changes = 0
     for t in range(steps):
         if remaining <= 0:
             remaining = int(rng.integers(5, 16)); action = float(rng.uniform(.012, .045) if rng.random() < .25 else rng.uniform(.019, .036)); changes += int(t > 0)
-        row = b5._paired_observation(nominal, plant, action, measurement_rng, _B5_CONFIG.measurement_noise_k)
+        row = episode_design._paired_observation(nominal, plant, action, measurement_rng, _EPISODE_DESIGN_CONFIG.measurement_noise_k)
         residual[t] = row["temperature_residual_k"]; actions[t] = action; z[t] = [action, action - previous, row["nominal_twin_temperature_k"], t + 1]; previous = action; remaining -= 1
-    manifest = {"episode_id": f"c16b_training_{index:04d}", "population_role": "training", "random_seed": seed, **metadata, "action_category": "variable_training_sequence", "operational_features": "|".join(FEATURE_NAMES), "fault_metadata_available_to_method": 0, "steps": steps, "action_min_lps": float(np.min(actions)), "action_max_lps": float(np.max(actions)), "action_changes": changes}
+    manifest = {"episode_id": f"cstr_mixed_training_{index:04d}", "population_role": "training", "random_seed": seed, **metadata, "action_category": "variable_training_sequence", "operational_features": "|".join(FEATURE_NAMES), "fault_metadata_available_to_method": 0, "steps": steps, "action_min_lps": float(np.min(actions)), "action_max_lps": float(np.max(actions)), "action_changes": changes}
     return residual, z, manifest
 
 
@@ -149,21 +149,21 @@ def generate_training(config: Config, template, b5config, output: Path):
 def _episode_task(task):
     role, index, seed = task; fault, severity_label = _fault_assignment(index)
     category = CATEGORIES[(index // 6) % 3]
-    nominal, plant, metadata = _configure_pair(_TEMPLATE, _B5_CONFIG, seed, fault, severity_label)
+    nominal, plant, metadata = _configure_pair(_TEMPLATE, _EPISODE_DESIGN_CONFIG, seed, fault, severity_label)
     measurement_rng = np.random.default_rng(seed + 1_000_000); action_rng = np.random.default_rng(seed + 2_000_000); prior = 2 / 60
-    for _ in range(_B5_CONFIG.pre_fault_lead_steps): b5._paired_observation(nominal, plant, prior, measurement_rng, _B5_CONFIG.measurement_noise_k)
+    for _ in range(_EPISODE_DESIGN_CONFIG.pre_fault_lead_steps): episode_design._paired_observation(nominal, plant, prior, measurement_rng, _EPISODE_DESIGN_CONFIG.measurement_noise_k)
     learning = []
-    for t in range(_B5_CONFIG.n_postfault):
-        action = b5.TRAINING_ACTIONS_LPS[(t // _B5_CONFIG.training_action_block_steps) % len(b5.TRAINING_ACTIONS_LPS)]
-        learning.append(b5._paired_observation(nominal, plant, action, measurement_rng, _B5_CONFIG.measurement_noise_k))
-    proposed = b5._select_action_after_fit(category, action_rng); previous = prior; online = []
+    for t in range(_EPISODE_DESIGN_CONFIG.n_postfault):
+        action = episode_design.TRAINING_ACTIONS_LPS[(t // _EPISODE_DESIGN_CONFIG.training_action_block_steps) % len(episode_design.TRAINING_ACTIONS_LPS)]
+        learning.append(episode_design._paired_observation(nominal, plant, action, measurement_rng, _EPISODE_DESIGN_CONFIG.measurement_noise_k))
+    proposed = episode_design._select_action_after_fit(category, action_rng); previous = prior; online = []
     for t, row in enumerate(learning):
         action = float(row["action_lps"]); online.append([action, action - previous, row["nominal_twin_temperature_k"], t + 1]); previous = action
     nominal_branch = copy.deepcopy(nominal); nominal_future = []; future = []
     for h in range(HORIZON):
         out = nominal_branch.simulate_step(Fin_sp_normal=proposed, Fin_sp_startup=proposed); temp = float(out["T_true"]); nominal_future.append(temp); future.append([proposed, proposed - previous, temp, 51 + h]); previous = proposed
-    episode_id = f"c16b_{role}_{index:04d}_{category}"; truth_path = Path("__OUTPUT__") / f"revealed_{role}" / f"{episode_id}.npz"
-    item = b10.EpisodeInputs(episode_id, category, seed, np.asarray([x["temperature_residual_k"] for x in learning]), np.asarray(online), np.asarray(future), np.asarray(nominal_future), proposed, truth_path, plant, None)
+    episode_id = f"cstr_mixed_{role}_{index:04d}_{category}"; truth_path = Path("__OUTPUT__") / f"revealed_{role}" / f"{episode_id}.npz"
+    item = discrepancy_freeze.EpisodeInputs(episode_id, category, seed, np.asarray([x["temperature_residual_k"] for x in learning]), np.asarray(online), np.asarray(future), np.asarray(nominal_future), proposed, truth_path, plant, None)
     manifest = {"episode_id": episode_id, "population_role": role, "random_seed": seed, **metadata, "action_category": category, "proposed_action_lps": proposed, "postfault_observation_count": 50, "fault_metadata_available_to_method": 0, "truth_generated_after_prediction": 1}
     return item, manifest
 
@@ -175,11 +175,11 @@ def generate_episodes(config: Config, template, b5config, output: Path, role: st
     episodes = []
     for item, manifest in results:
         truth_path = output / f"revealed_{role}" / f"{item.episode_id}.npz"
-        episodes.append(b10.EpisodeInputs(item.episode_id, item.category, item.random_seed, item.residual_online, item.z_online, item.z_future, item.nominal_future, item.proposed_action, truth_path, item.hidden_plant, None))
+        episodes.append(discrepancy_freeze.EpisodeInputs(item.episode_id, item.category, item.random_seed, item.residual_online, item.z_online, item.z_future, item.nominal_future, item.proposed_action, truth_path, item.hidden_plant, None))
     return episodes, [x[1] for x in results]
 
 
-def _reveal_physical(item: b10.EpisodeInputs, prediction_path: Path) -> np.ndarray:
+def _reveal_physical(item: discrepancy_freeze.EpisodeInputs, prediction_path: Path) -> np.ndarray:
     if not prediction_path.exists() or item.hidden_plant is None:
         raise RuntimeError("truth reveal requires a saved prediction and hidden plant")
     actual = []
@@ -192,7 +192,7 @@ def _reveal_physical(item: b10.EpisodeInputs, prediction_path: Path) -> np.ndarr
 def selection_diagnostics(model, episodes):
     rows = []
     for item in episodes:
-        paths, mean, _, _, _ = b11._paths_for_model(model, item, 200, item.random_seed + 121_000_000)
+        paths, mean, _, _, _ = bootstrap_ensemble._paths_for_model(model, item, 200, item.random_seed + 121_000_000)
         path = Path(item.truth_path).parent.parent / "selection_predictions" / f"{item.episode_id}.npz"; path.parent.mkdir(parents=True, exist_ok=True); np.savez_compressed(path, predictive_mean_temperature_k=mean)
         actual = _reveal_physical(item, path); filtered = kalman_filter(model, item.residual_online, item.z_online); error = mean - actual
         rows.append({"episode_id": item.episode_id, "recursive_RMSE_k": float(np.sqrt(np.mean(error ** 2))), "prediction_bias_k": float(np.mean(error)), "innovation_bias_k": float(np.mean(filtered.innovations)), "spectral_radius": model.spectral_radius})
@@ -214,23 +214,23 @@ def _init_predict_worker(models, output, q_plus=None, q_minus=None, metadata=Non
 
 
 def _calibration_task(item):
-    path = _PRED_OUTPUT / "calibration_predictions" / f"{item.episode_id}.npz"; pred = c1.predict_frozen_u3(item, _PRED_MODELS, 2000, path); before = _sha256(path); actual = _reveal_physical(item, path)
+    path = _PRED_OUTPUT / "calibration_predictions" / f"{item.episode_id}.npz"; pred = certification.predict_frozen_u3(item, _PRED_MODELS, 2000, path); before = _sha256(path); actual = _reveal_physical(item, path)
     if before != _sha256(path): raise AssertionError("prediction changed after calibration reveal")
-    plus, minus = c1.one_sided_scores(actual, pred["center"], pred["scale"])
+    plus, minus = certification.one_sided_scores(actual, pred["center"], pred["scale"])
     return {"episode_id": item.episode_id, "upper_score": plus, "lower_score": minus, "prediction_saved_before_truth_reveal": 1}
 
 
 def calibrate(config: Config, episodes, models, output: Path):
     with ProcessPoolExecutor(max_workers=config.workers, initializer=_init_predict_worker, initargs=(models, str(output))) as pool:
         rows = list(pool.map(_calibration_task, episodes, chunksize=1))
-    q_plus, rank_plus = b12.corrected_quantile(np.asarray([r["upper_score"] for r in rows]), .95)
-    q_minus, rank_minus = b12.corrected_quantile(np.asarray([r["lower_score"] for r in rows]), .95)
+    q_plus, rank_plus = trajectory_conformal.corrected_quantile(np.asarray([r["upper_score"] for r in rows]), .95)
+    q_minus, rank_minus = trajectory_conformal.corrected_quantile(np.asarray([r["lower_score"] for r in rows]), .95)
     return rows, float(q_plus), float(q_minus), int(rank_plus), int(rank_minus)
 
 
 def _final_task(item):
-    path = _PRED_OUTPUT / "final_predictions" / f"{item.episode_id}.npz"; pred = c1.predict_frozen_u3(item, _PRED_MODELS, 2000, path); prediction_ns = time.time_ns(); before = _sha256(path)
-    start = time.perf_counter(); scale = np.maximum(pred["scale"], c1.EPSILON_SCALE_K); upper = pred["center"] + _Q_PLUS * scale; lower = pred["center"] - _Q_MINUS * scale; certified = float(np.max(upper)) <= T_MAX_K; conformal_seconds = time.perf_counter() - start
+    path = _PRED_OUTPUT / "final_predictions" / f"{item.episode_id}.npz"; pred = certification.predict_frozen_u3(item, _PRED_MODELS, 2000, path); prediction_ns = time.time_ns(); before = _sha256(path)
+    start = time.perf_counter(); scale = np.maximum(pred["scale"], certification.EPSILON_SCALE_K); upper = pred["center"] + _Q_PLUS * scale; lower = pred["center"] - _Q_MINUS * scale; certified = float(np.max(upper)) <= T_MAX_K; conformal_seconds = time.perf_counter() - start
     decision_path = _PRED_OUTPUT / "final_decisions" / f"{item.episode_id}.json"; decision_path.parent.mkdir(parents=True, exist_ok=True); decision_path.write_text(json.dumps({"episode_id": item.episode_id, "decision": "CERTIFIED SAFE" if certified else "NOT CERTIFIED", "q_plus": _Q_PLUS, "T_max_k": T_MAX_K, "prediction_sha256": before}, indent=2), encoding="utf-8"); decision_ns = time.time_ns()
     actual = _reveal_physical(item, path); reveal_ns = time.time_ns()
     if before != _sha256(path) or not prediction_ns <= decision_ns <= reveal_ns: raise AssertionError("predict-decide-reveal chronology failure")
@@ -245,10 +245,10 @@ def evaluate_final(config: Config, episodes, models, q_plus, q_minus, manifest, 
 
 
 def _wilson(successes, trials):
-    return c1.wilson(int(successes), int(trials)) if trials else (float("nan"), float("nan"))
+    return certification.wilson(int(successes), int(trials)) if trials else (float("nan"), float("nan"))
 
 
-def metric_row(rows, method, population="Multi-fault C1.6B"):
+def metric_row(rows, method, population="CSTR mixed degradation"):
     n = len(rows)
     if method == "nominal_DT":
         safe = sum(r["nominal_dt_safe"] for r in rows); false = sum(r["nominal_dt_false_safe"] for r in rows); coverage = np.mean([r["nominal_upper_trajectory_covered"] for r in rows]); width = 0.0; latency = 0.0
@@ -274,14 +274,14 @@ def original_rows(path: Path):
     output = []
     for source_method, method in (("S0_nominal_DT", "nominal_DT"), ("S3_one_sided", "proposed_method")):
         r = next(x for x in rows if x["method"] == source_method and x["action_category"] == "pooled" and np.isclose(float(x["nominal_level"]), .95))
-        output.append({"population": "Original single-fault C1", "method": method, "number_of_episodes": int(r["number_of_episodes"]), "upper_trajectory_coverage": float(r["upper_trajectory_empirical_coverage"]), "SAFE_certification_rate": float(r["SAFE_certification_rate"]), "SAFE_count": int(r["SAFE_count"]), "false_safe_count": int(r["false_safe_count"]), "joint_false_safe_probability": float(r["joint_false_safe_probability"]), "joint_false_safe_CI_lower": float(r["joint_false_safe_CI_lower"]), "joint_false_safe_CI_upper": float(r["joint_false_safe_CI_upper"]), "conditional_false_safe_rate": float(r["conditional_false_safe_rate"]), "conditional_false_safe_CI_lower": float(r["false_safe_CI_lower"]), "conditional_false_safe_CI_upper": float(r["false_safe_CI_upper"]), "NOT_CERTIFIED_rate": 1.0 - float(r["SAFE_certification_rate"]), "mean_conformal_width_k": float(r["mean_envelope_width_k"]), "median_online_latency_seconds": float(r["median_latency"])})
+        output.append({"population": "CSTR primary evaluation", "method": method, "number_of_episodes": int(r["number_of_episodes"]), "upper_trajectory_coverage": float(r["upper_trajectory_empirical_coverage"]), "SAFE_certification_rate": float(r["SAFE_certification_rate"]), "SAFE_count": int(r["SAFE_count"]), "false_safe_count": int(r["false_safe_count"]), "joint_false_safe_probability": float(r["joint_false_safe_probability"]), "joint_false_safe_CI_lower": float(r["joint_false_safe_CI_lower"]), "joint_false_safe_CI_upper": float(r["joint_false_safe_CI_upper"]), "conditional_false_safe_rate": float(r["conditional_false_safe_rate"]), "conditional_false_safe_CI_lower": float(r["false_safe_CI_lower"]), "conditional_false_safe_CI_upper": float(r["false_safe_CI_upper"]), "NOT_CERTIFIED_rate": 1.0 - float(r["SAFE_certification_rate"]), "mean_conformal_width_k": float(r["mean_envelope_width_k"]), "median_online_latency_seconds": float(r["median_latency"])})
     return output
 
 
 def create_figures(output, summary, faults, severities, final_rows, calibration_rows):
     figures = output / "figures"; figures.mkdir(parents=True, exist_ok=True)
     def save(fig, name): fig.tight_layout(); fig.savefig(figures / f"{name}.png", dpi=180); plt.close(fig)
-    multi = [r for r in summary if r["population"] == "Multi-fault C1.6B"]
+    multi = [r for r in summary if r["population"] == "CSTR mixed degradation"]
     proposed = next(r for r in multi if r["method"] == "proposed_method"); nominal = next(r for r in multi if r["method"] == "nominal_DT")
     fig, ax = plt.subplots(figsize=(7, 4)); ax.bar(["Nominal false-safe", "Proposed false-safe", "Proposed SAFE", "Upper coverage"], [nominal["joint_false_safe_probability"], proposed["joint_false_safe_probability"], proposed["SAFE_certification_rate"], proposed["upper_trajectory_coverage"]], color=["#a33a3a", "#a33a3a", "#286f45", "#2d5f8b"]); ax.set_ylim(0,1); ax.set_ylabel("Episode fraction"); save(fig,"01_pooled_safety_metrics")
     fig, axes = plt.subplots(1,2,figsize=(10,4)); labels=[r["fault_mechanism"].replace("_"," ") for r in faults]; axes[0].bar(labels,[r["proposed_method_SAFE_rate"] for r in faults],color="#286f45"); axes[1].bar(labels,[r["upper_envelope_coverage"] for r in faults],color="#2d5f8b"); axes[0].set_ylabel("SAFE certification rate"); axes[1].set_ylabel("Upper trajectory coverage"); [ax.tick_params(axis="x",rotation=12) for ax in axes]; save(fig,"02_fault_specific_results")
@@ -291,11 +291,11 @@ def create_figures(output, summary, faults, severities, final_rows, calibration_
     axes[0].set_ylabel("Episode fraction"); save(fig,"03_severity_diagnostics")
     fig,ax=plt.subplots(figsize=(6.5,4)); ax.scatter([r["true_safety_margin_k"] for r in final_rows],[r["conformal_safety_margin_k"] for r in final_rows],c=["#286f45" if r["certified_safe"] else "#777777" for r in final_rows],s=13,alpha=.55); ax.axhline(0,color="black",lw=.8); ax.axvline(0,color="black",lw=.8); ax.set(xlabel="True safety margin (K)",ylabel="Conformal safety margin (K)"); save(fig,"04_true_vs_conformal_margin")
     fig,ax=plt.subplots(figsize=(6.5,4)); ax.hist([r["upper_score"] for r in calibration_rows],bins=30,color="#2d5f8b",alpha=.8); ax.set(xlabel="Calibration upper trajectory score",ylabel="Episodes"); save(fig,"05_calibration_scores")
-    fig,ax=plt.subplots(figsize=(7,4)); original=next(r for r in summary if r["population"]=="Original single-fault C1" and r["method"]=="proposed_method"); x=np.arange(4); ax.bar(x-.18,[original["joint_false_safe_probability"],original["SAFE_certification_rate"],original["upper_trajectory_coverage"],original["mean_conformal_width_k"]],.36,label="Original C1"); ax.bar(x+.18,[proposed["joint_false_safe_probability"],proposed["SAFE_certification_rate"],proposed["upper_trajectory_coverage"],proposed["mean_conformal_width_k"]],.36,label="Multi-fault C1.6B"); ax.set_xticks(x,["False-safe","SAFE rate","Coverage","Width (K)"]); ax.legend(); save(fig,"06_original_vs_multifault")
+    fig,ax=plt.subplots(figsize=(7,4)); original=next(r for r in summary if r["population"]=="CSTR primary evaluation" and r["method"]=="proposed_method"); x=np.arange(4); ax.bar(x-.18,[original["joint_false_safe_probability"],original["SAFE_certification_rate"],original["upper_trajectory_coverage"],original["mean_conformal_width_k"]],.36,label="Original primary certification"); ax.bar(x+.18,[proposed["joint_false_safe_probability"],proposed["SAFE_certification_rate"],proposed["upper_trajectory_coverage"],proposed["mean_conformal_width_k"]],.36,label="CSTR mixed degradation"); ax.set_xticks(x,["False-safe","SAFE rate","Coverage","Width (K)"]); ax.legend(); save(fig,"06_original_vs_multifault")
 
 
 def verdict(summary, fault_rows):
-    proposed = next(r for r in summary if r["population"] == "Multi-fault C1.6B" and r["method"] == "proposed_method")
+    proposed = next(r for r in summary if r["population"] == "CSTR mixed degradation" and r["method"] == "proposed_method")
     strong = proposed["joint_false_safe_probability"] <= .05 and proposed["upper_trajectory_coverage"] >= .90
     useful = proposed["SAFE_certification_rate"] >= .15 and all(r["proposed_method_SAFE_rate"] >= .05 for r in fault_rows)
     if strong and useful: return "MULTI-FAULT REVALIDATION SUCCESSFUL"
@@ -304,9 +304,9 @@ def verdict(summary, fault_rows):
 
 
 def create_reports(output, config, summary, faults, severities, q_plus, q_minus, rank_plus, selection, decision):
-    proposed = next(r for r in summary if r["population"] == "Multi-fault C1.6B" and r["method"] == "proposed_method"); nominal = next(r for r in summary if r["population"] == "Multi-fault C1.6B" and r["method"] == "nominal_DT"); original = next(r for r in summary if r["population"] == "Original single-fault C1" and r["method"] == "proposed_method"); original_nominal = next(r for r in summary if r["population"] == "Original single-fault C1" and r["method"] == "nominal_DT")
+    proposed = next(r for r in summary if r["population"] == "CSTR mixed degradation" and r["method"] == "proposed_method"); nominal = next(r for r in summary if r["population"] == "CSTR mixed degradation" and r["method"] == "nominal_DT"); original = next(r for r in summary if r["population"] == "CSTR primary evaluation" and r["method"] == "proposed_method"); original_nominal = next(r for r in summary if r["population"] == "CSTR primary evaluation" and r["method"] == "nominal_DT")
     fault_text="\n".join(f"| {r['fault_mechanism']} | {r['N']} | {r['actual_unsafe_fraction']:.3f} | {r['proposed_method_SAFE_rate']:.3f} | {r['proposed_method_false_safe_count']} | {r['upper_envelope_coverage']:.3f} |" for r in faults)
-    paper=f"""# Milestone C1.6B - Multi-fault CSTR revalidation
+    paper=f"""# mixed-degradation evaluation - Multi-fault CSTR revalidation
 
 The transferred fault-blind method retained k=1, the four observable features, whole-episode bootstrap, J=10/M=2000 prediction, standardized episode-level conformal scores, and prospective predict-decide-reveal ordering. All state-space parameters, 50 bootstrap fits, and q+={q_plus:.4f} (finite-sample rank {rank_plus}/{config.calibration_count}) were learned anew from balanced multi-fault populations. The final test used the practical minimum of {config.final_count} episodes because end-to-end CSTR integration and ensemble rollout made 1,000 materially more expensive. No final episode entered fitting, model diagnostics, bootstrap, or calibration.
 
@@ -322,9 +322,9 @@ The proposed method certified {proposed['SAFE_certification_rate']:.3f} of episo
 
 These fault rows are post-decision subgroup diagnostics under pooled calibration, not formal per-fault guarantees. High-severity UA undercoverage **persists** at {next(r['upper_envelope_coverage'] for r in severities if r['fault_mechanism']=='ua_fouling' and r['severity_label']=='high'):.3f}; high-severity feed-temperature coverage is similarly {next(r['upper_envelope_coverage'] for r in severities if r['fault_mechanism']=='feed_temperature_step' and r['severity_label']=='high'):.3f}. This conditional undercoverage does not contradict the pooled conformal guarantee, but it is the strongest deployment limitation.
 
-## Original C1 comparison
+## Original primary certification comparison
 
-| Metric | Original single-fault C1 | Multi-fault C1.6B |
+| Metric | CSTR primary evaluation | CSTR mixed degradation |
 |---|---:|---:|
 | Nominal-DT joint false-safe | {original_nominal['joint_false_safe_probability']:.3f} | {nominal['joint_false_safe_probability']:.3f} |
 | Proposed joint false-safe | {original['joint_false_safe_probability']:.3f} | {proposed['joint_false_safe_probability']:.3f} |
@@ -335,22 +335,22 @@ These fault rows are post-decision subgroup diagnostics under pooled calibration
 
 ### {decision}
 """
-    (output/"PAPER_MULTIFAULT_RESULT.md").write_text(paper,encoding="utf-8"); (output/"GO_NO_GO.md").write_text(f"### {decision}\n",encoding="utf-8")
+    (output/"mixed_degradation_report.md").write_text(paper,encoding="utf-8"); (output/"decision_summary.md").write_text(f"### {decision}\n",encoding="utf-8")
 
 
 def run(config: Config) -> str:
-    config.validate(); output=Path(config.output_dir); output.mkdir(parents=True,exist_ok=True); b5config=b5.MilestoneB5Config(); template=b5.build_template(b5config)
+    config.validate(); output=Path(config.output_dir); output.mkdir(parents=True,exist_ok=True); b5config=episode_design.EpisodeDesignConfig(); template=episode_design.build_template(b5config)
     residual,z,manifest,training_path=generate_training(config,template,b5config,output)
     fixed=fit_scalar_state_space_em_checkpoints(residual,z,91_005,(100,))[100]
     selection_episodes,selection_manifest=generate_episodes(config,template,b5config,output,"selection",config.selection_count); selection_rows,selection=selection_diagnostics(fixed,selection_episodes)
     if not selection["k1_passed_predefined_mean_dynamics_gate"]: raise RuntimeError("k=1 failed predefined mean-dynamics gate; k=2/3 diagnostic extension required before final testing")
-    models,bootstrap_manifest=b11.fit_bootstrap_ensemble(training_path,config.bootstrap_target,75,config.workers)
-    (output/"frozen_model.json").write_text(json.dumps({"latent_dimension":1,"parameters":b10._parameter_payload(fixed),"selection_gate":selection},indent=2),encoding="utf-8"); (output/"bootstrap_models.json").write_text(json.dumps([b10._parameter_payload(p) for p in models],indent=2),encoding="utf-8"); _write_csv(output/"bootstrap_manifest.csv",bootstrap_manifest); _write_csv(output/"selection_diagnostics.csv",selection_rows)
+    models,bootstrap_manifest=bootstrap_ensemble.fit_bootstrap_ensemble(training_path,config.bootstrap_target,75,config.workers)
+    (output/"frozen_model.json").write_text(json.dumps({"latent_dimension":1,"parameters":discrepancy_freeze._parameter_payload(fixed),"selection_gate":selection},indent=2),encoding="utf-8"); (output/"bootstrap_models.json").write_text(json.dumps([discrepancy_freeze._parameter_payload(p) for p in models],indent=2),encoding="utf-8"); _write_csv(output/"bootstrap_manifest.csv",bootstrap_manifest); _write_csv(output/"selection_diagnostics.csv",selection_rows)
     calibration_episodes,calibration_manifest=generate_episodes(config,template,b5config,output,"calibration",config.calibration_count); calibration_rows,q_plus,q_minus,rank_plus,rank_minus=calibrate(config,calibration_episodes,models[:config.ensemble_size],output); _write_csv(output/"calibration_scores.csv",calibration_rows)
     frozen_at_ns=time.time_ns(); final_episodes,final_manifest=generate_episodes(config,template,b5config,output,"final_test",config.final_count)
     final_rows=evaluate_final(config,final_episodes,models[:config.ensemble_size],q_plus,q_minus,final_manifest,output)
-    all_manifest=[*manifest,*selection_manifest,*calibration_manifest,*final_manifest]; _write_csv(output/"MULTIFAULT_POPULATION_MANIFEST.csv",all_manifest); _write_csv(output/"MULTIFAULT_FINAL_EPISODES.csv",final_rows)
-    summary=[*original_rows(Path("artifacts/cstr/primary_evaluation/safety_summary.csv")),metric_row(final_rows,"nominal_DT"),metric_row(final_rows,"proposed_method")]; fault_rows,severity_rows=subgroup_rows(final_rows,q_plus); _write_csv(output/"MULTIFAULT_SUMMARY.csv",summary); _write_csv(output/"FAULT_SPECIFIC_RESULTS.csv",fault_rows); _write_csv(output/"SEVERITY_RESULTS.csv",severity_rows)
+    all_manifest=[*manifest,*selection_manifest,*calibration_manifest,*final_manifest]; _write_csv(output/"mixed_degradation_population_manifest.csv",all_manifest); _write_csv(output/"mixed_degradation_test_episodes.csv",final_rows)
+    summary=[*original_rows(Path("artifacts/cstr/primary_evaluation/safety_summary.csv")),metric_row(final_rows,"nominal_DT"),metric_row(final_rows,"proposed_method")]; fault_rows,severity_rows=subgroup_rows(final_rows,q_plus); _write_csv(output/"mixed_degradation_summary.csv",summary); _write_csv(output/"mixed_degradation_by_fault.csv",fault_rows); _write_csv(output/"mixed_degradation_by_severity.csv",severity_rows)
     decision=verdict(summary,fault_rows); create_figures(output,summary,fault_rows,severity_rows,final_rows,calibration_rows); create_reports(output,config,summary,fault_rows,severity_rows,q_plus,q_minus,rank_plus,selection,decision)
     (output/"configuration.json").write_text(json.dumps({"configuration":asdict(config),"method":{"latent_dimension":K,"feature_names":FEATURE_NAMES,"bootstrap_unit":"whole episode","bootstrap_fits":50,"online_ensemble_size":10,"trajectories":2000,"upper_score":"max_h (T_true-m)/max(s,epsilon)","q_plus":q_plus,"q_minus_for_width_reporting":q_minus,"q_plus_rank":rank_plus,"q_minus_rank":rank_minus,"T_max_k":T_MAX_K,"safe_rule":"max_h U_conf(h) <= 313 K"},"population_seed_blocks":ROLE_SEEDS,"model_selection":selection,"method_frozen_before_final_generation_ns":frozen_at_ns,"verdict_rule":{"successful":"joint false-safe <=.05, upper coverage >=.90, pooled SAFE >=.15, each fault SAFE >=.05","conservative":"safety gates pass but usefulness gate fails","inadequate":"safety gates fail"},"verdict":decision},indent=2),encoding="utf-8")
     return decision
@@ -362,7 +362,7 @@ def _read_csv(path: Path):
 
 def refresh_existing(config: Config) -> str:
     """Rebuild evaluator summaries from frozen final artifacts without new decisions."""
-    output=Path(config.output_dir); raw=_read_csv(output/"MULTIFAULT_FINAL_EPISODES.csv"); final_rows=[]
+    output=Path(config.output_dir); raw=_read_csv(output/"mixed_degradation_test_episodes.csv"); final_rows=[]
     integer_fields={"random_seed","actual_safe","actual_unsafe","nominal_dt_safe","nominal_dt_false_safe","certified_safe","false_safe","upper_trajectory_covered","chronology_verified"}
     float_fields={"proposed_action_lps","actual_max_temperature_k","severity_value_evaluator_only","fault_onset_s_evaluator_only","initial_volume_perturbation_l_evaluator_only","initial_concentration_scale_evaluator_only","initial_temperature_perturbation_k_evaluator_only","mean_conformal_width_k","median_conformal_width_k","prediction_RMSE_k","true_safety_margin_k","conformal_safety_margin_k","online_latency_seconds"}
     for source in raw:
@@ -372,9 +372,9 @@ def refresh_existing(config: Config) -> str:
         with np.load(output/"final_predictions"/f"{row['episode_id']}.npz") as pred: nominal=np.asarray(pred["nominal_temperature_k"],float)
         with np.load(output/"revealed_final_test"/f"{row['episode_id']}.npz") as truth: actual=np.asarray(truth["actual_physical_temperature_k"],float)
         row["nominal_upper_trajectory_covered"]=int(np.all(actual<=nominal)); final_rows.append(row)
-    _write_csv(output/"MULTIFAULT_FINAL_EPISODES.csv",final_rows)
+    _write_csv(output/"mixed_degradation_test_episodes.csv",final_rows)
     configuration=json.loads((output/"configuration.json").read_text(encoding="utf-8")); q_plus=float(configuration["method"]["q_plus"]); q_minus=float(configuration["method"]["q_minus_for_width_reporting"]); selection=configuration["model_selection"]
-    summary=[*original_rows(Path("artifacts/cstr/primary_evaluation/safety_summary.csv")),metric_row(final_rows,"nominal_DT"),metric_row(final_rows,"proposed_method")]; fault_rows,severity_rows=subgroup_rows(final_rows,q_plus); _write_csv(output/"MULTIFAULT_SUMMARY.csv",summary); _write_csv(output/"FAULT_SPECIFIC_RESULTS.csv",fault_rows); _write_csv(output/"SEVERITY_RESULTS.csv",severity_rows)
+    summary=[*original_rows(Path("artifacts/cstr/primary_evaluation/safety_summary.csv")),metric_row(final_rows,"nominal_DT"),metric_row(final_rows,"proposed_method")]; fault_rows,severity_rows=subgroup_rows(final_rows,q_plus); _write_csv(output/"mixed_degradation_summary.csv",summary); _write_csv(output/"mixed_degradation_by_fault.csv",fault_rows); _write_csv(output/"mixed_degradation_by_severity.csv",severity_rows)
     calibration_rows=_read_csv(output/"calibration_scores.csv"); calibration_rows=[{**r,"upper_score":float(r["upper_score"]),"lower_score":float(r["lower_score"])} for r in calibration_rows]
     decision=verdict(summary,fault_rows); create_figures(output,summary,fault_rows,severity_rows,final_rows,calibration_rows); create_reports(output,config,summary,fault_rows,severity_rows,q_plus,q_minus,int(configuration["method"]["q_plus_rank"]),selection,decision); configuration["verdict"]=decision; (output/"configuration.json").write_text(json.dumps(configuration,indent=2),encoding="utf-8"); return decision
 

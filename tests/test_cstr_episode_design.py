@@ -4,7 +4,7 @@ import pytest
 from twinguard.cstr.episode_design import (
     FROZEN_FEATURES,
     PREDICTION_KEYS_WITHOUT_TRUTH,
-    MilestoneB5Config,
+    EpisodeDesignConfig,
     _select_action_after_fit,
     action_support_distance,
     construct_simultaneous_bands,
@@ -13,9 +13,9 @@ from twinguard.cstr.episode_design import (
 )
 
 
-@pytest.mark.skip(reason="documents the superseded Milestone-B Bayesian residual model; hashes development-only source files by working-directory-relative name (also fails in the development repository)")
-def test_b5_freezes_existing_m4_model_and_numerical_settings() -> None:
-    config = MilestoneB5Config(episodes_per_category=1)
+@pytest.mark.skip(reason="documents the superseded -B Bayesian residual model; hashes development-only source files by working-directory-relative name (also fails in the development repository)")
+def test_episode_design_freezes_existing_m4_model_and_numerical_settings() -> None:
+    config = EpisodeDesignConfig(episodes_per_category=1)
     config.validate()
     frozen = frozen_model_configuration(config)
 

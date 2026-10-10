@@ -1,6 +1,6 @@
 {
   "identity": "B9S_seed_91005_limit_100",
-  "original_B9_candidate_retained": false,
+  "original_DISCREPANCY_FIT_candidate_retained": false,
   "selection_and_training_only_choice": true,
   "new_untouched_final_population_required": true,
   "parameters": {

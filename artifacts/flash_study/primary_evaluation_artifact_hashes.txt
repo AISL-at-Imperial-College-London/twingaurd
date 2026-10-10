@@ -1,0 +1,5 @@
+# Frozen primary evaluation artifact SHA-256 manifest
+
+a1aa6259f8fad70d66404bcba2ca268c42f84573de737bbbeb344d414e65b959  flash_primary_episode_results.csv
+21b4447c76f47be83662cb45677558c0bb080797941b6c9524aef695ea0c4344  flash_primary_ablation.csv
+f56349d6a6fc5996784dda674697447586f9c610c4ffa1720e6147eb6d132e04  primary_evaluation_ledger.csv

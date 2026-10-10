@@ -4,7 +4,7 @@
 
 - **Physical interpretation:** progressive heat-transfer surface fouling.
 - **Modified parameter:** plant `UA_eff`; nominal `UA = 500 J/s/K`.
-- **Diagnostic range:** 25%, 40%, and 55% loss, matching the established C1 fault family.
+- **Diagnostic range:** 25%, 40%, and 55% loss, matching the established primary certification fault family.
 - **Scope:** hidden plant only; nominal DT unchanged.
 - **Status:** the existing `UA_eff` implementation was not modified.
 

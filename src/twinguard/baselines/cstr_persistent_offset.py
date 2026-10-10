@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Persistent-offset + one-sided conformal baseline on frozen CSTR C1.
+"""Persistent-offset conformal baseline for the primary CSTR evaluation.
 
-Requires the frozen CSTR primary-evaluation artifacts (with the per-episode archive extracted).
+Requires the frozen CSTR primary-evaluation artifacts (per-episode prediction and truth files of the primary evaluation).
 Reconstructs only PRE-DECISION residual histories from frozen seeds; it does
-not run future physical counterfactuals, refit the model, or overwrite C1.
+does not simulate future trajectories, refit the model, or alter primary evaluation results.
 """
 from __future__ import annotations
 import argparse
@@ -13,10 +13,10 @@ import csv
 import math
 import os
 import numpy as np
-from twinguard.cstr import safety_certification as c1
-from twinguard.cstr import episode_design as b5
+from twinguard.cstr import safety_certification as certification
+from twinguard.cstr import episode_design as episode_design
 
-# Pre-decision residual histories are not stored in the frozen C1 artifacts, so they are
+# Pre-decision residual histories are not stored in the frozen primary certification artifacts, so they are
 # rebuilt once from the frozen seeds (observation period only, no future rollout) and cached.
 HISTORY_CACHE = 'offset_residual_histories.npz'
 _CFG = None
@@ -25,12 +25,12 @@ _TEMPLATE = None
 
 def _init_worker():
     global _CFG, _TEMPLATE
-    _CFG = b5.MilestoneB5Config()
-    _TEMPLATE = b5.build_template(_CFG)
+    _CFG = episode_design.EpisodeDesignConfig()
+    _TEMPLATE = episode_design.build_template(_CFG)
 
 
 def _history(seed):
-    _, _, residual, _, _, _ = c1._reconstruct_decision_state(int(seed), _CFG, _TEMPLATE)
+    _, _, residual, _, _, _ = certification._reconstruct_decision_state(int(seed), _CFG, _TEMPLATE)
     return np.asarray(residual, float)
 
 
@@ -96,8 +96,8 @@ def evaluate_population(folder, role, histories, window, mode, q=None):
             out.append({'episode_id':eid,'random_seed':seed,'offset_K':b,'score_K':score})
         else:
             if q is None: raise ValueError('Provide calibrated q for test')
-            cert=bool(np.max(center+q)<=c1.T_MAX_K)
-            physical_safe=bool(np.max(actual)<=c1.T_MAX_K)
+            cert=bool(np.max(center+q)<=certification.T_MAX_K)
+            physical_safe=bool(np.max(actual)<=certification.T_MAX_K)
             covered=bool(np.all(actual<=center+q))
             out.append({'episode_id':eid,'random_seed':seed,'offset_K':b,'certified':int(cert),
                         'physical_safe':int(physical_safe),'false_safe':int(cert and not physical_safe),
@@ -114,7 +114,7 @@ def write(path,rr):
 
 def main():
     p=argparse.ArgumentParser()
-    p.add_argument('--c1-dir',default='artifacts/cstr/primary_evaluation')
+    p.add_argument('--primary-dir',default='artifacts/cstr/primary_evaluation')
     p.add_argument('--output-dir',default='runs/cstr_persistent_offset')
     p.add_argument('--window',type=int,default=10,help='Predeclared last L observed residual samples')
     p.add_argument('--mode',choices=('mean','last'),default='mean')
@@ -122,8 +122,8 @@ def main():
     p.add_argument('--workers',type=int,default=max(1,min(16,(os.cpu_count() or 2)-2)))
     a=p.parse_args()
     assert a.window>0 and 0<a.alpha<1
-    root=Path(a.c1_dir);out=Path(a.output_dir);out.mkdir(parents=True,exist_ok=True)
-    # Verify the immutable C1 directory layout before reconstructing observation histories.
+    root=Path(a.primary_dir);out=Path(a.output_dir);out.mkdir(parents=True,exist_ok=True)
+    # Verify the immutable primary certification directory layout before reconstructing observation histories.
     required = [root / name for name in ('safety_calibration_manifest.csv', 'final_safety_population_manifest.csv',
                 'calibration_predictions', 'revealed_calibration_truth', 'predictions', 'revealed_final_truth')]
     missing = [str(p) for p in required if not p.exists()]

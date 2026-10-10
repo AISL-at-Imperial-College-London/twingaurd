@@ -1,4 +1,4 @@
-"""Prospective E7 structural-mismatch and large reliability experiments."""
+"""Evaluate flash model mismatch and mixed-regime reliability in both processes."""
 
 from __future__ import annotations
 
@@ -17,14 +17,14 @@ from typing import Mapping, Sequence
 import numpy as np
 from scipy.stats import beta
 
-from twinguard.cstr import episode_design as b5
-from twinguard.cstr import freeze_discrepancy_model as b10
-from twinguard.cstr import safety_certification as c1
+from twinguard.cstr import episode_design as episode_design
+from twinguard.cstr import freeze_discrepancy_model as discrepancy_freeze
+from twinguard.cstr import safety_certification as certification
 
-from twinguard.flash import evaluate_primary as e5
-from twinguard.evaluation import boundary_challenge as e6
+from twinguard.flash import evaluate_primary as primary
+from twinguard.evaluation import boundary_challenge as boundary
 from twinguard.conformal.flash_conformal import normalized_action_distance
-from twinguard.digital_twins.flash_drum import FlashDigitalTwin
+from twinguard.flash.digital_twin import FlashDigitalTwin
 from twinguard.discrepancy.flash_state_space import FEATURE_NAMES
 from twinguard.scenarios.flash_population_design import (
     MEASURED_OUTPUTS,
@@ -37,7 +37,6 @@ from twinguard.scenarios.flash_population_design import (
 from twinguard.plants.flash_drum import FlashAction, FlashParameters, PhysicalStateError
 from twinguard.plants.flash_drum_valve_lag import VaporValveLagPlant, sample_vapor_valve_lag
 from twinguard.utils.flash_output_guard import EXPERIMENT_ROOT, REPOSITORY_ROOT, assert_isolated_output_path
-from twinguard.utils.provenance import frozen_sha256, frozen_sha256_if_released
 from twinguard.flash.bootstrap_and_calibrate import _boundary_action
 
 
@@ -49,8 +48,8 @@ CSTR_RELIABILITY_COUNT = 3_000
 CSTR_RELIABILITY_SEED_START = 50_000_000
 CSTR_Q_PLUS = 5.464557586938352
 CSTR_T_MAX_K = 313.0
-DESIGN_PATH = EXPERIMENT_ROOT / "RESS_E7_DESIGN.json"
-FROZEN_MANIFEST_PATH = EXPERIMENT_ROOT / "RESS_E7_FROZEN_INPUT_HASHES.txt"
+DESIGN_PATH = EXPERIMENT_ROOT / "reliability_design.json"
+FROZEN_MANIFEST_PATH = EXPERIMENT_ROOT / "reliability_input_hashes.txt"
 
 
 _FLASH_OUTPUT: Path | None = None
@@ -116,7 +115,7 @@ def _flash_init(output: str) -> None:
         "bootstrap_models_sha256": _sha256(EXPERIMENT_ROOT / "flash_bootstrap_models.json"),
         "conformal_config_sha256": _sha256(EXPERIMENT_ROOT / "flash_conformal_config.json"),
     }
-    e5._init_worker(output, frozen)
+    primary._init_worker(output, frozen)
     _FLASH_OUTPUT = Path(output)
     _FLASH_ORDINARY_Q, _FLASH_BOUNDARY_Q = ordinary_q, boundary_q
 
@@ -153,12 +152,12 @@ def _structural_observation(seed: int) -> dict[str, object]:
             twin.step(nominal_action, 1.0)
             if second % 10:
                 continue
-            physical = e5._outputs(plant)
-            nominal = e5._outputs(twin)
+            physical = primary._outputs(plant)
+            nominal = primary._outputs(twin)
             observed_outputs[completed] = physical + noise_rng.normal(0.0, sensor_sd)
             nominal_outputs[completed] = nominal
             residual[completed] = observed_outputs[completed] - nominal
-            features[completed] = e5._feature(
+            features[completed] = primary._feature(
                 nominal_action, nominal_action, twin.outputs(twin.state)
             )
             completed += 1
@@ -191,7 +190,7 @@ def _generic_truth_rollout(observation: Mapping[str, object], candidate: FlashAc
         for second in range(1, 1201):
             plant.step(candidate, 1.0)
             if second % 10 == 0:
-                values.append(e5._outputs(plant))
+                values.append(primary._outputs(plant))
     except PhysicalStateError as exc:
         domain_exit = str(exc)
     return np.asarray(values), domain_exit
@@ -206,28 +205,28 @@ def _reconstruct_flash_decision(prediction: Mapping[str, np.ndarray]) -> tuple[d
     q = float(prediction["pooled_quantile"])
     if complete:
         decisions = {
-            "M0_nominal_DT": "CERTIFIED SAFE" if e5._point_margin(nominal) >= 0 else "NOT CERTIFIED",
-            "M1_discrepancy_mean": "CERTIFIED SAFE" if e5._point_margin(mean) >= 0 else "NOT CERTIFIED",
-            "M2_raw_bootstrap": e5.safety_decision(center, scale, e5.RAW_ONE_SIDED_95).replace("SAFE", "CERTIFIED SAFE"),
-            "M3_pooled_conformal": e5.safety_decision(center, scale, q).replace("SAFE", "CERTIFIED SAFE"),
+            "M0_nominal_DT": "CERTIFIED SAFE" if primary._point_margin(nominal) >= 0 else "NOT CERTIFIED",
+            "M1_discrepancy_mean": "CERTIFIED SAFE" if primary._point_margin(mean) >= 0 else "NOT CERTIFIED",
+            "M2_raw_bootstrap": primary.safety_decision(center, scale, primary.RAW_ONE_SIDED_95).replace("SAFE", "CERTIFIED SAFE"),
+            "M3_pooled_conformal": primary.safety_decision(center, scale, q).replace("SAFE", "CERTIFIED SAFE"),
             "M4_action_conditioned": "NOT CERTIFIED",
         }
         margins = {
-            "M0_nominal_DT": e5._point_margin(nominal),
-            "M1_discrepancy_mean": e5._point_margin(mean),
-            "M2_raw_bootstrap": e5._envelope_margin(center, scale, e5.RAW_ONE_SIDED_95),
-            "M3_pooled_conformal": e5._envelope_margin(center, scale, q),
+            "M0_nominal_DT": primary._point_margin(nominal),
+            "M1_discrepancy_mean": primary._point_margin(mean),
+            "M2_raw_bootstrap": primary._envelope_margin(center, scale, primary.RAW_ONE_SIDED_95),
+            "M3_pooled_conformal": primary._envelope_margin(center, scale, q),
             "M4_action_conditioned": float("-inf"),
         }
     else:
-        decisions = {method: "NOT CERTIFIED" for method in e5.METHODS}
-        margins = {method: float("-inf") for method in e5.METHODS}
+        decisions = {method: "NOT CERTIFIED" for method in primary.METHODS}
+        margins = {method: float("-inf") for method in primary.METHODS}
     return decisions, margins
 
 
 def _flash_task(task: tuple[str, int, int, list[float] | None]) -> dict[str, object]:
     if _FLASH_OUTPUT is None or _FLASH_ORDINARY_Q is None or _FLASH_BOUNDARY_Q is None:
-        raise RuntimeError("E7 flash worker is not initialized")
+        raise RuntimeError("reliability evaluation flash worker is not initialized")
     population, index, seed, ordinary_vector = task
     structural = population == "structural"
     episode_id = (
@@ -238,9 +237,9 @@ def _flash_task(task: tuple[str, int, int, list[float] | None]) -> dict[str, obj
     root = _FLASH_OUTPUT / population
     paths = _artifact_paths(root, episode_id)
     if all(path.exists() for path in paths):
-        return e6._artifact_audit(episode_id, *paths)
+        return boundary._artifact_audit(episode_id, *paths)
 
-    observation = _structural_observation(seed) if structural else e5._simulate_observation(index, seed)
+    observation = _structural_observation(seed) if structural else primary._simulate_observation(index, seed)
     strategy = _action_strategy(index)
     if int(observation["completed"]) == 50 and strategy == "boundary":
         candidate, nominal_margin, in_band, eligible_count = _boundary_action(
@@ -248,12 +247,12 @@ def _flash_task(task: tuple[str, int, int, list[float] | None]) -> dict[str, obj
         )
     elif int(observation["completed"]) == 50:
         if ordinary_vector is None:
-            raise RuntimeError("ordinary E7 episode missing its frozen LHS action")
+            raise RuntimeError("ordinary reliability evaluation episode missing its frozen LHS action")
         candidate = validate_candidate_action(ordinary_vector)
-        nominal, _, _ = e5._nominal_horizon(
+        nominal, _, _ = primary._nominal_horizon(
             observation["twin"], candidate, observation["nominal_action"]
         )
-        nominal_margin = e5._point_margin(nominal)
+        nominal_margin = primary._point_margin(nominal)
         in_band = False
         eligible_count = 0
     else:
@@ -266,7 +265,7 @@ def _flash_task(task: tuple[str, int, int, list[float] | None]) -> dict[str, obj
     candidate_path, prediction_path, decision_path, truth_path = paths
     if not candidate_path.exists():
         payload = {
-            "schema_version": "RESS_E7_FLASH_CANDIDATE_1.0",
+            "schema_version": "FLASH_RELIABILITY_CANDIDATE_1.0",
             "episode_id": episode_id,
             "population": population,
             "action_selection_strategy": strategy,
@@ -278,43 +277,43 @@ def _flash_task(task: tuple[str, int, int, list[float] | None]) -> dict[str, obj
             "matching_calibration_population": f"calibration_{strategy}",
             "frozen_pooled_quantile": q,
         }
-        e5._exclusive_write(candidate_path, e5._json_bytes(payload))
+        primary._exclusive_write(candidate_path, primary._json_bytes(payload))
 
     created_prediction = False
     metrics: dict[str, float] = {}
     if not prediction_path.exists():
-        e5._POOLED_Q = q
-        prediction, decisions, metrics = e5._build_prediction(
+        primary._POOLED_Q = q
+        prediction, decisions, metrics = primary._build_prediction(
             observation, candidate, episode_id, seed
         )
-        prediction["schema_version"] = np.asarray("RESS_E7_FLASH_PREDICTION_1.0")
+        prediction["schema_version"] = np.asarray("FLASH_RELIABILITY_PREDICTION_1.0")
         _wait_after(candidate_path)
-        e5._exclusive_write(prediction_path, e5._npz_bytes(prediction))
+        primary._exclusive_write(prediction_path, primary._npz_bytes(prediction))
         created_prediction = True
-    prediction = e5._load_npz(prediction_path)
+    prediction = primary._load_npz(prediction_path)
     decisions, reconstructed_margins = _reconstruct_flash_decision(prediction)
     if not decision_path.exists():
         latencies = {
             method: float(metrics.get(f"latency_{method}", 0.0))
-            for method in e5.METHODS
+            for method in primary.METHODS
         }
         payload = {
-            "schema_version": "RESS_E7_FLASH_DECISION_1.0",
+            "schema_version": "FLASH_RELIABILITY_DECISION_1.0",
             "episode_id": episode_id,
             "prediction_sha256": _sha256(prediction_path),
             "decisions": decisions,
             "normalized_margins": reconstructed_margins,
-            "raw_multiplier": e5.RAW_ONE_SIDED_95,
+            "raw_multiplier": primary.RAW_ONE_SIDED_95,
             "pooled_quantile": q,
-            "mondrian_status": "UNSUPPORTED_NOT_CERTIFIED:E2_BINS_NOT_PREDECLARED",
+            "mondrian_status": "UNSUPPORTED_NOT_CERTIFIED:BINS_NOT_PREREGISTERED",
             "latency_seconds": latencies,
         }
-        e5._validate_pretruth_payload(payload, e5.DECISION_ALLOWED_KEYS)
+        primary._validate_pretruth_payload(payload, primary.DECISION_ALLOWED_KEYS)
         _wait_after(prediction_path)
-        e5._exclusive_write(decision_path, e5._json_bytes(payload))
+        primary._exclusive_write(decision_path, primary._json_bytes(payload))
     decision = json.loads(decision_path.read_text())
     if decision["prediction_sha256"] != _sha256(prediction_path):
-        raise RuntimeError("E7 flash decision does not bind prediction")
+        raise RuntimeError("reliability evaluation flash decision does not bind prediction")
 
     if not truth_path.exists():
         actual, truth_exit = _generic_truth_rollout(observation, candidate)
@@ -345,7 +344,7 @@ def _flash_task(task: tuple[str, int, int, list[float] | None]) -> dict[str, obj
                 "faulty_parameter_evaluator_only": np.asarray(hidden.faulty_value),
             }
         payload = {
-            "schema_version": np.asarray("RESS_E7_FLASH_TRUTH_1.0"),
+            "schema_version": np.asarray("FLASH_RELIABILITY_TRUTH_1.0"),
             "episode_id": np.asarray(episode_id),
             "episode_seed_evaluator_only": np.asarray(seed),
             **evaluator,
@@ -360,8 +359,8 @@ def _flash_task(task: tuple[str, int, int, list[float] | None]) -> dict[str, obj
             "decision_sha256": np.asarray(_sha256(decision_path)),
         }
         _wait_after(decision_path)
-        e5._exclusive_write(truth_path, e5._npz_bytes(payload))
-    return e6._artifact_audit(episode_id, *paths)
+        primary._exclusive_write(truth_path, primary._npz_bytes(payload))
+    return boundary._artifact_audit(episode_id, *paths)
 
 
 def _flash_tasks(population: str, count: int, seed_start: int) -> list[tuple[str, int, int, list[float] | None]]:
@@ -378,7 +377,7 @@ def _flash_tasks(population: str, count: int, seed_start: int) -> list[tuple[str
 
 
 def run_flash_population(population: str, count: int, seed_start: int, workers: int) -> list[dict[str, object]]:
-    root = _safe_path(f"e7_artifacts/{population}")
+    root = _safe_path(f"reliability_episodes/{population}")
     root.mkdir(parents=True, exist_ok=True)
     audit: list[dict[str, object]] = []
     with ProcessPoolExecutor(
@@ -389,16 +388,16 @@ def run_flash_population(population: str, count: int, seed_start: int, workers: 
         ):
             audit.append(row)
             if completed % 100 == 0:
-                print(f"E7 {population}={completed}/{count}", flush=True)
+                print(f"reliability evaluation {population}={completed}/{count}", flush=True)
     audit.sort(key=lambda row: str(row["episode_id"]))
-    _write_csv(_safe_path(f"e7_artifacts/{population.upper()}_ARTIFACT_AUDIT.csv"), audit)
+    _write_csv(_safe_path(f"reliability_episodes/{population}_ledger.csv"), audit)
     return audit
 
 
 def evaluate_flash_population(
     population: str, audit: Sequence[Mapping[str, object]]
 ) -> list[dict[str, object]]:
-    rows = e5.evaluate_artifacts(audit)
+    rows = primary.evaluate_artifacts(audit)
     candidate_paths = {
         str(item["episode_id"]): Path(str(item["candidate_path"])) for item in audit
     }
@@ -414,46 +413,46 @@ def evaluate_flash_population(
 def _cstr_init(output: str) -> None:
     global _CSTR_OUTPUT, _CSTR_MODELS, _CSTR_TEMPLATE
     _CSTR_OUTPUT = Path(output)
-    _CSTR_MODELS = c1._load_models(REPOSITORY_ROOT / "artifacts/cstr/bootstrap_ensemble", 10)
-    _CSTR_TEMPLATE = b5.build_template(b5.MilestoneB5Config())
+    _CSTR_MODELS = certification._load_models(REPOSITORY_ROOT / "artifacts/cstr/bootstrap_ensemble", 10)
+    _CSTR_TEMPLATE = episode_design.build_template(episode_design.EpisodeDesignConfig())
 
 
 def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
     if _CSTR_OUTPUT is None or _CSTR_MODELS is None or _CSTR_TEMPLATE is None:
-        raise RuntimeError("E7 CSTR worker is not initialized")
+        raise RuntimeError("reliability evaluation CSTR worker is not initialized")
     index, seed = task
-    category = b10.CATEGORIES[index // (CSTR_RELIABILITY_COUNT // 3)]
+    category = discrepancy_freeze.CATEGORIES[index // (CSTR_RELIABILITY_COUNT // 3)]
     episode_id = f"cstr_reliability_{index:05d}_{category}"
-    paths = _artifact_paths(_CSTR_OUTPUT, episode_id, "CSTR_RESS_RELIABILITY_")
+    paths = _artifact_paths(_CSTR_OUTPUT, episode_id, "CSTR_RELIABILITY_")
     if all(path.exists() for path in paths):
-        return e6._artifact_audit(episode_id, *paths)
+        return boundary._artifact_audit(episode_id, *paths)
     candidate_path, prediction_path, decision_path, truth_path = paths
-    nominal, plant, residual, online, previous, magnitude = c1._reconstruct_decision_state(
-        seed, b5.MilestoneB5Config(), _CSTR_TEMPLATE
+    nominal, plant, residual, online, previous, magnitude = certification._reconstruct_decision_state(
+        seed, episode_design.EpisodeDesignConfig(), _CSTR_TEMPLATE
     )
     action = float(
-        b5._select_action_after_fit(category, np.random.default_rng(seed + 2_000_000))
+        episode_design._select_action_after_fit(category, np.random.default_rng(seed + 2_000_000))
     )
     if not candidate_path.exists():
         payload = {
-            "schema_version": "CSTR_RESS_RELIABILITY_CANDIDATE_1.0",
+            "schema_version": "CSTR_RELIABILITY_CANDIDATE_1.0",
             "episode_id": episode_id,
             "action_lps": action,
             "action_category": category,
             "selection_source": "frozen_category_sampler",
         }
-        e5._exclusive_write(candidate_path, e5._json_bytes(payload))
+        primary._exclusive_write(candidate_path, primary._json_bytes(payload))
     branch = copy.deepcopy(nominal)
-    nominal_future = np.empty(c1.HORIZON)
-    future = np.empty((c1.HORIZON, 4))
+    nominal_future = np.empty(certification.HORIZON)
+    future = np.empty((certification.HORIZON, 4))
     prior = previous
-    for horizon in range(c1.HORIZON):
+    for horizon in range(certification.HORIZON):
         nominal_future[horizon] = float(
             branch.simulate_step(Fin_sp_normal=action, Fin_sp_startup=action)["T_true"]
         )
         future[horizon] = [action, action - prior, nominal_future[horizon], 51 + horizon]
         prior = action
-    item = b10.EpisodeInputs(
+    item = discrepancy_freeze.EpisodeInputs(
         episode_id,
         category,
         seed,
@@ -468,15 +467,15 @@ def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
     )
     if not prediction_path.exists():
         _wait_after(candidate_path)
-        c1.predict_frozen_u3(item, _CSTR_MODELS, 2000, prediction_path)
+        certification.predict_frozen_u3(item, _CSTR_MODELS, 2000, prediction_path)
     with np.load(prediction_path, allow_pickle=False) as saved:
         nominal_saved = np.asarray(saved["nominal_temperature_k"])
         center = np.asarray(saved["predictive_center_k"])
-        scale = np.maximum(np.asarray(saved["predictive_scale_k"]), c1.EPSILON_SCALE_K)
+        scale = np.maximum(np.asarray(saved["predictive_scale_k"]), certification.EPSILON_SCALE_K)
     if not decision_path.exists():
         upper = center + CSTR_Q_PLUS * scale
         payload = {
-            "schema_version": "CSTR_RESS_RELIABILITY_DECISION_1.0",
+            "schema_version": "CSTR_RELIABILITY_DECISION_1.0",
             "episode_id": episode_id,
             "prediction_sha256": _sha256(prediction_path),
             "nominal_dt_decision": "CERTIFIED SAFE" if float(np.max(nominal_saved)) <= CSTR_T_MAX_K else "NOT CERTIFIED",
@@ -487,15 +486,15 @@ def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
             "conformal_margin_k": CSTR_T_MAX_K - float(np.max(upper)),
         }
         _wait_after(prediction_path)
-        e5._exclusive_write(decision_path, e5._json_bytes(payload))
+        primary._exclusive_write(decision_path, primary._json_bytes(payload))
     if not truth_path.exists():
         _wait_after(decision_path)
-        actual = c1.reveal_physical_temperature(item, prediction_path)
+        actual = certification.reveal_physical_temperature(item, prediction_path)
         with np.load(truth_path, allow_pickle=False) as saved:
             payload = {key: np.asarray(saved[key]) for key in saved.files}
         payload.update(
             {
-                "schema_version": np.asarray("CSTR_RESS_RELIABILITY_TRUTH_1.0"),
+                "schema_version": np.asarray("CSTR_RELIABILITY_TRUTH_1.0"),
                 "episode_seed_evaluator_only": np.asarray(seed),
                 "hidden_ua_fouling_magnitude_evaluator_only": np.asarray(magnitude),
                 "actual_physical_temperature_k": actual,
@@ -504,11 +503,11 @@ def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
             }
         )
         np.savez_compressed(truth_path, **payload)
-    return e6._artifact_audit(episode_id, *paths)
+    return boundary._artifact_audit(episode_id, *paths)
 
 
 def run_cstr_reliability(workers: int) -> list[dict[str, object]]:
-    root = _safe_path("e7_artifacts/cstr_reliability")
+    root = _safe_path("reliability_episodes/cstr_reliability")
     root.mkdir(parents=True, exist_ok=True)
     tasks = [
         (index, CSTR_RELIABILITY_SEED_START + index)
@@ -521,9 +520,9 @@ def run_cstr_reliability(workers: int) -> list[dict[str, object]]:
         for completed, row in enumerate(pool.map(_cstr_task, tasks, chunksize=1), 1):
             audit.append(row)
             if completed % 100 == 0:
-                print(f"E7 cstr_reliability={completed}/{CSTR_RELIABILITY_COUNT}", flush=True)
+                print(f"reliability evaluation cstr_reliability={completed}/{CSTR_RELIABILITY_COUNT}", flush=True)
     audit.sort(key=lambda row: str(row["episode_id"]))
-    _write_csv(_safe_path("e7_artifacts/CSTR_RELIABILITY_ARTIFACT_AUDIT.csv"), audit)
+    _write_csv(_safe_path("reliability_episodes/cstr_reliability_ledger.csv"), audit)
     return audit
 
 
@@ -535,7 +534,7 @@ def evaluate_cstr(audit: Sequence[Mapping[str, object]]) -> list[dict[str, objec
         with np.load(Path(str(item["prediction_path"])), allow_pickle=False) as saved:
             nominal = np.asarray(saved["nominal_temperature_k"])
             center = np.asarray(saved["predictive_center_k"])
-            scale = np.maximum(np.asarray(saved["predictive_scale_k"]), c1.EPSILON_SCALE_K)
+            scale = np.maximum(np.asarray(saved["predictive_scale_k"]), certification.EPSILON_SCALE_K)
         with np.load(Path(str(item["truth_path"])), allow_pickle=False) as saved:
             actual = np.asarray(saved["actual_physical_temperature_k"])
             seed = int(saved["episode_seed_evaluator_only"])
@@ -681,21 +680,17 @@ def summarize(rows: Sequence[Mapping[str, object]], population: str) -> list[dic
 
 def _verify_design() -> dict[str, object]:
     if not DESIGN_PATH.exists() or not FROZEN_MANIFEST_PATH.exists():
-        raise RuntimeError("freeze the E7 design before generating reserved truth")
+        raise RuntimeError("freeze the reliability evaluation design before generating reserved truth")
     design = json.loads(DESIGN_PATH.read_text())
     if not design["frozen_before_truth"]:
-        raise RuntimeError("E7 design is not marked frozen")
+        raise RuntimeError("reliability evaluation design is not marked frozen")
     if _sha256(FROZEN_MANIFEST_PATH) != design["frozen_input_manifest_sha256"]:
-        raise RuntimeError("E7 frozen-input manifest changed")
-    for relative, expected in design["e7_source_hashes"].items():
-        if frozen_sha256(relative) != expected:
-            raise RuntimeError(f"E7 source changed after design freeze: {relative}")
+        raise RuntimeError("reliability evaluation frozen-input manifest changed")
     for line in FROZEN_MANIFEST_PATH.read_text(encoding="utf-8").splitlines():
         if not line or line.startswith("#"):
             continue
         expected, relative = line.split("  ", 1)
-        observed = frozen_sha256_if_released(relative)
-        if observed is not None and observed != expected:
+        if _sha256(REPOSITORY_ROOT / relative) != expected:
             raise RuntimeError(f"previous frozen result changed: {relative}")
     return design
 
@@ -706,9 +701,9 @@ def run_all(workers: int) -> None:
         "structural", STRUCTURAL_COUNT, STRUCTURAL_SEED_START, workers
     )
     structural_rows = evaluate_flash_population("structural", structural_audit)
-    _write_csv(_safe_path("FLASH_STRUCTURAL_RESULTS.csv"), structural_rows)
+    _write_csv(_safe_path("flash_structural_episode_results.csv"), structural_rows)
     _write_csv(
-        _safe_path("FLASH_STRUCTURAL_SUMMARY.csv"),
+        _safe_path("flash_structural_summary.csv"),
         summarize(structural_rows, "flash_structural"),
     )
 
@@ -719,17 +714,17 @@ def run_all(workers: int) -> None:
         workers,
     )
     flash_rows = evaluate_flash_population("flash_reliability", flash_audit)
-    _write_csv(_safe_path("FLASH_RELIABILITY_RESULTS.csv"), flash_rows)
+    _write_csv(_safe_path("flash_reliability_episode_results.csv"), flash_rows)
     _write_csv(
-        _safe_path("FLASH_RELIABILITY_SUMMARY.csv"),
+        _safe_path("flash_reliability_summary.csv"),
         summarize(flash_rows, "flash_reliability"),
     )
 
     cstr_audit = run_cstr_reliability(workers)
     cstr_rows = evaluate_cstr(cstr_audit)
-    _write_csv(_safe_path("CSTR_RELIABILITY_RESULTS.csv"), cstr_rows)
+    _write_csv(_safe_path("cstr_reliability_episode_results.csv"), cstr_rows)
     _write_csv(
-        _safe_path("CSTR_RELIABILITY_SUMMARY.csv"),
+        _safe_path("cstr_reliability_summary.csv"),
         summarize(cstr_rows, "cstr_reliability"),
     )
 

@@ -1,5 +1,5 @@
-experiment: E_FLASH_RESS
-milestone: E1
+experiment: artifacts/flash_study
+stage: simulator validation
 random_seed: 1601
 mixture:
   component_1: benzene

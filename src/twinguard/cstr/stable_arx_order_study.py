@@ -1,4 +1,4 @@
-"""Milestone B.7B: stable higher-order direct-residual Bayesian ARX study."""
+"""Compare stability-conditioned Bayesian ARX models for CSTR residuals."""
 
 from __future__ import annotations
 
@@ -18,8 +18,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from twinguard.cstr import episode_design as b5
-from twinguard.cstr import recursive_rollout_diagnostics as b6
+from twinguard.cstr import episode_design as episode_design
+from twinguard.cstr import recursive_rollout_diagnostics as recursive_diagnostics
 from twinguard.discrepancy.baselines.stable_arx import (
     BayesianDirectARXModel,
     arx_training_data,
@@ -37,10 +37,10 @@ MAX_LAG = 10
 
 
 @dataclass(frozen=True)
-class MilestoneB7BConfig:
+class ArxOrderStudyConfig:
     source_dir: str = "artifacts/cstr/episode_design"
-    b7a_dir: str = "results/milestone_b7a"
-    b6_dir: str = "artifacts/cstr/recursive_rollout_diagnostics"
+    stability_dir: str = "artifacts/cstr/stability_diagnostics"
+    recursive_dir: str = "artifacts/cstr/recursive_rollout_diagnostics"
     output_dir: str = "artifacts/cstr/stable_arx_order_study"
     workers: int = 8
     limit_episodes: int | None = None
@@ -52,60 +52,60 @@ class MilestoneB7BConfig:
         if self.limit_episodes is not None and self.limit_episodes <= 0:
             raise ValueError("limit_episodes must be positive")
         if self.limit_episodes is None and self.posterior_samples != 2000:
-            raise ValueError("the full B.7B experiment freezes M at 2000")
+            raise ValueError("the full ARX order study experiment freezes M at 2000")
 
 
 _TEMPLATE: object | None = None
-_B5_CONFIG: b5.MilestoneB5Config | None = None
+_EPISODE_DESIGN_CONFIG: episode_design.EpisodeDesignConfig | None = None
 _SOURCE_DIR: Path | None = None
 _SAMPLES = 2000
 
 
-def _init_worker(template: object, config: b5.MilestoneB5Config, source: str, samples: int) -> None:
-    global _TEMPLATE, _B5_CONFIG, _SOURCE_DIR, _SAMPLES
+def _init_worker(template: object, config: episode_design.EpisodeDesignConfig, source: str, samples: int) -> None:
+    global _TEMPLATE, _EPISODE_DESIGN_CONFIG, _SOURCE_DIR, _SAMPLES
     _TEMPLATE = template
-    _B5_CONFIG = config
+    _EPISODE_DESIGN_CONFIG = config
     _SOURCE_DIR = Path(source)
     _SAMPLES = int(samples)
 
 
 def _reconstruct_observations(source_row: dict[str, str]) -> tuple[list[dict], list[dict], float]:
-    """Recreate only the already-observed B.5 history and verify its identity."""
-    if _TEMPLATE is None or _B5_CONFIG is None:
-        raise RuntimeError("B.7B worker is not initialized")
-    config = _B5_CONFIG
+    """Rebuild observed CSTR histories from stored seeds and verify the saved data."""
+    if _TEMPLATE is None or _EPISODE_DESIGN_CONFIG is None:
+        raise RuntimeError("ARX order study worker is not initialized")
+    config = _EPISODE_DESIGN_CONFIG
     seed = int(float(source_row["random_seed"]))
     rng = np.random.default_rng(seed)
     measurement_rng = np.random.default_rng(seed + 1_000_000)
     action_rng = np.random.default_rng(seed + 2_000_000)
     fault_onset = float(rng.uniform(config.fault_onset_min_s, config.fault_onset_max_s))
     fault_magnitude = float(rng.uniform(config.fault_magnitude_min, config.fault_magnitude_max))
-    nominal, faulty, metadata = b5._configure_episode_models(
+    nominal, faulty, metadata = episode_design._configure_episode_models(
         _TEMPLATE, config, rng, fault_onset, fault_magnitude
     )
     if not np.isclose(fault_onset, float(source_row["hidden_fault_onset_s"])):
-        raise RuntimeError("reconstructed fault onset differs from B.5")
+        raise RuntimeError("reconstructed fault onset differs from episode design")
     if not np.isclose(fault_magnitude, float(source_row["hidden_fault_magnitude"])):
-        raise RuntimeError("reconstructed fault magnitude differs from B.5")
+        raise RuntimeError("reconstructed fault magnitude differs from episode design")
     for key, value in metadata.items():
         if key in source_row and not np.isclose(value, float(source_row[key])):
-            raise RuntimeError(f"reconstructed {key} differs from B.5")
+            raise RuntimeError(f"reconstructed {key} differs from episode design")
     pre = [
-        b5._paired_observation(nominal, faulty, 2.0 / 60.0, measurement_rng, config.measurement_noise_k)
+        episode_design._paired_observation(nominal, faulty, 2.0 / 60.0, measurement_rng, config.measurement_noise_k)
         for _ in range(config.pre_fault_lead_steps)
     ]
     learning = []
     for index in range(config.n_postfault):
-        action_index = (index // config.training_action_block_steps) % len(b5.TRAINING_ACTIONS_LPS)
+        action_index = (index // config.training_action_block_steps) % len(episode_design.TRAINING_ACTIONS_LPS)
         learning.append(
-            b5._paired_observation(
-                nominal, faulty, b5.TRAINING_ACTIONS_LPS[action_index],
+            episode_design._paired_observation(
+                nominal, faulty, episode_design.TRAINING_ACTIONS_LPS[action_index],
                 measurement_rng, config.measurement_noise_k
             )
         )
-    proposed = b5._select_action_after_fit(source_row["action_category"], action_rng)
+    proposed = episode_design._select_action_after_fit(source_row["action_category"], action_rng)
     if not np.isclose(proposed, float(source_row["proposed_action"])):
-        raise RuntimeError("reconstructed held-out action differs from B.5")
+        raise RuntimeError("reconstructed held-out action differs from episode design")
     return pre, learning, proposed
 
 
@@ -114,8 +114,8 @@ def _rmse(prediction: np.ndarray, truth: np.ndarray) -> float:
 
 
 def _episode_task(source_row: dict[str, str]) -> list[dict[str, object]]:
-    if _SOURCE_DIR is None or _B5_CONFIG is None:
-        raise RuntimeError("B.7B worker is not initialized")
+    if _SOURCE_DIR is None or _EPISODE_DESIGN_CONFIG is None:
+        raise RuntimeError("ARX order study worker is not initialized")
     episode_id = source_row["episode_id"]
     seed = int(float(source_row["random_seed"]))
     category = source_row["action_category"]
@@ -127,7 +127,7 @@ def _episode_task(source_row: dict[str, str]) -> list[dict[str, object]]:
         nominal = np.asarray(saved["nominal_twin_temperature_k"], dtype=float)
         actions = np.asarray(saved["action_sequence_lps"], dtype=float)
     if actual_residual.size != 240 or not np.allclose(actions, proposed_action):
-        raise RuntimeError("saved B.5 evaluation population is not the frozen H=240 action")
+        raise RuntimeError("saved episode design evaluation population is not the frozen H=240 action")
 
     all_observed = pre + learning
     residuals = np.asarray([row["temperature_residual_k"] for row in all_observed])
@@ -387,11 +387,11 @@ def _selection_roles(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     return output
 
 
-def _previous_comparison(selected_results: Sequence[dict[str, object]], b7a_dir: Path, b6_dir: Path, source_dir: Path) -> list[dict[str, object]]:
-    b7a_episode = {row["episode_id"]: row for row in _read_csv(b7a_dir / "stable_posterior_episode_results.csv")}
-    b7a_innovations = _read_csv(b7a_dir / "innovation_samples.csv")
-    b6_stability = {row["episode_id"]: row for row in _read_csv(b6_dir / "episode_stability_summary.csv")}
-    b5_episode = {row["episode_id"]: row for row in _read_csv(source_dir / "calibration_episodes.csv")}
+def _previous_comparison(selected_results: Sequence[dict[str, object]], stability_dir: Path, recursive_dir: Path, source_dir: Path) -> list[dict[str, object]]:
+    stability_diagnostics_episode = {row["episode_id"]: row for row in _read_csv(stability_dir / "stable_posterior_episode_results.csv")}
+    stability_diagnostics_innovations = _read_csv(stability_dir / "innovation_samples.csv")
+    recursive_diagnostics_stability = {row["episode_id"]: row for row in _read_csv(recursive_dir / "episode_stability_summary.csv")}
+    episode_design_episode = {row["episode_id"]: row for row in _read_csv(source_dir / "calibration_episodes.csv")}
     output = []
     final_rows = [row for row in selected_results if row["split_role"] == "final_assessment"]
     ids = {str(row["episode_id"]) for row in final_rows}
@@ -414,19 +414,19 @@ def _previous_comparison(selected_results: Sequence[dict[str, object]], b7a_dir:
             "runtime_note": "complete ARX fit+stability-rejection+rollout runtime",
         })
         innovations_by_episode: dict[str, list[float]] = {episode: [] for episode in category_ids}
-        for row in b7a_innovations:
+        for row in stability_diagnostics_innovations:
             if row["episode_id"] in innovations_by_episode:
                 innovations_by_episode[row["episode_id"]].append(float(row["innovation_k"]))
         arrays = [np.asarray(values) for values in innovations_by_episode.values() if values]
         acf = _acf_within_episodes(arrays)
-        mean_rmse = np.asarray([float(b7a_episode[e]["after_posterior_mean_RMSE_k"]) for e in category_ids])
-        median_rmse = np.asarray([float(b7a_episode[e]["after_posterior_median_RMSE_k"]) for e in category_ids])
+        mean_rmse = np.asarray([float(stability_diagnostics_episode[e]["after_posterior_mean_RMSE_k"]) for e in category_ids])
+        median_rmse = np.asarray([float(stability_diagnostics_episode[e]["after_posterior_median_RMSE_k"]) for e in category_ids])
         teacher_rmse = np.asarray([_rmse(values, np.zeros(len(values))) for values in arrays])
-        runtimes = np.asarray([sum(float(b5_episode[e][key]) for key in ("posterior_fit_time", "posterior_sampling_time", "rollout_time")) for e in category_ids])
-        unstable = np.asarray([float(b6_stability[e]["posterior_unstable_fraction"]) for e in category_ids])
+        runtimes = np.asarray([sum(float(episode_design_episode[e][key]) for key in ("posterior_fit_time", "posterior_sampling_time", "rollout_time")) for e in category_ids])
+        unstable = np.asarray([float(recursive_diagnostics_stability[e]["posterior_unstable_fraction"]) for e in category_ids])
         all_innovations = np.concatenate(arrays)
         output.append({
-            "model": "previous_B7A_stability_conditioned_M4", "order": "",
+            "model": "previous_stability_conditioned_M4", "order": "",
             "split_role": "final_assessment", "action_category": category,
             "number_of_episodes": len(category_ids),
             "teacher_forced_RMSE_k": float(np.median(teacher_rmse)),
@@ -436,7 +436,7 @@ def _previous_comparison(selected_results: Sequence[dict[str, object]], b7a_dir:
             "maximum_absolute_innovation_ACF_lags_1_10": float(np.max(np.abs(acf[1:]))),
             "raw_unstable_fraction": float(np.mean(unstable)),
             "median_runtime_seconds_lower_bound": float(np.median(runtimes)),
-            "runtime_note": "B.5 fit+sampling+rollout only; B.7A rejection overhead was not logged",
+            "runtime_note": "episode design fit+sampling+rollout only; stability diagnostics rejection overhead was not logged",
         })
     return output
 
@@ -481,7 +481,7 @@ def create_figures(comparison: Sequence[dict[str, object]], stability: Sequence[
     selected_final = [row for row in comparison if int(row["order"]) == selected and row["split_role"] == "final_assessment" and row["action_category"] in ("interpolation", "boundary", "extrapolation", "pooled")]
     categories = ["interpolation", "boundary", "extrapolation", "pooled"]
     fig, ax = plt.subplots(figsize=(7, 4)); positions = np.arange(4); width=.36
-    ax.bar(positions-width/2, [next(r for r in previous if r["action_category"]==c and r["model"]=="previous_B7A_stability_conditioned_M4")["posterior_mean_trajectory_RMSE_k"] for c in categories], width, label="B.7A")
+    ax.bar(positions-width/2, [next(r for r in previous if r["action_category"]==c and r["model"]=="previous_stability_conditioned_M4")["posterior_mean_trajectory_RMSE_k"] for c in categories], width, label="stability diagnostics")
     ax.bar(positions+width/2, [next(r for r in selected_final if r["action_category"]==c)["median_posterior_mean_trajectory_RMSE_k"] for c in categories], width, label=f"ARX({selected})")
     ax.set_xticks(positions, categories, rotation=20); ax.set_ylabel("Median free-running mean RMSE (K)"); ax.legend(); ax.grid(axis="y", alpha=.25); save(fig, "figure_B7B_7_selected_vs_B7A")
     fig, ax = plt.subplots(figsize=(6.4, 4)); ax.plot(x, [row["median_fit_seconds"] for row in selection], "o-", label="fit"); ax.plot(x, [row["median_stability_sampling_seconds"] for row in selection], "o-", label="stable sampling"); ax.plot(x, [row["median_rollout_seconds"] for row in selection], "o-", label="rollout"); ax.set(xlabel="AR order p", ylabel="Median seconds per episode"); ax.legend(); ax.grid(alpha=.25); save(fig, "figure_B7B_8_runtime")
@@ -510,9 +510,9 @@ def create_report(output: Path, selected: int, scores: dict[int, float], compari
     selected_innov = next(r for r in innovations if int(r["order"]) == selected and r["split_role"] == "final_assessment" and r["action_category"] == "pooled")
     highest_row = next(r for r in comparison if int(r["order"]) == max(ORDERS) and r["split_role"] == "final_assessment" and r["action_category"] == "pooled")
     highest_innov = next(r for r in innovations if int(r["order"]) == max(ORDERS) and r["split_role"] == "final_assessment" and r["action_category"] == "pooled")
-    old = next(r for r in previous if r["action_category"] == "pooled" and r["model"] == "previous_B7A_stability_conditioned_M4")
+    old = next(r for r in previous if r["action_category"] == "pooled" and r["model"] == "previous_stability_conditioned_M4")
     score_text = ", ".join(f"p={p}: {score:.3f} K" for p, score in scores.items())
-    report = f"""# Milestone B.7B — Selected mean model
+    report = f"""# ARX order study — Selected mean model
 
 ## Central result
 
@@ -520,9 +520,9 @@ The predeclared model-selection split selected **ARX({selected})**. The selectio
 
 On the final-assessment split (80 episodes per action category), ARX({selected}) obtained median posterior-mean trajectory RMSE **{float(selected_row['median_posterior_mean_trajectory_RMSE_k']):.3f} K**, median posterior-median trajectory RMSE **{float(selected_row['median_posterior_median_trajectory_RMSE_k']):.3f} K**, and median deterministic stable-coefficient-mean RMSE **{float(selected_row['median_deterministic_stable_coefficient_mean_RMSE_k']):.3f} K**.
 
-## Comparison with B.7A
+## Comparison with stability diagnostics
 
-For the identical final-assessment episode IDs, B.7A's corresponding median posterior-mean and posterior-median RMSE values were **{float(old['posterior_mean_trajectory_RMSE_k']):.3f} K** and **{float(old['posterior_median_trajectory_RMSE_k']):.3f} K**. Teacher-forced innovation RMSE changed from **{float(old['teacher_forced_RMSE_k']):.3f} K** to **{float(selected_row['median_teacher_forced_RMSE_k']):.3f} K**. The selected model's pooled innovation mean is **{float(selected_innov['innovation_mean_k']):+.3f} K** and maximum absolute within-episode ACF over lags 1–10 is **{float(selected_innov['maximum_absolute_ACF_lags_1_10']):.3f}**.
+For the identical final-assessment episode IDs, stability diagnostics's corresponding median posterior-mean and posterior-median RMSE values were **{float(old['posterior_mean_trajectory_RMSE_k']):.3f} K** and **{float(old['posterior_median_trajectory_RMSE_k']):.3f} K**. Teacher-forced innovation RMSE changed from **{float(old['teacher_forced_RMSE_k']):.3f} K** to **{float(selected_row['median_teacher_forced_RMSE_k']):.3f} K**. The selected model's pooled innovation mean is **{float(selected_innov['innovation_mean_k']):+.3f} K** and maximum absolute within-episode ACF over lags 1–10 is **{float(selected_innov['maximum_absolute_ACF_lags_1_10']):.3f}**.
 
 ## Stability and computation
 
@@ -530,7 +530,7 @@ The ordinary posterior was fitted before conditioning. Coefficient draws with co
 
 ## Interpretation
 
-Coverage and 95% width are retained only as diagnostics because B.7A already rejected the constant-variance innovation assumption. They were not used for model selection or the verdict. The comparison is about conditional-mean accuracy, horizon bias, dependence, stability, and runtime. A poor result therefore diagnoses the direct linear ARX mean structure before any nonlinear model is considered.
+Coverage and 95% width are retained only as diagnostics because stability diagnostics already rejected the constant-variance innovation assumption. They were not used for model selection or the verdict. The comparison is about conditional-mean accuracy, horizon bias, dependence, stability, and runtime. A poor result therefore diagnoses the direct linear ARX mean structure before any nonlinear model is considered.
 
 The predeclared acceptance gates were: final-assessment pooled median posterior-mean RMSE at most 5 K, interpolation median RMSE at most 2 K, absolute pooled innovation bias at most 0.5 K, and maximum absolute within-episode innovation ACF over lags 1–10 at most 0.3. Failure at p=5 is classified as `INCREASE TEMPORAL ORDER` only when p=5 improves selection RMSE by at least 5% over p=4 and dependence remains excessive; otherwise the tested linear mean structure is inadequate.
 
@@ -545,17 +545,17 @@ This is the answer to whether a stability-constrained higher-order ARX model pro
     (output / "SELECTED_MODEL.md").write_text(report, encoding="utf-8")
 
 
-def run_experiment(config: MilestoneB7BConfig) -> int:
+def run_experiment(config: ArxOrderStudyConfig) -> int:
     config.validate()
     source = Path(config.source_dir); output = Path(config.output_dir); output.mkdir(parents=True, exist_ok=True)
-    rows = _selection_roles(b6.load_b5_episodes(source / "calibration_episodes.csv"))
+    rows = _selection_roles(recursive_diagnostics.load_episode_design_episodes(source / "calibration_episodes.csv"))
     if config.limit_episodes is not None:
         rows = rows[:config.limit_episodes]
-    b5_config = b5.MilestoneB5Config(output_dir=config.source_dir)
-    template = b5.build_template(b5_config)
+    episode_design_config = episode_design.EpisodeDesignConfig(output_dir=config.source_dir)
+    template = episode_design.build_template(episode_design_config)
     with ProcessPoolExecutor(
         max_workers=min(config.workers, len(rows)), initializer=_init_worker,
-        initargs=(template, b5_config, str(source), config.posterior_samples)
+        initargs=(template, episode_design_config, str(source), config.posterior_samples)
     ) as pool:
         nested = list(pool.map(_episode_task, rows, chunksize=1))
     results = [item for group in nested for item in group]
@@ -574,7 +574,7 @@ def run_experiment(config: MilestoneB7BConfig) -> int:
         "spectral_radius_maximum",
     )
     stability = [{key: row[key] for key in stability_fields} for row in results]
-    previous = _previous_comparison(selected_results, Path(config.b7a_dir), Path(config.b6_dir), source)
+    previous = _previous_comparison(selected_results, Path(config.stability_dir), Path(config.recursive_dir), source)
     final_verdict = verdict(selected, comparison, innovations)
     for row in comparison:
         row["selected_order"] = int(int(row["order"]) == selected)
@@ -584,11 +584,11 @@ def run_experiment(config: MilestoneB7BConfig) -> int:
     _write_csv(output / "posterior_stability_summary.csv", stability)
     _write_csv(output / "horizon_error_summary.csv", horizon)
     _write_csv(output / "innovation_summary.csv", innovations)
-    _write_csv(output / "selected_vs_b7a_comparison.csv", previous)
+    _write_csv(output / "selected_vs_stability_diagnostics_comparison.csv", previous)
     create_figures(comparison, stability, horizon, innovations, selected, previous, output / "figures")
     create_report(output, selected, scores, comparison, innovations, previous, final_verdict)
     metadata = {
-        "milestone": "B.7B", "episode_count": len(rows), "orders": list(ORDERS),
+        "stage": "ARX order study", "episode_count": len(rows), "orders": list(ORDERS),
         "N_postfault": 50, "horizon_steps": 240, "posterior_samples": config.posterior_samples,
         "selection_episodes_per_category": SELECTION_EPISODES_PER_CATEGORY,
         "final_assessment_episodes_per_category": 80 if config.limit_episodes is None else None,
@@ -610,8 +610,8 @@ def run_experiment(config: MilestoneB7BConfig) -> int:
 def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-dir", default="artifacts/cstr/episode_design")
-    parser.add_argument("--b7a-dir", default="results/milestone_b7a")
-    parser.add_argument("--b6-dir", default="artifacts/cstr/recursive_rollout_diagnostics")
+    parser.add_argument("--stability-dir", default="artifacts/cstr/stability_diagnostics")
+    parser.add_argument("--recursive-dir", default="artifacts/cstr/recursive_rollout_diagnostics")
     parser.add_argument("--output-dir", default="artifacts/cstr/stable_arx_order_study")
     parser.add_argument("--workers", type=int, default=min(8, os.cpu_count() or 1))
     parser.add_argument("--limit-episodes", type=int)
@@ -620,9 +620,9 @@ def build_argument_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
-    config = MilestoneB7BConfig(**vars(build_argument_parser().parse_args()))
+    config = ArxOrderStudyConfig(**vars(build_argument_parser().parse_args()))
     count = run_experiment(config)
-    print(f"Milestone B.7B complete: {config.output_dir} ({count} episodes)")
+    print(f"ARX order study complete: {config.output_dir} ({count} episodes)")
 
 
 if __name__ == "__main__":

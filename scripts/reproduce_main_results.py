@@ -1,11 +1,10 @@
-"""Reproduce the principal RESS results.
+"""Reproduce the principal results.
 
-Verification of the frozen results (minutes; nothing is recomputed from scratch):
+Verification of the released results (minutes; nothing is recomputed from scratch):
 
-    python scripts/reproduce_main_results.py              # git checkout only
-    python scripts/reproduce_main_results.py --archive    # plus the extracted per-episode archive
+    python scripts/reproduce_main_results.py
 
-  runs the reproducibility audit, checks that results/tables and results/figures match the frozen
+  runs the reproducibility audit, checks that results/tables and results/figures match the released
   outputs, and prints the headline table.
 
 Prospective reruns (each stage reruns in a fresh workspace under runs/, never in artifacts/):
@@ -13,9 +12,10 @@ Prospective reruns (each stage reruns in a fresh workspace under runs/, never in
     python scripts/reproduce_main_results.py --rerun flash-simulator cstr-primary-smoke
     python scripts/reproduce_main_results.py --rerun flash-primary --workers 6
 
-  After each stage, its regenerated summary files are compared cell by cell with the frozen ones.
+  After each stage, its regenerated summary files are compared cell by cell with the released ones.
   Available stages and approximate cost are listed by --list. Full reruns of the evaluation
-  populations take hours, and the boundary / structural stages need the frozen archive.
+  populations take hours. The structural / mixed-regime stage ends with a final audit that reads the
+  per-episode files of the flash and CSTR primary evaluations, so rerun those stages first.
 """
 
 from __future__ import annotations
@@ -34,12 +34,12 @@ FLASH = ROOT / "artifacts" / "flash_study"
 LADDER = ROOT / "artifacts" / "flash_margin_ladder"
 CSTR = ROOT / "artifacts" / "cstr"
 
-# stage -> (experiment script, extra args, kind, [(frozen file, file relative to the rerun output)], cost)
+# stage -> (experiment script, extra args, kind, [(released file, file relative to the rerun output)], cost)
 STAGES = {
     "flash-simulator": ("validate_flash_simulator.py", [], "flash",
-                        [(FLASH / "e1_validation/HEALTHY_SCENARIO_SUMMARY.csv", "e1_validation/HEALTHY_SCENARIO_SUMMARY.csv"),
-                         (FLASH / "e1_validation/ACTION_STEP_RESPONSES.csv", "e1_validation/ACTION_STEP_RESPONSES.csv"),
-                         (FLASH / "e1_validation/E1_VALIDATION_SUMMARY.json", "e1_validation/E1_VALIDATION_SUMMARY.json")], "seconds"),
+                        [(FLASH / "simulator_validation/HEALTHY_SCENARIO_SUMMARY.csv", "simulator_validation/HEALTHY_SCENARIO_SUMMARY.csv"),
+                         (FLASH / "simulator_validation/ACTION_STEP_RESPONSES.csv", "simulator_validation/ACTION_STEP_RESPONSES.csv"),
+                         (FLASH / "simulator_validation/simulator_validation_summary.json", "simulator_validation/simulator_validation_summary.json")], "seconds"),
     "flash-model-selection": ("fit_and_select_flash_discrepancy_model.py", [], "flash",
                               [(FLASH / "flash_model_selection.csv", "flash_model_selection.csv")], "~1 h"),
     "flash-calibration": ("calibrate_flash_conformal.py", [], "flash",
@@ -48,15 +48,15 @@ STAGES = {
                                         [(FLASH / "flash_bootstrap_manifest.csv", "flash_bootstrap_manifest.csv"),
                                          (FLASH / "flash_calibration_scores.csv", "flash_calibration_scores.csv")], "several hours"),
     "flash-primary": ("evaluate_flash_primary.py", [], "flash",
-                      [(FLASH / "FLASH_FINAL_ABLATION.csv", "FLASH_FINAL_ABLATION.csv")], "~1 h (1200 episodes x 2000 paths)"),
+                      [(FLASH / "flash_primary_ablation.csv", "flash_primary_ablation.csv")], "~1 h (1200 episodes x 2000 paths)"),
     "boundary": ("evaluate_boundary_challenge.py", [], "flash",
-                 [(FLASH / "RISK_AVAILABILITY_RESULTS.csv", "RISK_AVAILABILITY_RESULTS.csv")], "hours; needs archive"),
+                 [(FLASH / "boundary_risk_availability.csv", "boundary_risk_availability.csv")], "hours"),
     "structural-and-mixed-regime": ("evaluate_structural_mismatch_and_mixed_regime_audits.py", [], "flash",
-                                    [(FLASH / "FLASH_STRUCTURAL_SUMMARY.csv", "FLASH_STRUCTURAL_SUMMARY.csv"),
-                                     (FLASH / "FLASH_RELIABILITY_SUMMARY.csv", "FLASH_RELIABILITY_SUMMARY.csv"),
-                                     (FLASH / "CSTR_RELIABILITY_SUMMARY.csv", "CSTR_RELIABILITY_SUMMARY.csv")], "many hours; needs archive"),
+                                    [(FLASH / "flash_structural_summary.csv", "flash_structural_summary.csv"),
+                                     (FLASH / "flash_reliability_summary.csv", "flash_reliability_summary.csv"),
+                                     (FLASH / "cstr_reliability_summary.csv", "cstr_reliability_summary.csv")], "many hours; needs primary per-episode files"),
     "margin-ladder": ("evaluate_flash_margin_ladder.py", ["--stage", "all"], "flash",
-                      [(LADDER / "E6B_RISK_AVAILABILITY.csv", "E6B_RISK_AVAILABILITY.csv")], "many hours"),
+                      [(LADDER / "margin_ladder_risk_availability.csv", "margin_ladder_risk_availability.csv")], "many hours"),
     "cstr-bootstrap": ("build_cstr_bootstrap_ensemble.py", [], "cstr",
                        [(CSTR / "bootstrap_ensemble/bootstrap_model_manifest.csv", "bootstrap_model_manifest.csv")], "~1 h"),
     "cstr-conformal": ("calibrate_cstr_conformal.py", [], "cstr",
@@ -66,7 +66,7 @@ STAGES = {
                       (CSTR / "primary_evaluation/safety_summary.csv", "safety_summary.csv")], "~1-2 h"),
     "cstr-primary-smoke": ("evaluate_cstr_primary.py", ["--limit-episodes", "3", "--trajectories", "200"], "cstr", [], "~1 min"),
     "cstr-mixed-degradation": ("evaluate_cstr_mixed_degradation.py", [], "cstr",
-                               [(CSTR / "mixed_degradation/MULTIFAULT_SUMMARY.csv", "MULTIFAULT_SUMMARY.csv")], "hours"),
+                               [(CSTR / "mixed_degradation/mixed_degradation_summary.csv", "mixed_degradation_summary.csv")], "hours"),
 }
 
 
@@ -87,14 +87,14 @@ def _same(a: str, b: str) -> bool:
     return (math.isnan(x) and math.isnan(y)) or math.isclose(x, y, rel_tol=1e-9, abs_tol=1e-12)
 
 
-def compare(frozen: Path, rerun: Path) -> str:
+def compare(released: Path, rerun: Path) -> str:
     if not rerun.is_file():
         return f"MISSING   {rerun}"
-    a, b = _cells(frozen), _cells(rerun)
+    a, b = _cells(released), _cells(rerun)
     if len(a) != len(b):
-        return f"DIFFERENT {frozen.name}: {len(a)} vs {len(b)} rows"
+        return f"DIFFERENT {released.name}: {len(a)} vs {len(b)} rows"
     differing = sum(any(not _same(x, y) for x, y in zip(ra, rb)) or len(ra) != len(rb) for ra, rb in zip(a, b))
-    return f"{'IDENTICAL' if differing == 0 else 'DIFFERENT'} {frozen.name}: {differing} of {len(a)} rows differ (numeric tolerance 1e-9)"
+    return f"{'IDENTICAL' if differing == 0 else 'DIFFERENT'} {released.name}: {differing} of {len(a)} rows differ (numeric tolerance 1e-9)"
 
 
 def rerun(stage: str, workers: int | None) -> int:
@@ -106,13 +106,13 @@ def rerun(stage: str, workers: int | None) -> int:
     arguments += extra + (["--workers", str(workers)] if workers and stage != "flash-simulator" and stage != "cstr-primary-smoke" else [])
     print(f"\n=== {stage} ({cost}) -> {target}", flush=True)
     status = subprocess.call(arguments, cwd=ROOT)
-    for frozen, relative in comparisons:
-        print("   ", compare(frozen, target / relative))
+    for released, relative in comparisons:
+        print("   ", compare(released, target / relative))
     return status
 
 
-def verify(archive: bool) -> int:
-    status = subprocess.call([sys.executable, str(ROOT / "reproducibility/run_reproducibility_audit.py")] + (["--archive"] if archive else []), cwd=ROOT)
+def verify() -> int:
+    status = subprocess.call([sys.executable, str(ROOT / "reproducibility/run_reproducibility_audit.py")], cwd=ROOT)
     status |= subprocess.call([sys.executable, str(ROOT / "scripts/generate_paper_tables.py"), "--check"], cwd=ROOT)
     status |= subprocess.call([sys.executable, str(ROOT / "scripts/generate_paper_figures.py")], cwd=ROOT)
     print("\nHeadline results (results/tables/paper_headline_results.csv):")
@@ -125,7 +125,6 @@ def verify(archive: bool) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--archive", action="store_true", help="also audit the extracted per-episode archive")
     parser.add_argument("--rerun", nargs="+", choices=sorted(STAGES), metavar="STAGE", help="stages to rerun prospectively")
     parser.add_argument("--workers", type=int, default=None)
     parser.add_argument("--list", action="store_true", help="list rerunnable stages")
@@ -136,7 +135,7 @@ def main() -> int:
         return 0
     if args.rerun:
         return max(rerun(stage, args.workers) for stage in args.rerun)
-    return verify(args.archive)
+    return verify()
 
 
 if __name__ == "__main__":

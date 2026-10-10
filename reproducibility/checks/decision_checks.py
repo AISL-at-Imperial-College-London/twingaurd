@@ -18,16 +18,16 @@ def _row_consistency(name, rows, rule, detail):
 
 def check_row_consistency() -> list[CheckResult]:
     results = []
-    for name, table in (("flash primary", "FLASH_FINAL_RESULTS.csv"), ("flash structural mismatch", "FLASH_STRUCTURAL_RESULTS.csv"),
-                        ("flash mixed-regime audit", "FLASH_RELIABILITY_RESULTS.csv")):
+    for name, table in (("flash primary", "flash_primary_episode_results.csv"), ("flash structural mismatch", "flash_structural_episode_results.csv"),
+                        ("flash mixed-regime audit", "flash_reliability_episode_results.csv")):
         rows = read_csv(FLASH / table)
         results.append(_row_consistency(name, rows, lambda r: (
             truthy(r["certified_safe"]) == (r["decision"] == "CERTIFIED SAFE")
             and truthy(r["false_safe"]) == (truthy(r["certified_safe"]) and truthy(r["actual_unsafe"]))
             and truthy(r["actual_safe"]) != truthy(r["actual_unsafe"])),
             "certified <=> decision 'CERTIFIED SAFE'; false-safe <=> certified and physically unsafe; safe xor unsafe"))
-    for name, path in (("flash boundary", FLASH / "FLASH_BOUNDARY_RESULTS.csv"), ("cstr boundary", FLASH / "CSTR_BOUNDARY_RESULTS.csv"),
-                       ("cstr mixed-regime audit", FLASH / "CSTR_RELIABILITY_RESULTS.csv")):
+    for name, path in (("flash boundary", FLASH / "flash_boundary_episode_results.csv"), ("cstr boundary", FLASH / "cstr_boundary_episode_results.csv"),
+                       ("cstr mixed-regime audit", FLASH / "cstr_reliability_episode_results.csv")):
         results.append(_row_consistency(name, read_csv(path), lambda r: (
             truthy(r["false_safe"]) == (truthy(r["certified_safe"]) and truthy(r["actual_unsafe"]))
             and truthy(r["actual_safe"]) != truthy(r["actual_unsafe"])),
@@ -35,12 +35,12 @@ def check_row_consistency() -> list[CheckResult]:
     results.append(_row_consistency("cstr primary", read_csv(CSTR / "primary_evaluation/final_safety_episodes.csv"), lambda r: (
         truthy(r["false_safe_indicator"]) == (r["decision"] == "SAFE" and not truthy(r["actual_safe"]))),
         "false-safe <=> decision SAFE and physical temperature limit exceeded"))
-    results.append(_row_consistency("cstr mixed degradation", read_csv(CSTR / "mixed_degradation/MULTIFAULT_FINAL_EPISODES.csv"), lambda r: (
+    results.append(_row_consistency("cstr mixed degradation", read_csv(CSTR / "mixed_degradation/mixed_degradation_test_episodes.csv"), lambda r: (
         truthy(r["certified_safe"]) == (r["decision"] == "CERTIFIED SAFE")
         and truthy(r["false_safe"]) == (truthy(r["certified_safe"]) and truthy(r["actual_unsafe"]))
         and truthy(r["nominal_dt_false_safe"]) == (truthy(r["nominal_dt_safe"]) and truthy(r["actual_unsafe"]))),
         "proposed and nominal-DT false-safe indicators follow from decision and physical outcome"))
-    for name, path in (("flash margin ladder", LADDER / "FLASH_E6B_MARGIN_RESULTS.csv"), ("cstr margin ladder", LADDER / "CSTR_E6B_MARGIN_RESULTS.csv")):
+    for name, path in (("flash margin ladder", LADDER / "flash_margin_results.csv"), ("cstr margin ladder", LADDER / "cstr_margin_results.csv")):
         results.append(_row_consistency(name, read_csv(path), lambda r: (
             not truthy(r["false_safe"]) or (truthy(r["certified_safe"]) and not truthy(r["actual_safe"]))),
             "false-safe implies certified and not physically safe"))
@@ -78,40 +78,40 @@ def _group(rows, keys):
 def check_summary_reconstruction() -> list[CheckResult]:
     results = []
     # flash primary + component ablation (pooled and every reported subgroup)
-    episodes = read_csv(FLASH / "FLASH_FINAL_RESULTS.csv")
+    episodes = read_csv(FLASH / "flash_primary_episode_results.csv")
     by_method = _group(episodes, ("method",))
-    for row in read_csv(FLASH / "FLASH_FINAL_ABLATION.csv"):
+    for row in read_csv(FLASH / "flash_primary_ablation.csv"):
         subset = by_method[(row["method"],)]
         if row["group_type"] != "pooled":
             column = next((c for c in subset[0] if c.endswith(("_evaluator_only", "_group", "_region", "_constraint"))
                            and row["group_value"] in {r[c] for r in subset}), None)
             if column is None:
                 results.append(CheckResult(f"summary:flash ablation {row['group_type']}={row['group_value']} {row['method']}",
-                                           "decision_reconstruction", "FLASH_FINAL_ABLATION.csv", 0, 0, status="INFO",
+                                           "decision_reconstruction", "flash_primary_ablation.csv", 0, 0, status="INFO",
                                            detail="no per-episode column carries this subgroup label"))
                 continue
             subset = [r for r in subset if r[column] == row["group_value"]]
         coverage, denominator = _coverage(subset, "whole_trajectory_safety_direction_covered")
-        results.append(_compare(f"summary:flash ablation {row['group_type']}={row['group_value']} {row['method']}", "FLASH_FINAL_ABLATION.csv",
+        results.append(_compare(f"summary:flash ablation {row['group_type']}={row['group_value']} {row['method']}", "flash_primary_ablation.csv",
                                 [("episodes", len(subset), row["episode_count"]), ("certified", _count(subset, "certified_safe"), row["certified_safe_count"]),
                                  ("false_safe", _count(subset, "false_safe"), row["false_safe_count"]),
                                  ("actual_unsafe", _count(subset, "actual_unsafe"), row["actual_unsafe_count"])],
                                 [("coverage", coverage, denominator, row["whole_trajectory_safety_direction_coverage"])] if row["method"] != "M4_action_conditioned" else []))
     # boundary challenge
-    flash_boundary = _group(read_csv(FLASH / "FLASH_BOUNDARY_RESULTS.csv"), ("method", "confidence_level"))
-    cstr_boundary = _group(read_csv(FLASH / "CSTR_BOUNDARY_RESULTS.csv"), ("method", "confidence_level"))
-    for row in read_csv(FLASH / "RISK_AVAILABILITY_RESULTS.csv"):
+    flash_boundary = _group(read_csv(FLASH / "flash_boundary_episode_results.csv"), ("method", "confidence_level"))
+    cstr_boundary = _group(read_csv(FLASH / "cstr_boundary_episode_results.csv"), ("method", "confidence_level"))
+    for row in read_csv(FLASH / "boundary_risk_availability.csv"):
         groups = flash_boundary if row["process"] == "flash" else cstr_boundary
         key = (row["method"], row["confidence_level"])
         subset = groups.get(key) or [r for (m, _), rs in groups.items() if m == row["method"] for r in rs]
-        results.append(_compare(f"summary:boundary {row['process']} {row['method']} {row['confidence_level']}", "RISK_AVAILABILITY_RESULTS.csv",
+        results.append(_compare(f"summary:boundary {row['process']} {row['method']} {row['confidence_level']}", "boundary_risk_availability.csv",
                                 [("episodes", len(subset), row["episode_count"]), ("certified", _count(subset, "certified_safe"), row["certified_safe_count"]),
                                  ("false_safe", _count(subset, "false_safe"), row["false_safe_count"]),
                                  ("actual_unsafe", _count(subset, "actual_unsafe"), row["actual_unsafe_count"])]))
     # structural mismatch and mixed-regime audits
-    for table, summary, coverage_column in (("FLASH_STRUCTURAL_RESULTS.csv", "FLASH_STRUCTURAL_SUMMARY.csv", "whole_trajectory_safety_direction_covered"),
-                                            ("FLASH_RELIABILITY_RESULTS.csv", "FLASH_RELIABILITY_SUMMARY.csv", "whole_trajectory_safety_direction_covered"),
-                                            ("CSTR_RELIABILITY_RESULTS.csv", "CSTR_RELIABILITY_SUMMARY.csv", "upper_trajectory_covered")):
+    for table, summary, coverage_column in (("flash_structural_episode_results.csv", "flash_structural_summary.csv", "whole_trajectory_safety_direction_covered"),
+                                            ("flash_reliability_episode_results.csv", "flash_reliability_summary.csv", "whole_trajectory_safety_direction_covered"),
+                                            ("cstr_reliability_episode_results.csv", "cstr_reliability_summary.csv", "upper_trajectory_covered")):
         groups = _group(read_csv(FLASH / table), ("method",))
         for row in read_csv(FLASH / summary):
             subset = groups[(row["method"],)]
@@ -135,29 +135,29 @@ def check_summary_reconstruction() -> list[CheckResult]:
                                  ("false_safe", _count(subset, "false_safe_indicator"), row["false_safe_count"])],
                                 [("upper coverage", coverage, denominator, row["upper_trajectory_empirical_coverage"])]))
     # CSTR mixed degradation (+ its comparison rows, which restate the CSTR primary result)
-    mixed = read_csv(CSTR / "mixed_degradation/MULTIFAULT_FINAL_EPISODES.csv")
+    mixed = read_csv(CSTR / "mixed_degradation/mixed_degradation_test_episodes.csv")
     primary_summary = {(r["method"], r["nominal_level"], r["action_category"]): r for r in read_csv(CSTR / "primary_evaluation/safety_summary.csv")}
-    for row in read_csv(CSTR / "mixed_degradation/MULTIFAULT_SUMMARY.csv"):
-        if row["population"].startswith("Multi-fault"):
+    for row in read_csv(CSTR / "mixed_degradation/mixed_degradation_summary.csv"):
+        if row["population"] == "CSTR mixed degradation":
             safe_col, false_col, cov_col = (("certified_safe", "false_safe", "upper_trajectory_covered") if row["method"] == "proposed_method"
                                             else ("nominal_dt_safe", "nominal_dt_false_safe", "nominal_upper_trajectory_covered"))
             coverage, denominator = _coverage(mixed, cov_col)
-            results.append(_compare(f"summary:cstr mixed degradation {row['method']}", "MULTIFAULT_SUMMARY.csv",
+            results.append(_compare(f"summary:cstr mixed degradation {row['method']}", "mixed_degradation_summary.csv",
                                     [("episodes", len(mixed), row["number_of_episodes"]), ("certified", _count(mixed, safe_col), row["SAFE_count"]),
                                      ("false_safe", _count(mixed, false_col), row["false_safe_count"])],
                                     [("upper coverage", coverage, denominator, row["upper_trajectory_coverage"])]))
         else:
             source = primary_summary[("S3_one_sided" if row["method"] == "proposed_method" else "S0_nominal_DT", "0.95", "pooled")]
-            results.append(_compare(f"summary:cstr primary restated in mixed-degradation table ({row['method']})", "MULTIFAULT_SUMMARY.csv",
+            results.append(_compare(f"summary:cstr primary restated in mixed-degradation table ({row['method']})", "mixed_degradation_summary.csv",
                                     [("episodes", source["number_of_episodes"], row["number_of_episodes"]),
                                      ("certified", source["SAFE_count"], row["SAFE_count"]),
                                      ("false_safe", source["false_safe_count"], row["false_safe_count"])]))
     # margin ladder
-    ladder_rows = read_csv(LADDER / "FLASH_E6B_MARGIN_RESULTS.csv") + read_csv(LADDER / "CSTR_E6B_MARGIN_RESULTS.csv")
-    for row in read_csv(LADDER / "E6B_RISK_AVAILABILITY.csv"):
+    ladder_rows = read_csv(LADDER / "flash_margin_results.csv") + read_csv(LADDER / "cstr_margin_results.csv")
+    for row in read_csv(LADDER / "margin_ladder_risk_availability.csv"):
         subset = [r for r in ladder_rows if r["process"].lower() == row["process"].lower() and r["method"] == row["method"]
                   and (row["margin_band"] in ("all", "pooled", "ALL") or r["margin_band"] == row["margin_band"])]
-        results.append(_compare(f"summary:margin ladder {row['process']} {row['margin_band']} {row['method']}", "E6B_RISK_AVAILABILITY.csv",
+        results.append(_compare(f"summary:margin ladder {row['process']} {row['margin_band']} {row['method']}", "margin_ladder_risk_availability.csv",
                                 [("eligible", len(subset), row["N_eligible"]), ("certified", _count(subset, "certified_safe"), row["certified_count"]),
                                  ("false_safe", _count(subset, "false_safe"), row["false_safe_count"])]))
     return results

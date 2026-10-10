@@ -1,8 +1,8 @@
-"""Frozen E2 fault, action, safety, and population-design interfaces.
+"""Define flash faults, candidate actions, safety limits, and episode populations.
 
-This module contains no training and generates no final physical truth. Hidden
-fault records are evaluator-only. Operational records have an explicit allowlist
-that excludes all fault and future-truth fields.
+Operational records contain values available before each prediction.
+Hidden fault identities and future outcomes stay in evaluator-only records.
+Population seeds are separated by training, calibration, and evaluation role.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from typing import Mapping, Sequence
 
 import numpy as np
 
-from twinguard.digital_twins.flash_drum import FlashDigitalTwin
+from twinguard.flash.digital_twin import FlashDigitalTwin
 from twinguard.plants.flash_drum import FlashAction, FlashParameters, FlashState, PhysicalStateError
 
 
@@ -209,7 +209,7 @@ def faulted_plant_parameters(
     """Apply F1-F3 to an independent plant parameter copy only."""
 
     if truth.family is FaultFamily.NONIDEAL_VLE_STRESS:
-        raise NotImplementedError("F4 is reserved and must not enter E2-E4 training")
+        raise NotImplementedError("F4 is reserved and must not enter population design-calibration training")
     expected = getattr(nominal_parameters, truth.changed_parameter)
     if not np.isclose(expected, truth.nominal_value, rtol=0.0, atol=1e-12):
         raise ValueError("fault record does not match the supplied nominal parameter set")
@@ -241,14 +241,14 @@ def validate_candidate_action(action: FlashAction | Sequence[float]) -> FlashAct
     nominal, lower, upper = nominal_and_effective_action_bounds()
     values = candidate.as_array()
     if np.any(values < lower) or np.any(values > upper):
-        raise ValueError(f"candidate action outside E2 domain [{lower}, {upper}]")
+        raise ValueError(f"candidate action outside population design domain [{lower}, {upper}]")
     if np.any(np.abs(values - nominal) > MAXIMUM_ACTION_CHANGE + 1e-12):
         raise ValueError("candidate exceeds maximum change from nominal action")
     return candidate
 
 
 def latin_hypercube_actions(count: int, seed: int) -> np.ndarray:
-    """Generate a deterministic centered Latin hypercube over the E2 domain."""
+    """Generate a centered Latin hypercube over the configured action bounds."""
 
     if count < 1:
         raise ValueError("action count must be positive")

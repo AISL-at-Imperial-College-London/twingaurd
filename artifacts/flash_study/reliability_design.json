@@ -1,0 +1,63 @@
+{
+  "cstr_reliability": {
+    "actions": "1000 each interpolation/boundary/extrapolation from frozen sampler",
+    "denominator_policy": "new population, never merged with primary certification/mixed-degradation evaluation",
+    "episode_count": 3000,
+    "fault": "UA fouling under frozen primary certification generator",
+    "q_plus_95": 5.464557586938352,
+    "seed_end": 50002999,
+    "seed_start": 50000000,
+    "temperature_limit_k": 313.0
+  },
+  "execution_amendment_01": {
+    "status": "PROSPECTIVE_BEFORE_ANY_RELIABILITY_CANDIDATE_OR_TRUTH_ARTIFACT",
+    "change": "Removed redundant per-worker calibration hashing; parent verification of all 34222 frozen inputs remains mandatory.",
+    "scientific_design_changed": false,
+    "reserved_artifacts_present_at_amendment": 0
+  },
+  "flash_reliability": {
+    "actions": "1500 frozen centered-LHS ordinary and 1500 nominal-DT boundary",
+    "boundary_pooled_q_95": 11.349920831470156,
+    "denominator_policy": "new population, never merged with primary evaluation/boundary challenge",
+    "episode_count": 3000,
+    "faults": "balanced cyclic F1/F2/F3, 1000 each",
+    "ordinary_pooled_q_95": 11.04859850832729,
+    "seed_end": 29002999,
+    "seed_start": 29000000
+  },
+  "freeze_date": "2026-08-13",
+  "frozen_before_truth": true,
+  "frozen_input_file_count": 34222,
+  "frozen_input_manifest_sha256": "a30f2743ac0298729c090a8c4ed15b6571ad7e737fc5139d90ee4cd18da93492",
+  "intervals": {
+    "confidence": 0.95,
+    "exact": "two-sided Clopper-Pearson",
+    "score": "Wilson",
+    "zero_event_word_rule": "report 0 observed/N with finite upper confidence bound; never zero risk"
+  },
+  "prospective_protocol": [
+    "candidate artifact",
+    "prediction artifact",
+    "decision artifact",
+    "physical truth reveal"
+  ],
+  "schema_version": "RELIABILITY_DESIGN_1.0",
+  "structural_amendment": {
+    "actions": "exactly half frozen centered-LHS ordinary and half nominal-DT boundary",
+    "calibration_interpretation": "matching frozen q values applied descriptively; no structural-fault calibration claim",
+    "deviation_from_population_design_placeholder": "population design reserved nonideal VLE as F4; the explicit reliability evaluation instruction instead preferred unmodelled actuator dynamics. No simulator validation-boundary challenge artifact is changed.",
+    "effective_actuator_state_visible_to_method": false,
+    "episode_count": 600,
+    "nominal_dt_contains_mechanism": false,
+    "observation_protocol": "unchanged 50 samples at 10 s under nominal command",
+    "seed_end": 28000599,
+    "seed_start": 28000000,
+    "severity_sampling": "tau=30+90*s, s~Uniform[0,1] from purpose stream 811",
+    "single_mechanism": "plant-only first-order vapor-valve actuator lag",
+    "status": "PROSPECTIVE_BEFORE_RELIABILITY_TRUTH",
+    "time_constant_s": [
+      30.0,
+      120.0
+    ]
+  }
+}

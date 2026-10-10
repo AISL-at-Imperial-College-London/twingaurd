@@ -1,7 +1,7 @@
-"""Milestone B.5A: calibration population for the frozen M4 model.
+"""Build distinct CSTR histories for model fitting, calibration, and evaluation.
 
-This experiment evaluates the existing model.  It does not tune priors, change
-features, conformalize intervals, or identify the hidden physical fault.
+Operational inputs exclude hidden faults and future physical outcomes.
+Seed blocks remain disjoint across population roles.
 """
 
 from __future__ import annotations
@@ -69,7 +69,7 @@ PREDICTION_KEYS_WITHOUT_TRUTH = frozenset(
 
 
 @dataclass(frozen=True)
-class MilestoneB5Config:
+class EpisodeDesignConfig:
     seed: int = 42_000
     episodes_per_category: int = 100
     n_postfault: int = 50
@@ -101,11 +101,11 @@ class MilestoneB5Config:
 
     def validate(self) -> None:
         if self.n_postfault != 50:
-            raise ValueError("Milestone B.5A freezes N_postfault at 50")
+            raise ValueError("episode design freezes N_postfault at 50")
         if self.rollout_samples != 2000:
-            raise ValueError("Milestone B.5A freezes posterior trajectories at M=2000")
+            raise ValueError("episode design freezes posterior trajectories at M=2000")
         if self.horizon_steps != 240 or self.dt_s != 1.0:
-            raise ValueError("Milestone B horizon and dt must remain 240 and 1 s")
+            raise ValueError(" B horizon and dt must remain 240 and 1 s")
         if self.episodes_per_category <= 0 or self.workers <= 0:
             raise ValueError("episode and worker counts must be positive")
         if not 0.0 < self.fault_magnitude_min < self.fault_magnitude_max < 0.95:
@@ -125,16 +125,16 @@ class SimultaneousBands:
 
 
 _WORKER_TEMPLATE: CSTRSimulation | None = None
-_WORKER_CONFIG: MilestoneB5Config | None = None
+_WORKER_CONFIG: EpisodeDesignConfig | None = None
 _WORKER_OUTPUT: str | None = None
 
 
-def frozen_model_configuration(config: MilestoneB5Config) -> dict:
+def frozen_model_configuration(config: EpisodeDesignConfig) -> dict:
     def source_hash(path: str) -> str:
         return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
     return {
-        "milestone": "B.5A posterior calibration",
+        "stage": "episode design posterior calibration",
         "model_frozen": True,
         "model_name": FROZEN_MODEL_NAME,
         "model_class": "BayesianResidualDynamicsModel",
@@ -156,7 +156,7 @@ def frozen_model_configuration(config: MilestoneB5Config) -> dict:
         "hidden_fault_features_allowed": False,
         "dt_s": config.dt_s,
         "rollout_horizon_steps": config.horizon_steps,
-        "milestone_b_reference_M": 1000,
+        "reference_M": 1000,
         "calibration_experiment_M": config.rollout_samples,
         "calibration_experiment_N_postfault": config.n_postfault,
         "pointwise_levels": list(COVERAGE_LEVELS),
@@ -166,14 +166,14 @@ def frozen_model_configuration(config: MilestoneB5Config) -> dict:
                 "bayesian_residual_dynamics.py"
             ),
             "counterfactual_rollout.py": source_hash("counterfactual_rollout.py"),
-            "milestone_b_residual_dynamics.py": source_hash(
-                "milestone_b_residual_dynamics.py"
+            "residual_dynamics_study.py": source_hash(
+                "residual_dynamics_study.py"
             ),
         },
     }
 
 
-def build_template(config: MilestoneB5Config) -> CSTRSimulation:
+def build_template(config: EpisodeDesignConfig) -> CSTRSimulation:
     simulator = CSTRSimulation(
         dt=config.dt_s,
         Fin_sp_startup=2.0 / 60.0,
@@ -198,7 +198,7 @@ def build_template(config: MilestoneB5Config) -> CSTRSimulation:
 
 
 def _init_worker(
-    template: CSTRSimulation, config: MilestoneB5Config, output_dir: str
+    template: CSTRSimulation, config: EpisodeDesignConfig, output_dir: str
 ) -> None:
     global _WORKER_TEMPLATE, _WORKER_CONFIG, _WORKER_OUTPUT
     _WORKER_TEMPLATE = template
@@ -208,7 +208,7 @@ def _init_worker(
 
 def _configure_episode_models(
     template: CSTRSimulation,
-    config: MilestoneB5Config,
+    config: EpisodeDesignConfig,
     rng: np.random.Generator,
     fault_onset_s: float,
     fault_magnitude: float,
@@ -853,8 +853,8 @@ def create_figures(
         zip(categories, ("tab:blue", "tab:orange", "tab:red", "black"))
     )
     for band_type, stem, title in (
-        ("pointwise", "figure_B5A_1_pointwise_calibration", "Pointwise calibration"),
-        ("simultaneous", "figure_B5A_2_simultaneous_calibration", "Whole-trajectory simultaneous calibration"),
+        ("pointwise", "figure_EPISODE_DESIGN_1_pointwise_calibration", "Pointwise calibration"),
+        ("simultaneous", "figure_EPISODE_DESIGN_2_simultaneous_calibration", "Whole-trajectory simultaneous calibration"),
     ):
         fig, ax = plt.subplots(figsize=(7.5, 5.2))
         for category in categories:
@@ -901,7 +901,7 @@ def create_figures(
         ax.set_yscale("log")
         ax.grid(alpha=0.2)
     axes[0].legend(fontsize=8)
-    fig.tight_layout(); _save_figure(fig, figure_dir, "figure_B5A_3_sharpness")
+    fig.tight_layout(); _save_figure(fig, figure_dir, "figure_EPISODE_DESIGN_3_sharpness")
 
     fig, axes = plt.subplots(1, 3, figsize=(14, 4.3))
     plot_fields = (
@@ -918,7 +918,7 @@ def create_figures(
         ax.grid(alpha=0.2)
     axes[0].legend(fontsize=8)
     fig.suptitle("Action-support distance associations (not causal)")
-    fig.tight_layout(); _save_figure(fig, figure_dir, "figure_B5A_4_support_distance")
+    fig.tight_layout(); _save_figure(fig, figure_dir, "figure_EPISODE_DESIGN_4_support_distance")
 
     fig, axes = plt.subplots(3, 1, figsize=(11, 10), sharex=False)
     for ax, category in zip(axes, categories[:-1]):
@@ -935,11 +935,11 @@ def create_figures(
         ax.set_ylabel("Temperature [K]"); ax.grid(alpha=0.2)
     axes[0].legend(fontsize=8, ncol=3)
     axes[-1].set_xlabel("Time [s]")
-    fig.tight_layout(); _save_figure(fig, figure_dir, "figure_B5A_5_representative_episodes")
+    fig.tight_layout(); _save_figure(fig, figure_dir, "figure_EPISODE_DESIGN_5_representative_episodes")
 
 
 def create_readme(
-    config: MilestoneB5Config,
+    config: EpisodeDesignConfig,
     episodes: list[dict],
     summary: list[dict],
     runtimes: list[dict],
@@ -965,9 +965,9 @@ def create_readme(
         for row in support
     ]
     unstable = sum(not bool(row["numerically_stable"]) for row in episodes)
-    report = f"""# Milestone B.5A — Frozen-posterior calibration dataset
+    report = f"""# episode design — Frozen-posterior calibration dataset
 
-This folder evaluates the unchanged Milestone B **M4 full Bayesian residual-dynamics model**. No feature, prior, noise model, numerical setting, posterior sampling rule, or rollout horizon was tuned from these episodes. No conformal calibration is performed.
+This folder evaluates the unchanged  B **M4 full Bayesian residual-dynamics model**. No feature, prior, noise model, numerical setting, posterior sampling rule, or rollout horizon was tuned from these episodes. No conformal calibration is performed.
 
 There are **{len(episodes)} independent evaluation episodes**: {config.episodes_per_category} interpolation, {config.episodes_per_category} boundary, and {config.episodes_per_category} extrapolation episodes. Each uses N={config.n_postfault} observed post-fault transitions and M={config.rollout_samples} posterior trajectories over {config.horizon_steps} future points. Hidden UA-fouling magnitude, onset, initial state, measurement sequence, and held-out action vary by episode. Hidden metadata is written only to `calibration_episodes.csv` for evaluator-side stratification and never enters the learner.
 
@@ -997,12 +997,12 @@ These are descriptive associations only and are not interpreted causally.
 - Mean recursive rollout time: {runtime_pooled['rollout_time_mean_s'] * 1000:.3f} ms.
 - Episodes exceeding the 50 K sampled-residual stability threshold: {unstable}/{len(episodes)}.
 
-This milestone produces a calibration dataset only. It does not recalibrate the model or decide a replacement model.
+This stage produces a calibration dataset only. It does not recalibrate the model or decide a replacement model.
 """
     (output_dir / "README.md").write_text(report, encoding="utf-8")
 
 
-def run_calibration(config: MilestoneB5Config) -> list[dict]:
+def run_calibration(config: EpisodeDesignConfig) -> list[dict]:
     config.validate()
     output_dir = Path(config.output_dir)
     prediction_dir = output_dir / "predictions"
@@ -1080,7 +1080,7 @@ def _load_episode_rows(path: Path) -> list[dict]:
     return rows
 
 
-def regenerate_aggregates(config: MilestoneB5Config) -> list[dict]:
+def regenerate_aggregates(config: EpisodeDesignConfig) -> list[dict]:
     """Rebuild summaries and figures without rerunning or modifying episodes."""
 
     config.validate()
@@ -1121,11 +1121,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parsed = vars(build_argument_parser().parse_args())
     aggregate_only = parsed.pop("aggregate_only")
-    config = MilestoneB5Config(**parsed)
+    config = EpisodeDesignConfig(**parsed)
     episodes = (
         regenerate_aggregates(config) if aggregate_only else run_calibration(config)
     )
-    print(f"Milestone B.5A complete: {config.output_dir} ({len(episodes)} episodes)")
+    print(f"episode design complete: {config.output_dir} ({len(episodes)} episodes)")
 
 
 if __name__ == "__main__":

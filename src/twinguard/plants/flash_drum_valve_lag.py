@@ -1,4 +1,4 @@
-"""Plant-only structural mismatch used by the prospective E7 stress test."""
+"""Flash plant variant with an unmodeled vapor-valve actuator lag."""
 
 from __future__ import annotations
 

@@ -27,6 +27,3 @@ include = ["twinguard*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src", "."]
-markers = [
-    "archive: requires the extracted frozen per-episode archive",
-]

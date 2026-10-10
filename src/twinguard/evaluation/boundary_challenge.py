@@ -20,11 +20,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
 
-from twinguard.cstr import episode_design as b5
-from twinguard.cstr import freeze_discrepancy_model as b10
-from twinguard.cstr import safety_certification as c1
+from twinguard.cstr import episode_design as episode_design
+from twinguard.cstr import freeze_discrepancy_model as discrepancy_freeze
+from twinguard.cstr import safety_certification as certification
 
-from twinguard.flash import evaluate_primary as e5
+from twinguard.flash import evaluate_primary as primary
 from twinguard.uncertainty.flash_bootstrap import PREDICTIVE_SCALE_FLOORS, coherent_predictive_summary
 from twinguard.conformal.flash_conformal import conformal_envelope, normalized_action_distance, safety_decision
 from twinguard.discrepancy.flash_state_space import parameters_from_payload, predict_discrepancy
@@ -36,11 +36,10 @@ from twinguard.scenarios.flash_population_design import (
 )
 from twinguard.plants.flash_drum import FlashAction
 from twinguard.utils.flash_output_guard import EXPERIMENT_ROOT, REPOSITORY_ROOT, assert_isolated_output_path
-from twinguard.utils.provenance import frozen_sha256
 from twinguard.flash.bootstrap_and_calibrate import _boundary_action
 
 
-DESIGN_PATH = EXPERIMENT_ROOT / "RESS_E6_DESIGN.json"
+DESIGN_PATH = EXPERIMENT_ROOT / "boundary_challenge_design.json"
 FLASH_COUNT = 1200
 FLASH_SEED_START = 27_000_000
 CSTR_COUNT = 300
@@ -75,23 +74,23 @@ def _sha256(path: Path) -> str:
 def _load_design() -> dict[str, object]:
     design = json.loads(DESIGN_PATH.read_text(encoding="utf-8"))
     if not design["frozen_before_boundary_truth"]:
-        raise RuntimeError("E6 design was not frozen before truth")
+        raise RuntimeError("boundary challenge design was not frozen before truth")
     hashes = design["frozen_source_hashes"]
     sources = {
-        "flash_e5_hash_manifest_sha256": EXPERIMENT_ROOT / "FLASH_E5_ARTIFACT_HASHES.txt",
+        "flash_primary_hash_manifest_sha256": EXPERIMENT_ROOT / "primary_evaluation_artifact_hashes.txt",
         "cstr_one_sided_quantiles_sha256": REPOSITORY_ROOT / "artifacts/cstr/primary_evaluation/one_sided_quantiles.csv",
         "cstr_safety_calibration_scores_sha256": REPOSITORY_ROOT / "artifacts/cstr/primary_evaluation/safety_calibration_scores.csv",
         "cstr_bootstrap_models_sha256": REPOSITORY_ROOT / "artifacts/cstr/bootstrap_ensemble/bootstrap_models.json",
     }
     for key, path in sources.items():
         if _sha256(path) != hashes[key]:
-            raise RuntimeError(f"frozen E6 source hash mismatch: {path}")
-    e5.verify_frozen_inputs()
-    for line in (EXPERIMENT_ROOT / "FLASH_E5_ARTIFACT_HASHES.txt").read_text().splitlines():
+            raise RuntimeError(f"frozen boundary challenge source hash mismatch: {path}")
+    primary.verify_frozen_inputs()
+    for line in (EXPERIMENT_ROOT / "primary_evaluation_artifact_hashes.txt").read_text().splitlines():
         if line and not line.startswith("#"):
             expected, relative = line.split("  ", maxsplit=1)
-            if frozen_sha256("E_FLASH_RESS/" + relative) != expected:
-                raise RuntimeError(f"E5 artifact changed before E6: {relative}")
+            if _sha256(EXPERIMENT_ROOT / relative) != expected:
+                raise RuntimeError(f"primary evaluation artifact changed before boundary challenge: {relative}")
     return design
 
 
@@ -126,7 +125,7 @@ def _wilson(successes: int, count: int) -> tuple[float, float]:
 
 def _write_csv(path: Path, rows: Sequence[Mapping[str, object]]) -> None:
     if not rows:
-        raise ValueError("cannot write empty E6 CSV")
+        raise ValueError("cannot write empty boundary challenge CSV")
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
         writer.writeheader()
@@ -145,7 +144,7 @@ def _artifact_audit(
     paths = (candidate, prediction, decision, truth)
     timestamps = [path.stat().st_mtime_ns for path in paths]
     if not timestamps[0] < timestamps[1] < timestamps[2] < timestamps[3]:
-        raise RuntimeError(f"E6 chronology failure: {episode_id}")
+        raise RuntimeError(f"boundary challenge chronology failure: {episode_id}")
     decision_payload = json.loads(decision.read_text(encoding="utf-8"))
     with np.load(truth, allow_pickle=False) as revealed:
         if decision_payload["prediction_sha256"] != _sha256(prediction):
@@ -184,7 +183,7 @@ def _flash_init(output: str, quantiles: Mapping[float, float]) -> None:
 
 def _flash_paths(episode_id: str) -> tuple[Path, Path, Path, Path]:
     if _FLASH_OUTPUT is None:
-        raise RuntimeError("flash E6 worker not initialized")
+        raise RuntimeError("flash boundary challenge worker not initialized")
     return tuple(
         _FLASH_OUTPUT / folder / f"{episode_id}.{extension}"
         for folder, extension in (
@@ -222,14 +221,14 @@ def _flash_envelope_margin(center: np.ndarray, scale: np.ndarray, q: float) -> f
 
 def _flash_task(task: tuple[int, int]) -> dict[str, object]:
     if _FLASH_MODELS is None or _FLASH_MEAN_MODEL is None or _FLASH_Q is None:
-        raise RuntimeError("flash E6 predictor missing")
+        raise RuntimeError("flash boundary challenge predictor missing")
     index, seed = task
     episode_id = f"flash_boundary_{index:05d}"
     candidate_path, prediction_path, decision_path, truth_path = _flash_paths(episode_id)
     if all(path.exists() for path in (candidate_path, prediction_path, decision_path, truth_path)):
         return _artifact_audit(episode_id, candidate_path, prediction_path, decision_path, truth_path)
 
-    observation = e5._simulate_observation(index, seed)
+    observation = primary._simulate_observation(index, seed)
     if int(observation["completed"]) == 50:
         selected, nominal_selection_margin, boundary_found, eligible_count = _boundary_action(
             observation["twin"].state.as_array(), seed
@@ -242,7 +241,7 @@ def _flash_task(task: tuple[int, int]) -> dict[str, object]:
     candidate = selected if isinstance(selected, FlashAction) else FlashAction.from_vector(selected)
     if not candidate_path.exists():
         candidate_payload = {
-            "schema_version": "FLASH_E6_CANDIDATE_1.0",
+            "schema_version": "FLASH_BOUNDARY_CANDIDATE_1.0",
             "episode_id": episode_id,
             "candidate_action": candidate.as_array().tolist(),
             "nominal_dt_margin": nominal_selection_margin,
@@ -251,10 +250,10 @@ def _flash_task(task: tuple[int, int]) -> dict[str, object]:
             "candidate_pool_size": 153,
             "selection_source": "nominal_DT_only",
         }
-        e5._exclusive_write(candidate_path, e5._json_bytes(candidate_payload))
+        primary._exclusive_write(candidate_path, primary._json_bytes(candidate_payload))
 
     if not prediction_path.exists():
-        nominal, features, prediction_exit = e5._nominal_horizon(
+        nominal, features, prediction_exit = primary._nominal_horizon(
             observation["twin"], candidate, observation["nominal_action"]
         ) if int(observation["completed"]) == 50 else (np.empty((0, 3)), np.empty((0, 11)), str(observation["domain_exit"]))
         if len(nominal) == 120:
@@ -280,7 +279,7 @@ def _flash_task(task: tuple[int, int]) -> dict[str, object]:
             mean_center = center = scale = np.empty((0, 3))
             status = "PREDICTION_DOMAIN_EXIT"
         prediction_payload = {
-            "schema_version": np.asarray("FLASH_E6_PREDICTION_1.0"),
+            "schema_version": np.asarray("FLASH_BOUNDARY_PREDICTION_1.0"),
             "episode_id": np.asarray(episode_id),
             "candidate_action": candidate.as_array(),
             "observed_residual": np.asarray(observation["residual"]),
@@ -298,8 +297,8 @@ def _flash_task(task: tuple[int, int]) -> dict[str, object]:
             "predictive_trajectory_count": np.asarray(2000),
         }
         _wait_after(candidate_path)
-        e5._exclusive_write(prediction_path, e5._npz_bytes(prediction_payload))
-    prediction = e5._load_npz(prediction_path)
+        primary._exclusive_write(prediction_path, primary._npz_bytes(prediction_payload))
+    prediction = primary._load_npz(prediction_path)
 
     if not decision_path.exists():
         complete = str(prediction["prediction_status"]) == "COMPLETE"
@@ -330,21 +329,21 @@ def _flash_task(task: tuple[int, int]) -> dict[str, object]:
             )
             margins[label] = _flash_envelope_margin(center, scale, _FLASH_Q[level])
         decision_payload = {
-            "schema_version": "FLASH_E6_DECISION_1.0",
+            "schema_version": "FLASH_BOUNDARY_DECISION_1.0",
             "episode_id": episode_id,
             "prediction_sha256": _sha256(prediction_path),
             "decisions": decisions,
             "normalized_margins": margins,
-            "action_conditioned_status": "UNSUPPORTED_NOT_CERTIFIED:E2_BINS_NOT_PREDECLARED",
+            "action_conditioned_status": "UNSUPPORTED_NOT_CERTIFIED:BINS_NOT_PREREGISTERED",
         }
         _wait_after(prediction_path)
-        e5._exclusive_write(decision_path, e5._json_bytes(decision_payload))
+        primary._exclusive_write(decision_path, primary._json_bytes(decision_payload))
 
     if not truth_path.exists():
-        actual, truth_exit = e5._truth_rollout(observation, candidate)
+        actual, truth_exit = primary._truth_rollout(observation, candidate)
         hidden = observation["hidden"]
         truth_payload = {
-            "schema_version": np.asarray("FLASH_E6_TRUTH_1.0"),
+            "schema_version": np.asarray("FLASH_BOUNDARY_TRUTH_1.0"),
             "episode_id": np.asarray(episode_id),
             "episode_seed_evaluator_only": np.asarray(seed),
             "fault_family_evaluator_only": np.asarray(hidden.family.value),
@@ -357,12 +356,12 @@ def _flash_task(task: tuple[int, int]) -> dict[str, object]:
             "decision_sha256": np.asarray(_sha256(decision_path)),
         }
         _wait_after(decision_path)
-        e5._exclusive_write(truth_path, e5._npz_bytes(truth_payload))
+        primary._exclusive_write(truth_path, primary._npz_bytes(truth_payload))
     return _artifact_audit(episode_id, candidate_path, prediction_path, decision_path, truth_path)
 
 
 def run_flash_boundary(workers: int, quantiles: Mapping[float, float]) -> list[dict[str, object]]:
-    output = _safe_path("e6_artifacts/flash")
+    output = _safe_path("boundary_challenge_episodes/flash")
     output.mkdir(parents=True, exist_ok=True)
     tasks = [(index, FLASH_SEED_START + index) for index in range(FLASH_COUNT)]
     audit = []
@@ -374,9 +373,9 @@ def run_flash_boundary(workers: int, quantiles: Mapping[float, float]) -> list[d
         for completed, row in enumerate(pool.map(_flash_task, tasks, chunksize=1), 1):
             audit.append(row)
             if completed % 100 == 0:
-                print(f"E6 flash boundary={completed}/{FLASH_COUNT}", flush=True)
+                print(f"boundary challenge flash boundary={completed}/{FLASH_COUNT}", flush=True)
     audit.sort(key=lambda row: str(row["episode_id"]))
-    _write_csv(_safe_path("e6_artifacts/FLASH_RESS_STRESS_ARTIFACT_AUDIT.csv"), audit)
+    _write_csv(_safe_path("boundary_challenge_episodes/flash_boundary_ledger.csv"), audit)
     return audit
 
 
@@ -400,9 +399,9 @@ def evaluate_flash_boundary(audit: Sequence[Mapping[str, object]]) -> list[dict[
     rows = []
     for item in audit:
         candidate = json.loads(Path(str(item["candidate_path"])).read_text())
-        prediction = e5._load_npz(Path(str(item["prediction_path"])))
+        prediction = primary._load_npz(Path(str(item["prediction_path"])))
         decision = json.loads(Path(str(item["decision_path"])).read_text())
-        truth = e5._load_npz(Path(str(item["truth_path"])))
+        truth = primary._load_npz(Path(str(item["truth_path"])))
         actual = np.asarray(truth["actual_horizon_outputs"])
         actual_safe, true_margin, severity_max, severity_integrated = _flash_truth_metrics(
             actual, len(actual) == 120
@@ -458,16 +457,16 @@ def evaluate_flash_boundary(audit: Sequence[Mapping[str, object]]) -> list[dict[
 
 def _cstr_init(output: str) -> None:
     global _CSTR_MODELS, _CSTR_TEMPLATE, _CSTR_OUTPUT
-    _CSTR_MODELS = c1._load_models(REPOSITORY_ROOT / "artifacts/cstr/bootstrap_ensemble", 10)
-    _CSTR_TEMPLATE = b5.build_template(b5.MilestoneB5Config())
+    _CSTR_MODELS = certification._load_models(REPOSITORY_ROOT / "artifacts/cstr/bootstrap_ensemble", 10)
+    _CSTR_TEMPLATE = episode_design.build_template(episode_design.EpisodeDesignConfig())
     _CSTR_OUTPUT = Path(output)
 
 
 def _cstr_paths(episode_id: str) -> tuple[Path, Path, Path, Path]:
     if _CSTR_OUTPUT is None:
-        raise RuntimeError("CSTR E6 worker not initialized")
+        raise RuntimeError("CSTR boundary challenge worker not initialized")
     return tuple(
-        _CSTR_OUTPUT / folder / f"CSTR_RESS_STRESS_{episode_id}.{extension}"
+        _CSTR_OUTPUT / folder / f"CSTR_BOUNDARY_{episode_id}.{extension}"
         for folder, extension in (
             ("candidates", "json"),
             ("predictions", "npz"),
@@ -488,17 +487,17 @@ def _select_cstr_boundary_action(nominal, seed: int) -> tuple[float, float, int,
     if (
         nominal.current_phase.name != "NORMAL"
         or not nominal._startup_done
-        or nominal.t + c1.HORIZON * nominal.dt >= nominal.T_startup + nominal.T_normal
+        or nominal.t + certification.HORIZON * nominal.dt >= nominal.T_startup + nominal.T_normal
         or nominal.fault_cfg.enable
         or nominal.conc_noise_pct != 0.0
         or nominal.flow_meas_noise_pct != 0.0
         or nominal.sensor_T_noise_std != 0.0
     ):
-        raise RuntimeError("CSTR E6 batched screen requires the frozen deterministic NORMAL nominal twin")
+        raise RuntimeError("CSTR boundary challenge batched screen requires the frozen deterministic NORMAL nominal twin")
 
     count = len(CSTR_ACTIONS)
     state = np.repeat(np.asarray(nominal.x, dtype=float)[None, :], count, axis=0)
-    trajectories = np.empty((count, c1.HORIZON), dtype=float)
+    trajectories = np.empty((count, certification.HORIZON), dtype=float)
 
     inlet_opening = np.full(count, nominal.valve_in.opening, dtype=float)
     coolant_opening = np.full(count, nominal.cool_valve_in.opening, dtype=float)
@@ -523,7 +522,7 @@ def _select_cstr_boundary_action(nominal, seed: int) -> tuple[float, float, int,
         return command, integral, error
 
     current_time = float(nominal.t)
-    for horizon in range(c1.HORIZON):
+    for horizon in range(certification.HORIZON):
         volume = state[:, 0]
         temperature = state[:, 5]
         inlet_flow_before_update = nominal.valve_in.Cv_max * inlet_opening
@@ -651,21 +650,21 @@ def _select_cstr_boundary_action(nominal, seed: int) -> tuple[float, float, int,
 
 def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
     if _CSTR_MODELS is None or _CSTR_TEMPLATE is None:
-        raise RuntimeError("CSTR E6 predictor missing")
+        raise RuntimeError("CSTR boundary challenge predictor missing")
     index, seed = task
     episode_id = f"cstr_boundary_{index:04d}"
     candidate_path, prediction_path, decision_path, truth_path = _cstr_paths(episode_id)
     if all(path.exists() for path in (candidate_path, prediction_path, decision_path, truth_path)):
         return _artifact_audit(episode_id, candidate_path, prediction_path, decision_path, truth_path)
-    nominal, plant, residual, online, previous, hidden_magnitude = c1._reconstruct_decision_state(
-        seed, b5.MilestoneB5Config(), _CSTR_TEMPLATE
+    nominal, plant, residual, online, previous, hidden_magnitude = certification._reconstruct_decision_state(
+        seed, episode_design.EpisodeDesignConfig(), _CSTR_TEMPLATE
     )
     action, nominal_margin, eligible_count, band_found, nominal_future = _select_cstr_boundary_action(
         nominal, seed
     )
     if not candidate_path.exists():
         payload = {
-            "schema_version": "CSTR_RESS_STRESS_CANDIDATE_1.0",
+            "schema_version": "CSTR_BOUNDARY_CANDIDATE_1.0",
             "episode_id": episode_id,
             "action_lps": action,
             "nominal_dt_margin_k": nominal_margin,
@@ -674,15 +673,15 @@ def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
             "pool_size": len(CSTR_ACTIONS),
             "selection_source": "nominal_DT_only",
         }
-        e5._exclusive_write(candidate_path, e5._json_bytes(payload))
-    future = np.empty((c1.HORIZON, 4))
+        primary._exclusive_write(candidate_path, primary._json_bytes(payload))
+    future = np.empty((certification.HORIZON, 4))
     prior = previous
-    for horizon in range(c1.HORIZON):
+    for horizon in range(certification.HORIZON):
         future[horizon] = [action, action - prior, nominal_future[horizon], 51 + horizon]
         prior = action
-    item = b10.EpisodeInputs(
+    item = discrepancy_freeze.EpisodeInputs(
         episode_id,
-        c1._action_category(action),
+        certification._action_category(action),
         seed + 100_000,
         residual,
         online,
@@ -695,14 +694,14 @@ def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
     )
     if not prediction_path.exists():
         _wait_after(candidate_path)
-        c1.predict_frozen_u3(item, _CSTR_MODELS, 2000, prediction_path)
+        certification.predict_frozen_u3(item, _CSTR_MODELS, 2000, prediction_path)
     with np.load(prediction_path, allow_pickle=False) as saved:
         center = np.asarray(saved["predictive_center_k"])
-        scale = np.maximum(np.asarray(saved["predictive_scale_k"]), c1.EPSILON_SCALE_K)
+        scale = np.maximum(np.asarray(saved["predictive_scale_k"]), certification.EPSILON_SCALE_K)
     if not decision_path.exists():
         upper = center + CSTR_Q_PLUS * scale
         payload = {
-            "schema_version": "CSTR_RESS_STRESS_DECISION_1.0",
+            "schema_version": "CSTR_BOUNDARY_DECISION_1.0",
             "episode_id": episode_id,
             "prediction_sha256": _sha256(prediction_path),
             "nominal_dt_decision": "CERTIFIED SAFE" if nominal_margin >= 0 else "NOT CERTIFIED",
@@ -712,10 +711,10 @@ def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
             "conformal_margin_k": CSTR_T_MAX_K - float(np.max(upper)),
         }
         _wait_after(prediction_path)
-        e5._exclusive_write(decision_path, e5._json_bytes(payload))
+        primary._exclusive_write(decision_path, primary._json_bytes(payload))
     if not truth_path.exists():
         _wait_after(decision_path)
-        actual = c1.reveal_physical_temperature(item, prediction_path)
+        actual = certification.reveal_physical_temperature(item, prediction_path)
         with np.load(truth_path, allow_pickle=False) as saved:
             truth_payload = {key: np.asarray(saved[key]) for key in saved.files}
         truth_payload.update(
@@ -734,7 +733,7 @@ def _cstr_task(task: tuple[int, int]) -> dict[str, object]:
 
 
 def run_cstr_boundary(workers: int) -> list[dict[str, object]]:
-    output = _safe_path("e6_artifacts/cstr")
+    output = _safe_path("boundary_challenge_episodes/cstr")
     output.mkdir(parents=True, exist_ok=True)
     tasks = [(index, CSTR_SEED_START + index) for index in range(CSTR_COUNT)]
     audit = []
@@ -746,9 +745,9 @@ def run_cstr_boundary(workers: int) -> list[dict[str, object]]:
         for completed, row in enumerate(pool.map(_cstr_task, tasks, chunksize=1), 1):
             audit.append(row)
             if completed % 50 == 0:
-                print(f"E6 CSTR boundary={completed}/{CSTR_COUNT}", flush=True)
+                print(f"boundary challenge CSTR boundary={completed}/{CSTR_COUNT}", flush=True)
     audit.sort(key=lambda row: str(row["episode_id"]))
-    _write_csv(_safe_path("e6_artifacts/CSTR_RESS_STRESS_ARTIFACT_AUDIT.csv"), audit)
+    _write_csv(_safe_path("boundary_challenge_episodes/cstr_boundary_ledger.csv"), audit)
     return audit
 
 
@@ -772,7 +771,7 @@ def evaluate_cstr_boundary(audit: Sequence[Mapping[str, object]]) -> list[dict[s
             rows.append(
                 {
                     "episode_id": item["episode_id"],
-                    "population": "CSTR_RESS_STRESS_BOUNDARY",
+                    "population": "CSTR_BOUNDARY_CHALLENGE",
                     "method": method,
                     "confidence_level": "" if method == "nominal_DT" else 0.95,
                     "episode_seed_evaluator_only": seed,
@@ -866,7 +865,7 @@ def risk_rows(flash: Sequence[Mapping[str, object]], cstr: Sequence[Mapping[str,
 
 def _save(fig: plt.Figure, name: str) -> None:
     fig.tight_layout()
-    fig.savefig(_safe_path(f"e6_figures/{name}.png"), dpi=220, bbox_inches="tight", facecolor="white")
+    fig.savefig(_safe_path(f"boundary_challenge_figures/{name}.png"), dpi=220, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
 
@@ -973,11 +972,11 @@ def build_report(
         float(flash95["certification_availability"]) > 0.0
         and float(flash95["joint_false_safe_risk"]) < float(flash_nominal["joint_false_safe_risk"])
     )
-    return f"""# RESS E6 Boundary Reliability Results
+    return f"""# boundary challenge Boundary Reliability Results
 
 ## Frozen Design And Chronology
 
-Flash uses all 1,200 E2-reserved boundary seeds. Candidate pools and selection
+Flash uses all 1,200 population design-reserved boundary seeds. Candidate pools and selection
 use only nominal-DT trajectories and the frozen `|m_DT|<=0.15` criterion.
 {boundary_found}/1200 states had at least one in-band candidate; fallbacks were
 not regenerated. Prediction and decision artifacts were serialized before each
@@ -1003,12 +1002,12 @@ Zero false-safe events are not required for this conclusion.
 
 ## Separate CSTR Stress Extension
 
-The new 300-action CSTR denominator is separate from C1/C1.6. Its nominal-DT
+The new 300-action CSTR denominator is separate from primary certification/mixed-degradation evaluation. Its nominal-DT
 availability/risk are {cstr_nominal['certification_availability']:.3f}/
 {cstr_nominal['joint_false_safe_risk']:.3f}; the frozen 95% CSTR method gives
 {cstr95['certification_availability']:.3f}/{cstr95['joint_false_safe_risk']:.3f}.
 The CSTR reduction likewise occurs through complete abstention on this challenge.
-No C1 or C1.6 artifact or denominator was altered.
+No primary certification or mixed-degradation evaluation artifact or denominator was altered.
 
 ## Conclusion
 
@@ -1019,18 +1018,17 @@ No C1 or C1.6 artifact or denominator was altered.
 def _hash_outputs() -> None:
     paths = [
         DESIGN_PATH,
-        EXPERIMENT_ROOT / "run_ress_e6.py",
-        EXPERIMENT_ROOT / "FLASH_BOUNDARY_RESULTS.csv",
-        EXPERIMENT_ROOT / "CSTR_BOUNDARY_RESULTS.csv",
-        EXPERIMENT_ROOT / "RISK_AVAILABILITY_RESULTS.csv",
-        EXPERIMENT_ROOT / "RESS_E6_RESULTS.md",
+        EXPERIMENT_ROOT / "flash_boundary_episode_results.csv",
+        EXPERIMENT_ROOT / "cstr_boundary_episode_results.csv",
+        EXPERIMENT_ROOT / "boundary_risk_availability.csv",
+        EXPERIMENT_ROOT / "boundary_challenge_report.md",
     ]
-    paths.extend(sorted((EXPERIMENT_ROOT / "e6_figures").glob("*.png")))
-    paths.extend(sorted((EXPERIMENT_ROOT / "e6_artifacts").rglob("*.*")))
-    lines = ["# Frozen E6 artifact SHA-256 manifest", ""]
+    paths.extend(sorted((EXPERIMENT_ROOT / "boundary_challenge_figures").glob("*.png")))
+    paths.extend(sorted((EXPERIMENT_ROOT / "boundary_challenge_episodes").rglob("*.*")))
+    lines = ["# Frozen boundary challenge artifact SHA-256 manifest", ""]
     for path in paths:
         lines.append(f"{_sha256(path)}  {path.relative_to(EXPERIMENT_ROOT).as_posix()}")
-    _safe_path("RESS_E6_ARTIFACT_HASHES.txt").write_text("\n".join(lines) + "\n", encoding="ascii")
+    _safe_path("boundary_challenge_artifact_hashes.txt").write_text("\n".join(lines) + "\n", encoding="ascii")
 
 
 def main(workers: int, skip_cstr: bool = False) -> None:
@@ -1041,18 +1039,18 @@ def main(workers: int, skip_cstr: bool = False) -> None:
         for level, value in zip(design["flash"]["confidence_levels"], design["flash"]["quantiles"])
     }
     if quantiles != expected:
-        raise RuntimeError("calibration-only boundary quantiles differ from frozen E6 design")
+        raise RuntimeError("calibration-only boundary quantiles differ from frozen boundary challenge design")
     flash_audit = run_flash_boundary(workers, quantiles)
     flash_rows = evaluate_flash_boundary(flash_audit)
-    _write_csv(_safe_path("FLASH_BOUNDARY_RESULTS.csv"), flash_rows)
+    _write_csv(_safe_path("flash_boundary_episode_results.csv"), flash_rows)
     if skip_cstr:
         return
     cstr_audit = run_cstr_boundary(workers)
     cstr_rows = evaluate_cstr_boundary(cstr_audit)
-    _write_csv(_safe_path("CSTR_BOUNDARY_RESULTS.csv"), cstr_rows)
+    _write_csv(_safe_path("cstr_boundary_episode_results.csv"), cstr_rows)
     risk = risk_rows(flash_rows, cstr_rows)
-    _write_csv(_safe_path("RISK_AVAILABILITY_RESULTS.csv"), risk)
-    _safe_path("RESS_E6_RESULTS.md").write_text(
+    _write_csv(_safe_path("boundary_risk_availability.csv"), risk)
+    _safe_path("boundary_challenge_report.md").write_text(
         build_report(flash_rows, cstr_rows, risk, quantiles), encoding="utf-8"
     )
     create_figures(flash_rows, cstr_rows, risk)

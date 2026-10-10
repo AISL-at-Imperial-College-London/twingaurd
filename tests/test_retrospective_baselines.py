@@ -39,11 +39,11 @@ def test_offset_calibration_population_sizes() -> None:
 
 
 @pytest.mark.parametrize("folder,frozen,mapping", [
-    ("cstr_conformal_controls/cstr_final_baseline_comparison_alpha_0p05.csv",
+    ("cstr_conformal_controls/cstr_control_comparison_alpha_0p05.csv",
      ("artifacts/cstr/primary_evaluation/safety_summary.csv"),
      {"M0_nominal_DT": "S0_nominal_DT", "M3_adaptive_conformal": "S3_one_sided"}),
-    ("flash_conformal_controls/flash_final_baseline_comparison_alpha_0p05.csv",
-     ("artifacts/flash_study/FLASH_FINAL_ABLATION.csv"),
+    ("flash_conformal_controls/flash_control_comparison_alpha_0p05.csv",
+     ("artifacts/flash_study/flash_primary_ablation.csv"),
      {m: m for m in ("M0_nominal_DT", "M1_discrepancy_mean", "M2_raw_bootstrap", "M3_pooled_conformal")}),
 ])
 def test_reconstructed_frozen_methods_match_frozen_results(folder, frozen, mapping) -> None:

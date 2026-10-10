@@ -1,5 +1,5 @@
 """Calibrate the CSTR episode-level whole-trajectory conformal quantiles
-(frozen output: artifacts/cstr/conformal_calibration).
+(recorded output: artifacts/cstr/conformal_calibration).
 """
 
 from _runner import cstr_stage

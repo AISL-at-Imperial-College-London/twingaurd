@@ -29,7 +29,7 @@ def test_truth_value_cannot_change_precomputed_safety_decision() -> None:
 
 
 def test_physical_safety_truth_removes_only_the_frozen_measurement_draw() -> None:
-    root=Path.cwd()/f".test_c1_physical_truth_{uuid4().hex}";root.mkdir()
+    root=Path.cwd()/f".test_certification_physical_truth_{uuid4().hex}";root.mkdir()
     truth=root/"truth.npz";prediction=root/"prediction.npz"
     try:
         seed=1234;physical=np.array([310.,311.,312.]);noise=np.random.default_rng(seed).normal(0,.1,3);measured=physical+noise
@@ -48,7 +48,7 @@ def test_physical_safety_truth_removes_only_the_frozen_measurement_draw() -> Non
 def test_summary_distinguishes_joint_and_conditional_false_safe() -> None:
     rows=[]
     for i,(decision,actual) in enumerate((("SAFE",0),("SAFE",1),("UNRESOLVED",0),("UNSAFE",0))):
-        for method in ("S0_nominal_DT","S1_raw_U3","S2_symmetric_B12","S3_one_sided"):
+        for method in ("S0_nominal_DT","S1_raw_bootstrap","S2_symmetric_conformal","S3_one_sided"):
             for level in (.9,.95,.99):
                 rows.append({"episode_id":str(i),"method":method,"nominal_level":level,"action_category":"interpolation","decision":decision,"actual_safe":actual,"false_safe_indicator":int(decision=="SAFE" and not actual),"false_unsafe_indicator":int(decision=="UNSAFE" and actual),"upper_trajectory_covered":1,"lower_trajectory_covered":1,"mean_envelope_width_k":2.,"upper_inflation_max_k":1.,"total_latency":.1})
     pooled=next(r for r in summarize(rows) if r["method"]=="S3_one_sided" and r["action_category"]=="pooled" and np.isclose(r["nominal_level"],.95))

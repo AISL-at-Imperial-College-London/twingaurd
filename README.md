@@ -16,7 +16,7 @@ uses three components:
 This repository contains the TwinGuard implementation and its research materials:
 
 - the code and tests;
-- frozen calibration and evaluation artifacts;
+- the calibration and evaluation artifacts;
 - paper-facing tables, figures and reproducibility checks.
 
 ## 1. Overview
@@ -33,8 +33,9 @@ physical parameters, or the future physical trajectory. It uses only:
 - the fixed nominal twin's predictions;
 - the candidate action.
 
-Every evaluation in this repository is **prospective**. Each episode is processed in this order,
-with each step stored and hashed before the next:
+Every evaluation of TwinGuard in this repository is **prospective**. (The comparison baselines in
+§5 are the exception: they were computed retrospectively.) Each episode is processed in this
+order, with each step stored and hashed before the next:
 
 1. candidate action
 2. prediction
@@ -88,44 +89,44 @@ tests that probe where the marginal assumptions hold or break.
 ## 3. Repository structure
 
 ```
-README.md  LICENSE  pyproject.toml  requirements.txt
+README.md  LICENSE  pyproject.toml requirements.txt
 src/twinguard/
   plants/            cstr.py (CSTR plant; also the nominal CSTR twin with faults off), flash_drum.py,
                      flash_drum_valve_lag.py (plant-only structural mismatch)
-  digital_twins/     flash_drum.py (independent nominal flash twin)
   scenarios/         flash_population_design.py (seed streams, evaluator-only faults, safety spec, action designs)
   discrepancy/       cstr_state_space.py, flash_state_space.py, baselines/ (earlier residual models)
   uncertainty/       flash_bootstrap.py
   conformal/         flash_conformal.py (scores, finite-sample quantile, envelope, certification rule)
   cstr/              CSTR pipeline stages (episode design, discrepancy fit/freeze, bootstrap,
                      conformal calibration, primary certification, decision audit, mixed degradation)
-  flash/             flash pipeline stages (simulator validation, population reservation,
+  flash/             nominal twin and pipeline stages (simulator validation, population reservation,
                      discrepancy fit/selection, bootstrap + calibration, primary evaluation)
   evaluation/        boundary challenge, structural mismatch + mixed-regime audits, margin ladder, final audit
-  utils/             repository paths, output guards, frozen-artifact provenance resolver
+  baselines/         retrospective comparison baselines (conformal controls C0/C1, persistent offset)
+  utils/             repository paths, output guards
 experiments/         one entry point per experiment (reruns go to runs/, never to artifacts/)
 scripts/             reproduce_main_results.py, generate_paper_tables.py, generate_paper_figures.py
-artifacts/           frozen experiment directories: models, calibration, manifests, per-episode result tables
-  cstr/  flash_study/  flash_margin_ladder/
+artifacts/           experiment outputs: models, calibration, manifests, per-episode result tables
+  cstr/  flash_study/  flash_margin_ladder/  retrospective_baselines/
 results/
   tables/            paper-facing tables with semantic names (derived from artifacts/)
   figures/main/      figures used in the main text
   figures/appendix/  appendix / repository figures
-reproducibility/     read-only audit, provenance records, seed and artifact manifests, checks/
-data/                data availability, population manifest, frozen archive instructions
+reproducibility/     read-only audit, seed and artifact manifests, checks/
+data/                data availability
 paper/               result_mapping.md, reproducibility_mapping.md
 tests/               unit, regression and integrity tests
 ```
 
-Frozen artifact hashes and source/path provenance records are kept under `reproducibility/`.
+The SHA-256 of every released result file is recorded in `reproducibility/artifact_manifest.csv`.
 
 ## 4. Installation
 
 Requires Python ≥ 3.10.
 
 ```bash
-git clone https://github.com/AISL-at-Imperial-College-London/twingaurd.git
-cd twingaurd
+git clone https://github.com/AISL-at-Imperial-College-London/twinguard.git
+cd twinguard
 python -m venv .venv
 ```
 
@@ -152,24 +153,23 @@ pytest
 ```
 
 Run all commands from the repository root. Line endings matter for the hash checks:
-`.gitattributes` keeps frozen artifacts byte-exact, so do not re-save them with an editor that
+`.gitattributes` keeps the released artifacts byte-exact, so do not re-save them with an editor that
 rewrites line endings.
 
 ## 5. Reproducing the main results
 
-**Verify the frozen results** (minutes):
+**Verify the released results** (minutes):
 
 ```bash
-python scripts/reproduce_main_results.py              # git checkout only
-python scripts/reproduce_main_results.py --archive    # after extracting the frozen archive (see data/README.md)
+python scripts/reproduce_main_results.py
 ```
 
 This runs the reproducibility audit, checks that `results/tables` and `results/figures` match the
-frozen outputs, and prints the headline table. The audit recomputes every reported count from the
-per-episode records, checks seed separation and chronology, and verifies frozen hashes.
+released outputs, and prints the headline table. The audit recomputes every reported count from the
+per-episode records, checks seed separation and chronology, and verifies the recorded hashes.
 
 **Rerun experiments prospectively.** Each stage runs in a fresh workspace under `runs/` and is
-compared cell by cell with the frozen outputs:
+compared cell by cell with the released outputs:
 
 ```bash
 python scripts/reproduce_main_results.py --list
@@ -184,7 +184,7 @@ Individual experiments can also be run directly, for example
 
 ### Retrospective comparison baselines
 
-Three post-hoc controls were evaluated on the same frozen calibration and test populations, after
+Three post-hoc controls were evaluated on the same calibration and test populations, after
 the prospective study. They are **not** part of the TwinGuard method and **not** prospective
 results.
 
@@ -195,13 +195,13 @@ results.
 | Offset-C (persistent offset) | nominal twin under the candidate action + the mean of the last 10 observed pre-decision residuals | conformal |
 
 Code: `src/twinguard/baselines/`. Entry points: `experiments/evaluate_*_conformal_controls.py` and
-`experiments/evaluate_*_persistent_offset.py`. Frozen outputs: `artifacts/retrospective_baselines/`.
-Comparison table: `results/tables/retrospective_baseline_comparison.csv`. These runs need the
-frozen archive.
+`experiments/evaluate_*_persistent_offset.py`. Outputs: `artifacts/retrospective_baselines/`.
+Comparison table: `results/tables/retrospective_baseline_comparison.csv`. These runs read the
+per-episode prediction and truth files of the primary evaluations, so rerun those stages first.
 
 ## 6. Experimental populations
 
-All populations are disjoint seed blocks, declared in frozen manifests before their truth was
+All populations are disjoint seed blocks, declared in population manifests before their truth was
 generated. They are never merged. The full list, with declared and observed seed ranges, is in
 `reproducibility/seed_manifest.csv`.
 
@@ -235,24 +235,20 @@ of complete trajectories for each flash population.
 - **Prediction before truth.** Each episode's candidate, prediction, decision and truth files
   were written in that order. Each later file stores the SHA-256 of the earlier ones. The
   nanosecond timestamps recorded at write time are kept in the per-episode ledgers.
-- **Fault blindness.** Method inputs, frozen models and feature sets contain no fault, severity or
-  truth fields. Pre-truth artifacts are scanned for evaluator-only keys (with `--archive`).
-- **Hash verification.** The frozen SHA-256 manifests, preregistration sidecars and design files
-  are verified against the released bytes.
-- **Source provenance.** Each module under `src/twinguard` is the frozen experiment source plus a
-  machine-checked list of import, path and hash-resolution edits.
-  `reproducibility/provenance/source_ledger.json` reverses these edits to reproduce the frozen
-  source hashes.
-- **Decision reconstruction.** Every summary table is recomputed from per-episode rows. With the
-  archive, every decision is rebuilt from the stored prediction envelope.
+- **Fault blindness.** Method inputs, fitted models and feature sets contain no fault, severity or
+  truth fields.
+- **Hash verification.** Every released result file, the stage SHA-256 manifests, the
+  preregistration sidecars and the hash references between design files are verified against the
+  released bytes.
+- **Decision reconstruction.** Every summary table is recomputed from per-episode rows.
 
 See `reproducibility/README.md` and `paper/reproducibility_mapping.md`.
 
 ## 8. Generating paper figures
 
 ```bash
-python scripts/generate_paper_figures.py                                        # verify against frozen figures
-python scripts/generate_paper_figures.py --regenerate --workspace runs/figures  # redraw with the original plotting code
+python scripts/generate_paper_figures.py                                        # verify against the recorded hashes
+python scripts/generate_paper_figures.py --regenerate --workspace runs/figures  # redraw the simulator figures
 ```
 
 `results/figures/main/` contains four figures:
@@ -273,15 +269,10 @@ python scripts/generate_paper_figures.py --regenerate --workspace runs/figures  
 
 All data are simulated. Every population can be regenerated from the code and its seeds.
 
-- **This repository (git):** frozen models, calibration sets, configurations, hash manifests,
+- **This repository:** fitted models, calibration sets, configurations, hash manifests,
   per-episode result tables and ledgers (≈ 100 MB).
-- **Frozen archive:** the ≈ 66,000 per-episode candidate, prediction, decision and truth files
-  (≈ 580 MB) are intended for separate distribution. The archive has not yet been deposited; see
-  `data/README.md` for its contents and the expected extraction layout. Extract it at the repository
-  root to enable `--archive` checks and archive-dependent tests.
-
-  On Windows, the longest archived path is 126 characters relative to the repository root. Keep
-  the repository root path under about 130 characters, or enable Windows long-path support,
-  before extracting.
+- **Per-episode files:** the ≈ 66,000 per-episode candidate, prediction, decision and truth files
+  (≈ 580 MB) are not included. The experiment entry points regenerate them from their seeds; the
+  ledgers record the SHA-256 and write time of each file. See `data/README.md`.
 
 Licensed under the MIT License; see [LICENSE](LICENSE).

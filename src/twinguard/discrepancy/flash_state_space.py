@@ -14,7 +14,7 @@ from typing import Mapping, Sequence
 import numpy as np
 from scipy.optimize import minimize
 
-from twinguard.digital_twins.flash_drum import FlashDigitalTwin
+from twinguard.flash.digital_twin import FlashDigitalTwin
 from twinguard.scenarios.flash_population_design import (
     ACTION_NAMES,
     MEASURED_OUTPUTS,
@@ -398,7 +398,7 @@ def fit_flash_state_space_em(
     relative_tolerance: float = 1e-5,
 ) -> FlashStateSpaceParameters:
     if latent_dimension not in (1, 2, 3):
-        raise ValueError("E2 permits latent dimensions 1, 2, and 3 only")
+        raise ValueError("population design permits latent dimensions 1, 2, and 3 only")
     raw_y = np.asarray(residual, dtype=float)
     raw_x = np.asarray(features, dtype=float)
     if raw_y.ndim != 3 or raw_y.shape[2] != 3:

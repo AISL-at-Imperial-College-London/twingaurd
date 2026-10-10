@@ -1,0 +1,16 @@
+method,alpha,target_coverage,n_calibration_complete,corrected_rank_k,quantile,fixed_engineering_scales
+C0_nominal_fixedscale_conformal,0.1,0.9,447,404,2.926842477953595,0.10 bar; 0.10 level fraction; 5 K
+C0_nominal_fixedscale_conformal,0.05,0.95,447,426,3.7107814440576012,0.10 bar; 0.10 level fraction; 5 K
+C0_nominal_fixedscale_conformal,0.025,0.975,447,437,4.077992382151783,0.10 bar; 0.10 level fraction; 5 K
+C0_nominal_fixedscale_conformal,0.01,0.99,447,444,4.510547905681422,0.10 bar; 0.10 level fraction; 5 K
+C0_nominal_fixedscale_conformal,0.005,0.995,447,446,5.259787110777255,0.10 bar; 0.10 level fraction; 5 K
+CERTIFICATION_corrected_fixedscale_conformal,0.1,0.9,447,404,1.9304217907857595,0.10 bar; 0.10 level fraction; 5 K
+CERTIFICATION_corrected_fixedscale_conformal,0.05,0.95,447,426,2.3924845805728245,0.10 bar; 0.10 level fraction; 5 K
+CERTIFICATION_corrected_fixedscale_conformal,0.025,0.975,447,437,2.6413956117201995,0.10 bar; 0.10 level fraction; 5 K
+CERTIFICATION_corrected_fixedscale_conformal,0.01,0.99,447,444,3.0607484058632406,0.10 bar; 0.10 level fraction; 5 K
+CERTIFICATION_corrected_fixedscale_conformal,0.005,0.995,447,446,3.1050607720082057,0.10 bar; 0.10 level fraction; 5 K
+M3_pooled_conformal,0.1,0.9,447,404,9.291741027947406,adaptive bootstrap scale
+M3_pooled_conformal,0.05,0.95,447,426,11.04859850832729,adaptive bootstrap scale
+M3_pooled_conformal,0.025,0.975,447,437,12.40507962230346,adaptive bootstrap scale
+M3_pooled_conformal,0.01,0.99,447,444,15.956864471438763,adaptive bootstrap scale
+M3_pooled_conformal,0.005,0.995,447,446,16.491406271439885,adaptive bootstrap scale

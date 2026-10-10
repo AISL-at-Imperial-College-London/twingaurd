@@ -63,15 +63,15 @@ def _method_episode_sets(rows, method_keys, id_key="episode_id"):
 def check_method_rows() -> list[CheckResult]:
     """Every method (and confidence level) is evaluated on exactly the same episodes, once each."""
     tables = (
-        ("flash primary", FLASH / "FLASH_FINAL_RESULTS.csv", ("method",)),
-        ("flash boundary", FLASH / "FLASH_BOUNDARY_RESULTS.csv", ("method", "confidence_level")),
-        ("cstr boundary", FLASH / "CSTR_BOUNDARY_RESULTS.csv", ("method", "confidence_level")),
-        ("flash structural mismatch", FLASH / "FLASH_STRUCTURAL_RESULTS.csv", ("method",)),
-        ("flash mixed-regime audit", FLASH / "FLASH_RELIABILITY_RESULTS.csv", ("method",)),
-        ("cstr mixed-regime audit", FLASH / "CSTR_RELIABILITY_RESULTS.csv", ("method",)),
+        ("flash primary", FLASH / "flash_primary_episode_results.csv", ("method",)),
+        ("flash boundary", FLASH / "flash_boundary_episode_results.csv", ("method", "confidence_level")),
+        ("cstr boundary", FLASH / "cstr_boundary_episode_results.csv", ("method", "confidence_level")),
+        ("flash structural mismatch", FLASH / "flash_structural_episode_results.csv", ("method",)),
+        ("flash mixed-regime audit", FLASH / "flash_reliability_episode_results.csv", ("method",)),
+        ("cstr mixed-regime audit", FLASH / "cstr_reliability_episode_results.csv", ("method",)),
         ("cstr primary", CSTR / "primary_evaluation/final_safety_episodes.csv", ("method", "nominal_level")),
-        ("flash margin ladder", LADDER / "FLASH_E6B_MARGIN_RESULTS.csv", ("method",)),
-        ("cstr margin ladder", LADDER / "CSTR_E6B_MARGIN_RESULTS.csv", ("method",)),
+        ("flash margin ladder", LADDER / "flash_margin_results.csv", ("method",)),
+        ("cstr margin ladder", LADDER / "cstr_margin_results.csv", ("method",)),
     )
     results = []
     for name, path, keys in tables:
@@ -90,10 +90,10 @@ def check_method_rows() -> list[CheckResult]:
                 examples.append(f"{method}: episode set differs")
         results.append(CheckResult(f"method_rows:{name}", "population_integrity", path.name, len(sets), failures,
                                    detail=f"{len(reference or [])} episodes x {len(sets)} method/level rows", examples=examples[:5]))
-    mixed = read_csv(CSTR / "mixed_degradation/MULTIFAULT_FINAL_EPISODES.csv")
+    mixed = read_csv(CSTR / "mixed_degradation/mixed_degradation_test_episodes.csv")
     expected = read_json(CSTR / "mixed_degradation/configuration.json")["configuration"]["final_count"]
     ids = [row["episode_id"] for row in mixed]
-    results.append(CheckResult("method_rows:cstr mixed degradation", "population_integrity", "MULTIFAULT_FINAL_EPISODES.csv",
+    results.append(CheckResult("method_rows:cstr mixed degradation", "population_integrity", "mixed_degradation_test_episodes.csv",
                                expected, int(len(ids) != len(set(ids)) or len(ids) != expected),
                                detail=f"{len(set(ids))} unique episodes; configured final_count={expected}"))
     return results

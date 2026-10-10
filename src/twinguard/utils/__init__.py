@@ -1,1 +1,1 @@
-"""Repository paths, output guards and frozen-artifact provenance resolution."""
+"""Repository paths, output guards and output guards."""

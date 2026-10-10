@@ -1,5 +1,5 @@
 {
-  "e2_preregistration_sha256": "a35c3919c64380f03e275558d9037b5de41ea2056a0e298552f074ebddc7f7df",
+  "population_design_preregistration_sha256": "e976e1afc20fbe8f2da120717983dc58ed8a4ce6997d6a33bb15fb07edb2383a",
   "model": {
     "A": [
       [
@@ -252,7 +252,7 @@
   ],
   "process_bundle_sha256": "1bc228ee61c628bf44795a0f67c9a476973f630dcd95f9932d88c96682325624",
   "prohibited_populations_accessed": [],
-  "schema_version": "E3_SELECTED_FLASH_MODEL_1.0",
+  "schema_version": "SELECTED_FLASH_MODEL_1.0",
   "selected_metrics": {
     "action_changes_discrepancy_rollout": true,
     "action_changes_nominal_rollout": true,

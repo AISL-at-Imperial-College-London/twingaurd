@@ -1,7 +1,8 @@
-"""Retrospective CSTR conformal controls on the frozen C1 calibration (n=500) and test (N=1000) populations:
-nominal twin + constant-width one-sided conformal (C0) and discrepancy mean + constant-width conformal (C1),
-next to the reconstructed M0-M3 results (frozen output: artifacts/retrospective_baselines/cstr_conformal_controls).
-Requires the frozen archive extracted at the repository root.
+"""Retrospective CSTR comparison controls on the primary calibration (n=500) and test (N=1000)
+populations: nominal twin + constant-width one-sided conformal (C0) and discrepancy mean +
+constant-width conformal (C1), next to the reconstructed M0-M3 results
+(recorded output: artifacts/retrospective_baselines/cstr_conformal_controls). Pass --primary-dir pointing
+at a primary-evaluation output directory that contains the per-episode prediction and truth files.
 """
 
 from _runner import cstr_stage

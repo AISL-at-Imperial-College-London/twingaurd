@@ -1,8 +1,8 @@
 {
-  "source_dir": "results/milestone_b5",
-  "b7b_dir": "results/milestone_b7b",
-  "b8_dir": "results/milestone_b8",
-  "output_dir": "results/milestone_b9",
+  "source_dir": "artifacts/cstr/episode_design",
+  "arx_dir": "artifacts/cstr/stable_arx_order_study",
+  "observable_dir": "artifacts/cstr/observable_conditioning_study",
+  "output_dir": "artifacts/cstr/discrepancy_fit",
   "training_episodes": 600,
   "training_steps": 120,
   "posterior_samples": 2000,

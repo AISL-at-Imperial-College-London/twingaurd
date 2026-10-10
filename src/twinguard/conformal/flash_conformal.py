@@ -122,7 +122,7 @@ def mondrian_group(
     action: Sequence[float],
     bin_edges: Sequence[float] | None,
 ) -> str | None:
-    """Return no group when E2 did not freeze bin edges."""
+    """Return no group when calibration bin edges are unavailable."""
 
     if bin_edges is None:
         return None
